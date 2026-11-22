@@ -1,0 +1,292 @@
+param(
+    [string]$SkinsDir = (Join-Path (Split-Path -Parent $PSScriptRoot) "skins")
+)
+
+Add-Type -AssemblyName System.Drawing
+
+$ErrorActionPreference = "Stop"
+
+function New-ButtonCanvas([string]$BasePath) {
+    $src = [System.Drawing.Bitmap]::FromFile($BasePath)
+    $bmp = New-Object System.Drawing.Bitmap($src.Width, $src.Height, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+    $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+    $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+    $g.DrawImage($src, 0, 0, $src.Width, $src.Height)
+    $src.Dispose()
+    return @($bmp, $g)
+}
+
+function Save-ButtonCanvas($bmp, $g, [string]$OutPath) {
+    $g.Dispose()
+    $bmp.Save($OutPath, [System.Drawing.Imaging.ImageFormat]::Png)
+    $bmp.Dispose()
+}
+
+function Get-StrokeColor([bool]$IsOn) {
+    if ($IsOn) {
+        return [System.Drawing.Color]::FromArgb(255, 255, 255, 255)
+    }
+    return [System.Drawing.Color]::FromArgb(235, 210, 222, 234)
+}
+
+function Get-AccentColor([bool]$IsOn) {
+    if ($IsOn) {
+        return [System.Drawing.Color]::FromArgb(255, 255, 255, 255)
+    }
+    return [System.Drawing.Color]::FromArgb(230, 0, 229, 255)
+}
+
+function Draw-Polyline($g, $pen, [float[]]$pts) {
+    $arr = New-Object System.Drawing.PointF[] ($pts.Length / 2)
+    for ($i = 0; $i -lt $arr.Length; $i++) {
+        $arr[$i] = New-Object System.Drawing.PointF($pts[2 * $i], $pts[2 * $i + 1])
+    }
+    $g.DrawLines($pen, $arr)
+}
+
+function Draw-Curve($g, $pen, [float[]]$pts) {
+    $arr = New-Object System.Drawing.PointF[] ($pts.Length / 2)
+    for ($i = 0; $i -lt $arr.Length; $i++) {
+        $arr[$i] = New-Object System.Drawing.PointF($pts[2 * $i], $pts[2 * $i + 1])
+    }
+    $g.DrawCurve($pen, $arr, 0.45)
+}
+
+function Draw-CenteredText($g, [string]$text, [float]$cx, [float]$cy, [float]$size, $color) {
+    $font = New-Object System.Drawing.Font("Segoe UI", $size, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
+    $brush = New-Object System.Drawing.SolidBrush($color)
+    $sf = New-Object System.Drawing.StringFormat
+    $sf.Alignment = [System.Drawing.StringAlignment]::Center
+    $sf.LineAlignment = [System.Drawing.StringAlignment]::Center
+    $rect = New-Object System.Drawing.RectangleF(($cx - 40), ($cy - 14), 80, 28)
+    $g.DrawString($text, $font, $brush, $rect, $sf)
+    $sf.Dispose()
+    $brush.Dispose()
+    $font.Dispose()
+}
+
+# 1. Filter Type (seg4: 58x40): 0=Clean, 1=Vintage, 2=Acid, 3=Digital
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg4_$state.png"
+    $col = Get-StrokeColor $isOn
+    $pen = New-Object System.Drawing.Pen($col, 2.2)
+    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+
+    # 0: Clean sine wave
+    $bmp, $g = New-ButtonCanvas $base
+    $pts = @()
+    for ($i = 0; $i -le 16; $i++) {
+        $t = $i / 16.0
+        $x = 13.0 + $t * 32.0
+        $y = 20.0 - 8.0 * [Math]::Sin($t * 2.0 * [Math]::PI)
+        $pts += [float]$x; $pts += [float]$y
+    }
+    Draw-Curve $g $pen $pts
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_ftype_0_$state.png")
+
+    # 1: Vintage (warm tube tanh S-curve)
+    $bmp, $g = New-ButtonCanvas $base
+    $pts = @()
+    for ($i = 0; $i -le 16; $i++) {
+        $t = ($i / 16.0) * 2.0 - 1.0
+        $x = 13.0 + ($i / 16.0) * 32.0
+        $y = 20.0 - 8.5 * [Math]::Tanh(2.6 * $t)
+        $pts += [float]$x; $pts += [float]$y
+    }
+    Draw-Curve $g $pen $pts
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_ftype_1_$state.png")
+
+    # 2: Acid (303 resonant spike)
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Curve $g $pen @(12, 18, 22, 18, 29, 9, 34, 19, 44, 29)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_ftype_2_$state.png")
+
+    # 3: Digital (stepped staircase)
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Polyline $g $pen @(13, 27, 21, 27, 21, 20, 29, 20, 29, 13, 37, 13, 37, 27, 45, 27)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_ftype_3_$state.png")
+
+    $pen.Dispose()
+}
+
+# 2. Filter Mode (seg4: 58x40): 0=LP, 1=HP, 2=BP, 3=Notch
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg4_$state.png"
+    $col = Get-StrokeColor $isOn
+    $pen = New-Object System.Drawing.Pen($col, 2.2)
+    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+
+    # 0: LP
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Curve $g $pen @(13, 14, 24, 14, 30, 12, 37, 21, 45, 29)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_fmode_0_$state.png")
+
+    # 1: HP
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Curve $g $pen @(13, 29, 21, 21, 28, 12, 34, 14, 45, 14)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_fmode_1_$state.png")
+
+    # 2: BP
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Curve $g $pen @(13, 28, 22, 24, 29, 11, 36, 24, 45, 28)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_fmode_2_$state.png")
+
+    # 3: Notch
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Polyline $g $pen @(13, 13, 23, 13, 29, 28, 35, 13, 45, 13)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_fmode_3_$state.png")
+
+    $pen.Dispose()
+}
+
+# 3. Routing (seg2: 122x40): 0=Serial, 1=Parallel (from mushin/Source/Web/index.html:1559-1578)
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg2_$state.png"
+    $col = Get-StrokeColor $isOn
+    $pen = New-Object System.Drawing.Pen($col, 2.0)
+    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+
+    # 0: Serial [A] -- [B]
+    $bmp, $g = New-ButtonCanvas $base
+    $g.DrawRectangle($pen, 31, 13, 16, 14)
+    $g.DrawRectangle($pen, 75, 13, 16, 14)
+    $dashPen = New-Object System.Drawing.Pen($col, 2.0)
+    $dashPen.DashPattern = @(2.0, 2.0)
+    $g.DrawLine($dashPen, 49, 20, 73, 20)
+    $dashPen.Dispose()
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_route_0_$state.png")
+
+    # 1: Parallel split -> [A] / [B] -> join
+    $bmp, $g = New-ButtonCanvas $base
+    $g.DrawLine($pen, 29, 20, 41, 20)
+    $g.DrawLine($pen, 41, 13, 41, 27)
+    $g.DrawLine($pen, 41, 13, 51, 13)
+    $g.DrawLine($pen, 41, 27, 51, 27)
+    $g.DrawRectangle($pen, 51, 9, 20, 8)
+    $g.DrawRectangle($pen, 51, 23, 20, 8)
+    $g.DrawLine($pen, 71, 13, 81, 13)
+    $g.DrawLine($pen, 71, 27, 81, 27)
+    $g.DrawLine($pen, 81, 13, 81, 27)
+    $g.DrawLine($pen, 81, 20, 93, 20)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_route_1_$state.png")
+
+    $pen.Dispose()
+}
+
+# 4. Noise Route (seg3: 80x40): 0=PRE-D, 1=PRE-F, 2=POST
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg3_$state.png"
+    $col = Get-StrokeColor $isOn
+    $acc = Get-AccentColor $isOn
+    $pen = New-Object System.Drawing.Pen($col, 1.8)
+    $brush = New-Object System.Drawing.SolidBrush($acc)
+
+    for ($idx = 0; $idx -lt 3; $idx++) {
+        $bmp, $g = New-ButtonCanvas $base
+        # Signal line + two blocks [D] and [F]
+        $g.DrawLine($pen, 10, 20, 70, 20)
+        $g.DrawRectangle($pen, 25, 14, 12, 12)
+        $g.DrawRectangle($pen, 45, 14, 12, 12)
+        if ($idx -eq 0) { $dx = 15 }
+        elseif ($idx -eq 1) { $dx = 41 }
+        else { $dx = 65 }
+        $g.FillEllipse($brush, ($dx - 4), 16, 8, 8)
+        Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_nroute_${idx}_$state.png")
+    }
+
+    $brush.Dispose()
+    $pen.Dispose()
+}
+
+# 5. Gate Rate (seg3: 80x40): 0=1/16, 1=1/8, 2=1/4
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg3_$state.png"
+    $col = Get-StrokeColor $isOn
+    $brush = New-Object System.Drawing.SolidBrush($col)
+
+    # 0: 1/16 (4 bars + text)
+    $bmp, $g = New-ButtonCanvas $base
+    for ($b = 0; $b -lt 4; $b++) {
+        $g.FillRectangle($brush, (22 + $b * 10), 8, 6, 8)
+    }
+    Draw-CenteredText $g "1/16" 40 27 12 $col
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_grate_0_$state.png")
+
+    # 1: 1/8 (2 bars + text)
+    $bmp, $g = New-ButtonCanvas $base
+    $g.FillRectangle($brush, 22, 8, 15, 8)
+    $g.FillRectangle($brush, 43, 8, 15, 8)
+    Draw-CenteredText $g "1/8" 40 27 12 $col
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_grate_1_$state.png")
+
+    # 2: 1/4 (1 wide bar + text)
+    $bmp, $g = New-ButtonCanvas $base
+    $g.FillRectangle($brush, 22, 8, 36, 8)
+    Draw-CenteredText $g "1/4" 40 27 12 $col
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_grate_2_$state.png")
+
+    $brush.Dispose()
+}
+
+# 6. Delay Tempo (seg4: 58x40): 0=1/16, 1=1/8, 2=1/4, 3=1/2
+$dLabels = @("1/16", "1/8", "1/4", "1/2")
+$dDots = @(4, 3, 2, 1)
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg4_$state.png"
+    $col = Get-StrokeColor $isOn
+    $brush = New-Object System.Drawing.SolidBrush($col)
+
+    for ($idx = 0; $idx -lt 4; $idx++) {
+        $bmp, $g = New-ButtonCanvas $base
+        Draw-CenteredText $g $dLabels[$idx] 29 15 12 $col
+        $n = $dDots[$idx]
+        $startX = 29 - (($n - 1) * 7) / 2.0
+        for ($d = 0; $d -lt $n; $d++) {
+            $g.FillEllipse($brush, ($startX + $d * 7 - 2), 27, 4, 4)
+        }
+        Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_dtempo_${idx}_$state.png")
+    }
+    $brush.Dispose()
+}
+
+# 7. Limiter Mode (seg2: 122x40): 0=CLEAN (brickwall), 1=LMC (soft squash)
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg2_$state.png"
+    $col = Get-StrokeColor $isOn
+    $pen = New-Object System.Drawing.Pen($col, 2.2)
+    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+
+    # 0: CLEAN brickwall
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Polyline $g $pen @(26, 29, 44, 13, 62, 13)
+    Draw-CenteredText $g "CLN" 86 20 13 $col
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lmode_0_$state.png")
+
+    # 1: LMC soft squash
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Curve $g $pen @(26, 29, 38, 17, 50, 14, 62, 13)
+    Draw-CenteredText $g "LMC" 86 20 13 $col
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lmode_1_$state.png")
+
+    $pen.Dispose()
+}
+
+Write-Host "Generated 44 icon button PNGs in $SkinsDir"

@@ -621,24 +621,24 @@ public:
         addParam(boolParam  ("exhaustion", "Exhaustion",  false));
         addParam(floatParam ("threshold",  "Threshold",   -24.0f, 0.0f, 0.0f, "dB", 1));
         addParam(boolParam  ("autogain",   "Auto Gain",   false));
-        addParam(floatParam ("mix",        "Dry/Wet Mix", 0.0f, 1.0f, 1.0f, "", 2));
+        addParam(floatParam ("mix",        "Mix",         0.0f, 1.0f, 1.0f, "", 2));
 
         // Filter A
-        addParam(logParam   ("filter_a_cutoff",    "A Cutoff", 20.0f, 20000.0f, 20000.0f, "Hz", 0));
-        addParam(floatParam ("filter_a_resonance", "A Reso",   0.0f, 1.0f, 0.1f, "", 2));
-        addParam(floatParam ("filter_a_drive",     "A Drive",  1.0f, 10.0f, 1.0f, "x", 1));
-        addParam(floatParam ("filter_a_grit",      "A Grit",   0.0f, 1.0f, 0.0f, "", 2));
-        addParam(choiceParam("filter_a_type",      "A Type",   {"CLN", "VINT", "ACID", "DIGI"}, 0));
-        addParam(choiceParam("filter_a_mode",      "A Mode",   {"LP", "HP", "BP", "NOTCH"}, 0));
+        addParam(logParam   ("filter_a_cutoff",    "Cutoff",   20.0f, 20000.0f, 20000.0f, "Hz", 0));
+        addParam(floatParam ("filter_a_resonance", "Reso",     0.0f, 1.0f, 0.1f, "", 2));
+        addParam(floatParam ("filter_a_drive",     "Drive",    1.0f, 10.0f, 1.0f, "x", 1));
+        addParam(floatParam ("filter_a_grit",      "Grit",     0.0f, 1.0f, 0.0f, "", 2));
+        addParam(choiceParam("filter_a_type",      "Type",     {"CLN", "VINT", "ACID", "DIGI"}, 0));
+        addParam(choiceParam("filter_a_mode",      "Mode",     {"LP", "HP", "BP", "NOTCH"}, 0));
 
         // Filter B & Routing
-        addParam(logParam   ("filter_b_cutoff",    "B Cutoff", 20.0f, 20000.0f, 20000.0f, "Hz", 0));
-        addParam(floatParam ("filter_b_resonance", "B Reso",   0.0f, 1.0f, 0.1f, "", 2));
-        addParam(floatParam ("filter_b_drive",     "B Drive",  1.0f, 10.0f, 1.0f, "x", 1));
-        addParam(floatParam ("filter_b_grit",      "B Grit",   0.0f, 1.0f, 0.0f, "", 2));
-        addParam(choiceParam("filter_b_type",      "B Type",   {"CLN", "VINT", "ACID", "DIGI"}, 0));
-        addParam(choiceParam("filter_b_mode",      "B Mode",   {"LP", "HP", "BP", "NOTCH"}, 0));
-        addParam(choiceParam("routing",            "Routing",  {"SERIAL", "PARAL"}, 0));
+        addParam(logParam   ("filter_b_cutoff",    "Cutoff",   20.0f, 20000.0f, 20000.0f, "Hz", 0));
+        addParam(floatParam ("filter_b_resonance", "Reso",     0.0f, 1.0f, 0.1f, "", 2));
+        addParam(floatParam ("filter_b_drive",     "Drive",    1.0f, 10.0f, 1.0f, "x", 1));
+        addParam(floatParam ("filter_b_grit",      "Grit",     0.0f, 1.0f, 0.0f, "", 2));
+        addParam(choiceParam("filter_b_type",      "Type",     {"CLN", "VINT", "ACID", "DIGI"}, 0));
+        addParam(choiceParam("filter_b_mode",      "Mode",     {"LP", "HP", "BP", "NOTCH"}, 0));
+        addParam(choiceParam("routing",            "Path",     {"SERIAL", "PARAL"}, 0));
 
         // LFOs
         addParam(logParam   ("lfo1_freq", "LFO 1 Freq", 0.1f, 20.0f, 1.0f, "Hz", 2));
@@ -647,74 +647,74 @@ public:
         addParam(choiceParam("lfo2_wave", "LFO 2 Wave", {"Sine", "Triangle", "Saw", "Square", "Random"}, 0));
 
         // Mod Matrix
-        addParam(floatParam("mod_lfo1_target1", "L1 A Cut",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo1_target2", "L1 A Res",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo1_target3", "L1 A Grit", -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo1_target4", "L1 B Cut",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo1_target5", "L1 B Res",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo1_target6", "L1 B Grit", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target1", "A Cut",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target2", "A Res",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target3", "A Grit", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target4", "B Cut",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target5", "B Res",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target6", "B Grit", -1.0f, 1.0f, 0.0f, "", 2));
 
-        addParam(floatParam("mod_lfo2_target1", "L2 A Cut",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo2_target2", "L2 A Res",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo2_target3", "L2 A Grit", -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo2_target4", "L2 B Cut",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo2_target5", "L2 B Res",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo2_target6", "L2 B Grit", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target1", "A Cut",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target2", "A Res",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target3", "A Grit", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target4", "B Cut",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target5", "B Res",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target6", "B Grit", -1.0f, 1.0f, 0.0f, "", 2));
 
         // Sidechain
-        addParam(boolParam  ("sc_active",    "SC Active",  false));
-        addParam(choiceParam("sc_source",    "SC Source",  {"INT", "EXT", "TEST"}, 0));
-        addParam(floatParam ("sc_threshold", "SC Thresh",  -60.0f, 0.0f, -24.0f, "dB", 1));
-        addParam(floatParam ("sc_attack",    "SC Attack",  0.1f, 500.0f, 10.0f, "ms", 1));
-        addParam(floatParam ("sc_release",   "SC Release", 1.0f, 2000.0f, 100.0f, "ms", 0));
-        addParam(choiceParam("sc_mode",      "SC Mode",    {"PEAK", "RMS"}, 0));
-        addParam(floatParam ("sc_amount",    "SC Amount",  -100.0f, 100.0f, 0.0f, "%", 0));
-        addParam(choiceParam("sc_target",    "SC Target",  {"DRIVE", "CUT", "GAIN"}, 2));
-        addParam(logParam   ("sc_hp_freq",   "SC HPF",     20.0f, 2000.0f, 20.0f, "Hz", 0));
-        addParam(logParam   ("sc_lp_freq",   "SC LPF",     500.0f, 20000.0f, 20000.0f, "Hz", 0));
+        addParam(boolParam  ("sc_active",    "Active",  false));
+        addParam(choiceParam("sc_source",    "Source",  {"INT", "EXT", "TEST"}, 0));
+        addParam(floatParam ("sc_threshold", "Thresh",  -60.0f, 0.0f, -24.0f, "dB", 1));
+        addParam(floatParam ("sc_attack",    "Attack",  0.1f, 500.0f, 10.0f, "ms", 1));
+        addParam(floatParam ("sc_release",   "Release", 1.0f, 2000.0f, 100.0f, "ms", 0));
+        addParam(choiceParam("sc_mode",      "Mode",    {"PEAK", "RMS"}, 0));
+        addParam(floatParam ("sc_amount",    "Amount",  -100.0f, 100.0f, 0.0f, "%", 0));
+        addParam(choiceParam("sc_target",    "Target",  {"DRIVE", "CUT", "GAIN"}, 2));
+        addParam(logParam   ("sc_hp_freq",   "HPF",     20.0f, 2000.0f, 20.0f, "Hz", 0));
+        addParam(logParam   ("sc_lp_freq",   "LPF",     500.0f, 20000.0f, 20000.0f, "Hz", 0));
 
         // Noise Oscillator
-        addParam(boolParam  ("noise_active",  "Noise Active", false));
-        addParam(choiceParam("noise_type",    "Noise Type",   {"White", "Pink", "Sine", "Triangle", "Saw", "Square"}, 0));
-        addParam(logParam   ("noise_freq",    "Noise Freq",   20.0f, 20000.0f, 440.0f, "Hz", 0));
-        addParam(floatParam ("noise_level",   "Noise Level",  -60.0f, 0.0f, -20.0f, "dB", 1));
-        addParam(choiceParam("noise_routing", "Noise Route",  {"PRE-D", "PRE-F", "POST"}, 0));
-        addParam(floatParam ("noise_fm_mod",  "Filter FM",    0.0f, 1.0f, 0.0f, "", 2));
+        addParam(boolParam  ("noise_active",  "Active",    false));
+        addParam(choiceParam("noise_type",    "Type",      {"White", "Pink", "Sine", "Triangle", "Saw", "Square"}, 0));
+        addParam(logParam   ("noise_freq",    "Freq",      20.0f, 20000.0f, 440.0f, "Hz", 0));
+        addParam(floatParam ("noise_level",   "Level",     -60.0f, 0.0f, -20.0f, "dB", 1));
+        addParam(choiceParam("noise_routing", "Route",     {"PRE-D", "PRE-F", "POST"}, 0));
+        addParam(floatParam ("noise_fm_mod",  "Filter FM", 0.0f, 1.0f, 0.0f, "", 2));
 
         // Trance Gate
-        addParam(boolParam  ("tg_active",  "Gate Active",  false));
-        addParam(floatParam ("tg_mix",     "Gate Mix",     0.0f, 1.0f, 1.0f, "", 2));
-        addParam(choiceParam("tg_pattern", "Gate Pattern",
+        addParam(boolParam  ("tg_active",  "Active",  false));
+        addParam(floatParam ("tg_mix",     "Mix",     0.0f, 1.0f, 1.0f, "", 2));
+        addParam(choiceParam("tg_pattern", "Pattern",
             {"Straight 16", "Offbeat 16", "Classic 1", "Classic 2", "4-On-Floor", "Galop", "Space Gate", "Euclidean 5"}, 0));
-        addParam(choiceParam("tg_rate",    "Gate Rate",    {"1/16", "1/8", "1/4"}, 0));
-        addParam(floatParam ("tg_start",   "Gate Start",   0.0f, 100.0f, 5.0f, "ms", 1));
-        addParam(floatParam ("tg_hold",    "Gate Hold",    10.0f, 100.0f, 50.0f, "%", 0));
-        addParam(floatParam ("tg_end",     "Gate End",     0.0f, 200.0f, 10.0f, "ms", 1));
-        addParam(floatParam ("tg_depth",   "Gate Depth",   0.0f, 100.0f, 100.0f, "%", 0));
+        addParam(choiceParam("tg_rate",    "Rate",    {"1/16", "1/8", "1/4"}, 0));
+        addParam(floatParam ("tg_start",   "Start",   0.0f, 100.0f, 5.0f, "ms", 1));
+        addParam(floatParam ("tg_hold",    "Hold",    10.0f, 100.0f, 50.0f, "%", 0));
+        addParam(floatParam ("tg_end",     "End",     0.0f, 200.0f, 10.0f, "ms", 1));
+        addParam(floatParam ("tg_depth",   "Depth",   0.0f, 100.0f, 100.0f, "%", 0));
 
         // Info Decay
-        addParam(boolParam ("qe_active",     "Decay Active", false));
-        addParam(floatParam("qe_depth",      "Bit Depth",    2.0f, 16.0f, 16.0f, "bit", 1));
-        addParam(intParam  ("qe_downsample", "Downsample",   1, 32, 1, "x"));
-        addParam(floatParam("qe_mix",        "Decay Mix",    0.0f, 1.0f, 1.0f, "", 2));
-        addParam(boolParam ("qe_link",       "Exh Link",     false));
+        addParam(boolParam ("qe_active",     "Active",     false));
+        addParam(floatParam("qe_depth",      "Bit Depth",  2.0f, 16.0f, 16.0f, "bit", 1));
+        addParam(intParam  ("qe_downsample", "Downsample", 1, 32, 1, "x"));
+        addParam(floatParam("qe_mix",        "Mix",        0.0f, 1.0f, 1.0f, "", 2));
+        addParam(boolParam ("qe_link",       "Exh Link",   false));
 
         // Stereo Delay
-        addParam(boolParam  ("delay_active",   "Delay Active", false));
-        addParam(logParam   ("delay_time",     "Delay Time",   1.0f, 2000.0f, 300.0f, "ms", 0));
-        addParam(floatParam ("delay_feedback", "Delay FB",     0.0f, 0.95f, 0.3f, "", 2));
-        addParam(floatParam ("delay_mix",      "Delay Mix",    0.0f, 1.0f, 0.3f, "", 2));
-        addParam(boolParam  ("delay_pingpong", "Ping-Pong",    false));
-        addParam(boolParam  ("delay_sync",     "Delay Sync",   false));
-        addParam(choiceParam("delay_tempo",    "Delay Tempo",  {"1/16", "1/8", "1/4", "1/2"}, 2));
+        addParam(boolParam  ("delay_active",   "Active",    false));
+        addParam(logParam   ("delay_time",     "Time",      1.0f, 2000.0f, 300.0f, "ms", 0));
+        addParam(floatParam ("delay_feedback", "Feedback",  0.0f, 0.95f, 0.3f, "", 2));
+        addParam(floatParam ("delay_mix",      "Mix",       0.0f, 1.0f, 0.3f, "", 2));
+        addParam(boolParam  ("delay_pingpong", "Ping-Pong", false));
+        addParam(boolParam  ("delay_sync",     "Sync",      false));
+        addParam(choiceParam("delay_tempo",    "Tempo",     {"1/16", "1/8", "1/4", "1/2"}, 2));
 
         // Limiter
-        addParam(boolParam  ("limiter_active",  "Limit Active", false));
-        addParam(choiceParam("limiter_mode",    "Limit Mode",   {"CLEAN", "LMC"}, 0));
-        addParam(floatParam ("limiter_drive",   "Limit Drive",  0.0f, 24.0f, 0.0f, "dB", 1));
-        addParam(floatParam ("limiter_ceiling", "Limit Ceil",   -12.0f, 0.0f, -0.1f, "dB", 1));
-        addParam(floatParam ("limiter_release", "Limit Rel",    10.0f, 1000.0f, 100.0f, "ms", 0));
-        addParam(floatParam ("limiter_mix",     "Limit Mix",    0.0f, 1.0f, 1.0f, "", 2));
+        addParam(boolParam  ("limiter_active",  "Active",  false));
+        addParam(choiceParam("limiter_mode",    "Mode",    {"CLEAN", "LMC"}, 0));
+        addParam(floatParam ("limiter_drive",   "Drive",   0.0f, 24.0f, 0.0f, "dB", 1));
+        addParam(floatParam ("limiter_ceiling", "Ceiling", -12.0f, 0.0f, -0.1f, "dB", 1));
+        addParam(floatParam ("limiter_release", "Release", 10.0f, 1000.0f, 100.0f, "ms", 0));
+        addParam(floatParam ("limiter_mix",     "Mix",     0.0f, 1.0f, 1.0f, "", 2));
 
         // Performance Macros (0..100%)
         addParam(floatParam ("macro_exhaustion", "EXHAUSTION",  0.0f, 1.0f, 0.0f, "", 2));
@@ -808,21 +808,24 @@ public:
         waveshaper_.setThreshold(mpc::dsp::dbToGain(get(kThreshold)));
         waveshaper_.setAutoGain(getBool(kAutoGain));
 
-        const float baseFACutoff = mpc::clamp(get(kFACutoff) * std::pow(2.0f, -3.5f * mChoke), 20.0f, 20000.0f);
-        const float baseFAReso = mpc::clamp(get(kFAReso) + 0.35f * mChoke, 0.0f, 0.98f);
+        const float baseFACutoff = mpc::clamp(get(kFACutoff) * std::pow(2.0f, -7.0f * mChoke), 20.0f, 20000.0f);
+        const float baseFAReso = mpc::clamp(get(kFAReso) + 0.50f * mChoke, 0.0f, 0.98f);
         const float baseFAGrit = mpc::clamp(get(kFAGrit) + 0.5f * mReso, 0.0f, 1.0f);
         filterA_.setDrive(get(kFADrive));
         filterA_.setGrit(baseFAGrit);
         filterA_.setType(getInt(kFAType));
         filterA_.setMode(getInt(kFAMode));
 
-        const float baseFBCutoff = mpc::clamp(get(kFBCutoff) * std::pow(2.0f, -2.0f * mChoke), 20.0f, 20000.0f);
-        const float baseFBReso = mpc::clamp(get(kFBReso) + 0.35f * mChoke, 0.0f, 0.98f);
+        const bool chokeBand = (mChoke > 0.02f && getInt(kFBMode) == 0 && get(kFBCutoff) > 15000.0f);
+        const float baseFBCutoff = chokeBand
+            ? mpc::clamp(20.0f * std::pow(2.0f, 5.0f * mChoke), 20.0f, 20000.0f)
+            : mpc::clamp(get(kFBCutoff) * std::pow(2.0f, -4.0f * mChoke), 20.0f, 20000.0f);
+        const float baseFBReso = mpc::clamp(get(kFBReso) + 0.50f * mChoke, 0.0f, 0.98f);
         const float baseFBGrit = mpc::clamp(get(kFBGrit) + 0.5f * mReso, 0.0f, 1.0f);
         filterB_.setDrive(get(kFBDrive));
         filterB_.setGrit(baseFBGrit);
         filterB_.setType(getInt(kFBType));
-        filterB_.setMode(getInt(kFBMode));
+        filterB_.setMode(chokeBand ? 1 : getInt(kFBMode));
 
         const bool parallelRouting = (getInt(kRouting) == 1);
 

@@ -7,6 +7,7 @@ panel-scoped Text label (e.g. "Active", "Mix", "Cutoff", "Reso", "Drive")
 so section prefixes are not repeated inside labeled panels.
 """
 
+import copy
 import json
 import os
 import subprocess
@@ -164,6 +165,28 @@ def make_label_entry(name, text, x, y, w, h, height, colour, when_visible):
             "bounds": f"{x} {y} {w} {h}",
         },
     })
+
+
+def make_icon_radio_def(local_defs, base_key, new_key, prefix, count):
+    base_def = None
+    for entry in local_defs:
+        if obj_get(entry, "key") == base_key:
+            base_def = entry
+            break
+    if base_def is None:
+        raise RuntimeError(f"Missing base localComponentDefinition {base_key}")
+    cloned = copy.deepcopy(base_def)
+    obj_set(cloned, "key", new_key)
+    val = obj_get(cloned, "value")
+    for c in obj_get(val, "componentsData"):
+        cd = obj_get(c, "componentData")
+        if obj_get(cd, "type") == "Button":
+            bdata = obj_get(cd, "data")
+            bid = obj_get(bdata, "buttonId")
+            if 0 <= bid < count:
+                obj_set(bdata, "onImage", f"{prefix}_{bid}_on.png")
+                obj_set(bdata, "offImage", f"{prefix}_{bid}_off.png")
+    return cloned
 
 
 def make_orb_local_def(orb_idx):
@@ -372,16 +395,47 @@ def make_gate_envelope(idx_start, idx_hold, idx_end):
     })
 
 
+# Map parameter index -> unique ui.json key name (so gen_ui.py can bind controls
+# unambiguously while Mushin.cpp exposes concise DRY display names via Name).
+UI_PARAM_KEYS = {
+    5: "Dry/Wet Mix",
+    6: "A Cutoff", 7: "A Reso", 8: "A Drive", 9: "A Grit", 10: "A Type", 11: "A Mode",
+    12: "B Cutoff", 13: "B Reso", 14: "B Drive", 15: "B Grit", 16: "B Type", 17: "B Mode",
+    18: "Routing",
+    23: "L1 A Cut", 24: "L1 A Res", 25: "L1 A Grit", 26: "L1 B Cut", 27: "L1 B Res", 28: "L1 B Grit",
+    29: "L2 A Cut", 30: "L2 A Res", 31: "L2 A Grit", 32: "L2 B Cut", 33: "L2 B Res", 34: "L2 B Grit",
+    35: "SC Active", 36: "SC Source", 37: "SC Thresh", 38: "SC Attack", 39: "SC Release",
+    40: "SC Mode", 41: "SC Amount", 42: "SC Target", 43: "SC HPF", 44: "SC LPF",
+    45: "Noise Active", 46: "Noise Type", 47: "Noise Freq", 48: "Noise Level", 49: "Noise Route",
+    51: "Gate Active", 52: "Gate Mix", 53: "Gate Pattern", 54: "Gate Rate",
+    55: "Gate Start", 56: "Gate Hold", 57: "Gate End", 58: "Gate Depth",
+    59: "Decay Active", 62: "Decay Mix",
+    64: "Delay Active", 65: "Delay Time", 66: "Delay FB", 67: "Delay Mix",
+    69: "Delay Sync", 70: "Delay Tempo",
+    71: "Limit Active", 72: "Limit Mode", 73: "Limit Drive", 74: "Limit Ceil",
+    75: "Limit Rel", 76: "Limit Mix",
+}
+
+
 def main():
     if not os.path.isfile(PARAMS_PATH):
         print(f"ERROR: {PARAMS_PATH} not found. Run build.py first.", file=sys.stderr)
         return 1
 
+    with open(PARAMS_PATH, "r", encoding="utf-8") as f:
+        params_data = json.load(f)
+    for p in params_data["params"]:
+        if p["index"] in UI_PARAM_KEYS:
+            p["name"] = UI_PARAM_KEYS[p["index"]]
+    params_ui_path = os.path.join(BUILD_DIR, "params_ui.json")
+    with open(params_ui_path, "w", encoding="utf-8") as f:
+        json.dump(params_data, f, indent=2)
+
     os.makedirs(SKINS_DIR, exist_ok=True)
     cmd = [
         sys.executable,
         GEN_UI_PATH,
-        "--params", PARAMS_PATH,
+        "--params", params_ui_path,
         "--ui", UI_PATH,
         "--out", SKINS_DIR,
         "--kit-cache", BUILD_DIR,
@@ -389,6 +443,14 @@ def main():
     res = subprocess.run(cmd, check=False)
     if res.returncode != 0:
         return res.returncode
+
+    icon_ps1 = os.path.join(SCRIPT_DIR, "make_button_icons.ps1")
+    res_icons = subprocess.run(
+        ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", icon_ps1, "-SkinsDir", SKINS_DIR],
+        check=False,
+    )
+    if res_icons.returncode != 0:
+        return res_icons.returncode
 
     tui_path = os.path.join(SKINS_DIR, "TUI.json")
     with open(tui_path, "r", encoding="utf-8") as f:
@@ -401,61 +463,9 @@ def main():
     page_data = obj_get(tui, "pageData")
     comp_defs = obj_get(page_data, "componentDefinitions")
     local_defs = obj_get(comp_defs, "localComponentDefinitions")
-
-    # Record each localDef's "name" Label geometry, then remove it from the localDef
-    name_specs = {}
-    for ldef in local_defs:
-        key = obj_get(ldef, "key")
-        val = obj_get(ldef, "value")
-        comps = obj_get(val, "componentsData")
-        kept = []
-        for c in comps:
-            cd = obj_get(c, "componentData")
-            cdata = obj_get(cd, "data")
-            if obj_get(cd, "type") == "Label" and obj_get(cdata, "type") == "Name":
-                bounds_obj = obj_get(c, "bounds")
-                bx, by, bw, bh = [int(v) for v in obj_get(bounds_obj, "bounds").split()]
-                ts = obj_get(cdata, "textStyle")
-                font = obj_get(ts, "font")
-                name_specs[key] = (bx, by, bw, bh, obj_get(font, "height"), obj_get(ts, "colour"))
-            else:
-                kept.append(c)
-        obj_set(val, "componentsData", kept)
-
-    # Add a panel-scoped Text Label for each control on every tab
     tabs = obj_get(page_data, "tabs")
-    for tab in tabs:
-        cdef = obj_get(tab, "componentDefinition")
-        comps = obj_get(cdef, "componentsData")
-        new_comps = []
-        for idx, c in enumerate(comps):
-            new_comps.append(c)
-            cd = obj_get(c, "componentData")
-            ctype = obj_get(cd, "type")
-            if ctype in name_specs:
-                bounds_obj = obj_get(c, "bounds")
-                bx, by, bw, bh = [int(v) for v in obj_get(bounds_obj, "bounds").split()]
-                nx, ny, nw, nh, fh, col = name_specs[ctype]
-                orig_name = obj_get(cd, "name", "")
-                short_name = DRY_LABELS.get(orig_name, orig_name)
-                when_vis = obj_get(bounds_obj, "whenVisible", "Always")
-                new_comps.append(
-                    make_label_entry(
-                        f"lbl_{idx}",
-                        short_name,
-                        bx + nx,
-                        by + ny,
-                        nw,
-                        nh,
-                        fh,
-                        col,
-                        when_vis,
-                    )
-                )
-        obj_set(cdef, "componentsData", new_comps)
 
-    with open(PARAMS_PATH, "r", encoding="utf-8") as f:
-        params_by_name = {p["name"]: p["index"] for p in json.load(f)["params"]}
+    params_by_name = {p["name"]: p["index"] for p in params_data["params"]}
 
     macro_names = [
         "EXHAUSTION", "CHOKE", "INFO DECAY", "CORRUPT MIX",
@@ -467,6 +477,46 @@ def main():
     for i in range(8):
         local_defs.append(make_orb_local_def(i))
     local_defs.append(make_gate_pat_local_def())
+
+    # Bake crisp shapes/icons into segmented switch buttons
+    icon_radio_specs = [
+        ("radio4", "radioFType", "btn_ftype", 4),
+        ("radio4", "radioFMode", "btn_fmode", 4),
+        ("radio2", "radioRoute", "btn_route", 2),
+        ("radio3", "radioNRoute", "btn_nroute", 3),
+        ("radio3", "radioGRate", "btn_grate", 3),
+        ("radio4", "radioDTempo", "btn_dtempo", 4),
+        ("radio2", "radioLMode", "btn_lmode", 2),
+    ]
+    for base_k, new_k, prefix, cnt in icon_radio_specs:
+        local_defs.append(make_icon_radio_def(local_defs, base_k, new_k, prefix, cnt))
+
+    switch_type_map = {
+        "A Type": "radioFType",
+        "B Type": "radioFType",
+        "A Mode": "radioFMode",
+        "B Mode": "radioFMode",
+        "Routing": "radioRoute",
+        "Noise Route": "radioNRoute",
+        "Gate Rate": "radioGRate",
+        "Delay Tempo": "radioDTempo",
+        "Limit Mode": "radioLMode",
+    }
+    seg_prefixes = tuple(f"{k} seg " for k in switch_type_map)
+
+    for tab in tabs:
+        cdef = obj_get(tab, "componentDefinition")
+        comps = obj_get(cdef, "componentsData")
+        filtered = []
+        for c in comps:
+            cd = obj_get(c, "componentData")
+            cname = obj_get(cd, "name") or ""
+            if obj_get(cd, "type") == "Label" and cname.startswith(seg_prefixes):
+                continue
+            if cname in switch_type_map and str(obj_get(cd, "type")).startswith("radio"):
+                obj_set(cd, "type", switch_type_map[cname])
+            filtered.append(c)
+        obj_set(cdef, "componentsData", filtered)
 
     for tab in tabs:
         tname = obj_get(tab, "tabName")
@@ -489,10 +539,39 @@ def main():
                 make_gate_pattern_strip(params_by_name["Gate Pattern"])
             )
 
+    # Ensure all static Text labels (including gen_ui segment button captions)
+    # use handleName "Invalid" and showWhenDataModelInvalid "Show" so the MPC
+    # never hides them as unbound "Data" handles.
+    for tab in tabs:
+        cdef = obj_get(tab, "componentDefinition")
+        for c in obj_get(cdef, "componentsData"):
+            cd = obj_get(c, "componentData")
+            if obj_get(cd, "type") == "Label":
+                cdata = obj_get(cd, "data")
+                if obj_get(cdata, "type") == "Text":
+                    obj_set(cdata, "handleName", "Invalid")
+                    bounds_obj = obj_get(c, "bounds")
+                    obj_set(bounds_obj, "showWhenDataModelInvalid", "Show")
+
     with open(tui_path, "w", encoding="utf-8") as f:
         f.write(gen_ui.dump_json(tui) + "\n")
 
-    print(f"Patched DRY labels into {tui_path}")
+    # Map MAIN (Tab 1) Q-Links to consecutive top-down banks (Bank 1 = Q13..16, Bank 2 = Q9..12)
+    qlinks_path = os.path.join(SKINS_DIR, "Q-Links.json")
+    with open(qlinks_path, "r", encoding="utf-8") as f:
+        qlinks = json.load(f)
+    for entry in qlinks["Screen Mode Q-Links"]["map"]:
+        if entry.get("Tab") == 1:
+            ql = entry["Q-Links"]
+            for i in range(4):
+                ql[f"Q-Link {13 + i}"] = params_by_name[macro_names[i]]
+                ql[f"Q-Link {9 + i}"] = params_by_name[macro_names[4 + i]]
+                ql[f"Q-Link {5 + i}"] = -1
+                ql[f"Q-Link {1 + i}"] = -1
+    with open(qlinks_path, "w", encoding="utf-8") as f:
+        json.dump(qlinks, f, indent=4)
+
+    print(f"Generated {SKINS_DIR} with native Name bindings and MAIN Q-Links")
     return 0
 
 
