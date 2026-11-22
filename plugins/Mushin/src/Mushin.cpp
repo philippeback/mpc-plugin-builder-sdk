@@ -644,19 +644,19 @@ public:
         addParam(choiceParam("lfo2_wave", "LFO 2 Wave", {"Sine", "Triangle", "Saw", "Square", "Random"}, 0));
 
         // Mod Matrix
-        addParam(floatParam("mod_lfo1_target1", "LFO1->A Cut",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo1_target2", "LFO1->A Res",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo1_target3", "LFO1->A Grit", -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo1_target4", "LFO1->B Cut",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo1_target5", "LFO1->B Res",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo1_target6", "LFO1->B Grit", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target1", "L1 A Cut",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target2", "L1 A Res",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target3", "L1 A Grit", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target4", "L1 B Cut",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target5", "L1 B Res",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo1_target6", "L1 B Grit", -1.0f, 1.0f, 0.0f, "", 2));
 
-        addParam(floatParam("mod_lfo2_target1", "LFO2->A Cut",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo2_target2", "LFO2->A Res",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo2_target3", "LFO2->A Grit", -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo2_target4", "LFO2->B Cut",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo2_target5", "LFO2->B Res",  -1.0f, 1.0f, 0.0f, "", 2));
-        addParam(floatParam("mod_lfo2_target6", "LFO2->B Grit", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target1", "L2 A Cut",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target2", "L2 A Res",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target3", "L2 A Grit", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target4", "L2 B Cut",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target5", "L2 B Res",  -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("mod_lfo2_target6", "L2 B Grit", -1.0f, 1.0f, 0.0f, "", 2));
 
         // Sidechain
         addParam(boolParam  ("sc_active",    "SC Active",  false));

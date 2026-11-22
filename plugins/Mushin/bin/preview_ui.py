@@ -209,6 +209,7 @@ for (const def of TUI.pageData.componentDefinitions.localComponentDefinitions) {
 }
 
 const tabs = TUI.pageData.tabs;
+tabBar.style.gridTemplateColumns = `repeat(${tabs.length}, 1fr)`;
 
 // Build tab buttons
 tabs.forEach((tab, idx) => {
@@ -297,7 +298,7 @@ function renderComponent(comp, offsetX = 0, offsetY = 0, paramOverride = null) {
     if ((d.type === "Name" || d.type === "ParameterName") && pIdx !== null) text = PARAMS_INFO.params[pIdx].name;
     else if ((d.type === "Value" || d.type === "ParameterValue") && pIdx !== null) text = formatParamValue(pIdx);
 
-    if (ts.justification === "centre") {
+    if (ts.justification === "centre" || (ts.justification && ts.justification.includes("horizontallyCentred"))) {
       ctx.textAlign = "center";
       ctx.fillText(text, x + w / 2, y + h / 2, w - 4);
     } else if (ts.justification === "right") {
@@ -343,22 +344,12 @@ function renderComponent(comp, offsetX = 0, offsetY = 0, paramOverride = null) {
       if (nGrp === 1) {
         isOn = paramValues[pIdx] >= 0.5;
       } else {
-        isOn = getParamChoiceIndex(pIdx) === ((d.buttonId || 1) - 1);
+        const bid = (d.buttonId !== undefined) ? d.buttonId : 0;
+        isOn = getParamChoiceIndex(pIdx) === bid;
       }
     }
     const imgName = isOn ? d.onImage : d.offImage;
     if (imgs[imgName]) ctx.drawImage(imgs[imgName], x, y, w, h);
-    if (nGrp > 1 && pIdx !== null) {
-      const p = PARAMS_INFO.params[pIdx];
-      const label = (p && p.choices && p.choices[(d.buttonId || 1) - 1]) ? p.choices[(d.buttonId || 1) - 1] : String(d.buttonId || "");
-      ctx.save();
-      ctx.fillStyle = isOn ? "#0d0f12" : "#f0f4f8";
-      ctx.font = '700 13px "Titillium Web", "Segoe UI", sans-serif';
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(label, x + w / 2, y + h / 2, w - 6);
-      ctx.restore();
-    }
     return;
   }
 
@@ -367,6 +358,94 @@ function renderComponent(comp, offsetX = 0, offsetY = 0, paramOverride = null) {
     const isOn = pIdx !== null ? paramValues[pIdx] >= 0.5 : false;
     const imgName = isOn ? d.onImage : d.offImage;
     if (imgs[imgName]) ctx.drawImage(imgs[imgName], x, y, w, h);
+    return;
+  }
+
+  if (type === "Envelope") {
+    const d = cd.data;
+    const findIdx = name => PARAMS_INFO.params.findIndex(p => p.name === name);
+    const iStart = findIdx("Gate Start");
+    const iHold  = findIdx("Gate Hold");
+    const iEnd   = findIdx("Gate End");
+    const iDepth = findIdx("Gate Depth");
+
+    const startNorm = iStart >= 0 ? paramValues[iStart] : 0.05;
+    const holdNorm  = iHold  >= 0 ? paramValues[iHold]  : 0.44;
+    const endNorm   = iEnd   >= 0 ? paramValues[iEnd]   : 0.05;
+    const depthNorm = iDepth >= 0 ? paramValues[iDepth] : 1.0;
+
+    ctx.save();
+    ctx.fillStyle = argbToCss(d.backgroundColour || "ff10141a");
+    ctx.strokeStyle = argbToCss(d.scaleColour || "ff262e3a");
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    const padX = 18, padY = 14;
+    const gx = x + padX, gy = y + padY, gw = w - padX * 2, gh = h - padY * 2;
+
+    // Subtle grid lines
+    ctx.strokeStyle = "rgba(38, 46, 58, 0.7)";
+    for (let i = 1; i <= 3; i++) {
+      const ly = gy + (gh * i) / 4;
+      ctx.beginPath(); ctx.moveTo(gx, ly); ctx.lineTo(gx + gw, ly); ctx.stroke();
+    }
+    for (let i = 1; i <= 3; i++) {
+      const lx = gx + (gw * i) / 4;
+      ctx.beginPath(); ctx.moveTo(lx, gy); ctx.lineTo(lx, gy + gh); ctx.stroke();
+    }
+
+    // Gate trapezoid geometry matching TranceGateProcessor
+    const holdW = Math.max(0.1, 0.1 + 0.9 * holdNorm) * gw;
+    const maxTrans = gw * 0.35;
+    let atkW = Math.min(startNorm * maxTrans, holdW * 0.5);
+    let decW = Math.min(endNorm * maxTrans, holdW * 0.5);
+    if (atkW + decW > holdW) {
+      atkW = holdW * 0.5;
+      decW = holdW * 0.5;
+    }
+    const yTop = gy + 4;
+    const yFloor = gy + gh * (0.1 + 0.85 * depthNorm);
+
+    ctx.beginPath();
+    ctx.moveTo(gx, yFloor);
+    ctx.lineTo(gx + atkW, yTop);
+    ctx.lineTo(gx + holdW - decW, yTop);
+    ctx.lineTo(gx + holdW, yFloor);
+    ctx.lineTo(gx + gw, yFloor);
+
+    // Fill under curve
+    ctx.save();
+    ctx.lineTo(gx + gw, gy + gh);
+    ctx.lineTo(gx, gy + gh);
+    ctx.closePath();
+    ctx.fillStyle = argbToCss(d.fillColour || "3300e5ff");
+    ctx.fill();
+    ctx.restore();
+
+    // Stroke curve
+    ctx.strokeStyle = argbToCss(d.lineColour || "ff00e5ff");
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Stage handles
+    const pts = [
+      [gx + atkW, yTop],
+      [gx + holdW - decW, yTop],
+      [gx + holdW, yFloor]
+    ];
+    for (const [px, py] of pts) {
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "#10141a";
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+    }
+    ctx.restore();
     return;
   }
 
@@ -456,15 +535,10 @@ function render() {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, 1280, 628);
 
-  // Subtle half-screen divider line
-  ctx.save();
-  ctx.strokeStyle = "#262e3a";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(20, 325);
-  ctx.lineTo(1260, 325);
-  ctx.stroke();
-  ctx.restore();
+  const bgImg = tab.componentDefinition.backgroundData.unfocussed.image;
+  if (bgImg && imgs[bgImg]) {
+    ctx.drawImage(imgs[bgImg], 0, 0, 1280, 628);
+  }
 
   // Render components
   for (const comp of tab.componentDefinition.componentsData) {

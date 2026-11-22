@@ -13,109 +13,124 @@
   "pages": [
     {
       "name": "S-CURVE",
+      "background": "bg_scurve.png",
       "controls": [
-        { "widget": "text", "text": "S-Curve" },
         { "param": "Drive", "widget": "knob" },
         { "param": "Threshold", "widget": "knob" },
-        { "param": "Dry/Wet Mix", "widget": "fader" },
         { "param": "Gain", "widget": "fader" },
+        { "param": "Dry/Wet Mix", "widget": "fader" },
+
         { "param": "Exhaustion", "widget": "switch" },
         { "param": "Auto Gain", "widget": "switch" },
         "empty",
+        "empty",
 
-        { "widget": "text", "text": "Info Decay" },
         { "param": "Decay Active", "widget": "switch" },
         { "param": "Bit Depth", "widget": "knob" },
         { "param": "Downsample", "widget": "knob" },
         { "param": "Decay Mix", "widget": "fader" },
+
         { "param": "Exh Link", "widget": "switch" },
+        "empty",
         "empty",
         "empty"
       ]
     },
     {
       "name": "FILTER",
+      "background": "bg_filter.png",
       "controls": [
-        { "widget": "text", "text": "Filter A" },
         { "param": "A Cutoff", "widget": "knob" },
         { "param": "A Reso", "widget": "knob" },
         { "param": "A Drive", "widget": "knob" },
         { "param": "A Grit", "widget": "knob" },
+
         { "param": "A Type", "widget": "switch" },
         { "param": "A Mode", "widget": "switch" },
         "empty",
+        "empty",
 
-        { "widget": "text", "text": "Filter B" },
         { "param": "B Cutoff", "widget": "knob" },
         { "param": "B Reso", "widget": "knob" },
         { "param": "B Drive", "widget": "knob" },
         { "param": "B Grit", "widget": "knob" },
+
         { "param": "B Type", "widget": "switch" },
         { "param": "B Mode", "widget": "switch" },
+        "empty",
         { "param": "Routing", "widget": "switch" }
       ]
     },
     {
-      "name": "LFO MOD",
+      "name": "LFO",
+      "background": "bg_lfo.png",
       "controls": [
-        { "widget": "text", "text": "LFO 1 & 2" },
         { "param": "LFO 1 Freq", "widget": "knob" },
         { "param": "LFO 1 Wave", "widget": "knob", "overlay": "menu" },
+        "empty",
+        "empty",
+
         { "param": "LFO 2 Freq", "widget": "knob" },
         { "param": "LFO 2 Wave", "widget": "knob", "overlay": "menu" },
         "empty",
         "empty",
-        "empty",
 
-        { "widget": "text", "text": "LFO 1 Matrix" },
-        { "param": "LFO1->A Cut", "widget": "knob", "polarity": "bipolar" },
-        { "param": "LFO1->A Res", "widget": "knob", "polarity": "bipolar" },
-        { "param": "LFO1->A Grit", "widget": "knob", "polarity": "bipolar" },
-        { "param": "LFO1->B Cut", "widget": "knob", "polarity": "bipolar" },
-        { "param": "LFO1->B Res", "widget": "knob", "polarity": "bipolar" },
-        { "param": "LFO1->B Grit", "widget": "knob", "polarity": "bipolar" },
-        "empty"
-      ]
-    },
-    {
-      "name": "MOD 2",
-      "controls": [
-        { "widget": "text", "text": "LFO 2 Matrix" },
-        { "param": "LFO2->A Cut", "widget": "knob", "polarity": "bipolar" },
-        { "param": "LFO2->A Res", "widget": "knob", "polarity": "bipolar" },
-        { "param": "LFO2->A Grit", "widget": "knob", "polarity": "bipolar" },
-        { "param": "LFO2->B Cut", "widget": "knob", "polarity": "bipolar" },
-        { "param": "LFO2->B Res", "widget": "knob", "polarity": "bipolar" },
-        { "param": "LFO2->B Grit", "widget": "knob", "polarity": "bipolar" },
-        "empty",
-
-        { "widget": "text", "text": "Noise Osc" },
         { "param": "Noise Active", "widget": "switch" },
         { "param": "Noise Type", "widget": "knob", "overlay": "menu" },
         { "param": "Noise Freq", "widget": "knob" },
         { "param": "Noise Level", "widget": "fader" },
+
         { "param": "Noise Route", "widget": "switch" },
         { "param": "Filter FM", "widget": "knob" },
+        "empty",
+        "empty"
+      ]
+    },
+    {
+      "name": "LFO MTX",
+      "background": "bg_matrix.png",
+      "controls": [
+        { "param": "L1 A Cut", "widget": "knob", "polarity": "bipolar" },
+        { "param": "L1 A Res", "widget": "knob", "polarity": "bipolar" },
+        { "param": "L1 A Grit", "widget": "knob", "polarity": "bipolar" },
+        "empty",
+
+        { "param": "L1 B Cut", "widget": "knob", "polarity": "bipolar" },
+        { "param": "L1 B Res", "widget": "knob", "polarity": "bipolar" },
+        { "param": "L1 B Grit", "widget": "knob", "polarity": "bipolar" },
+        "empty",
+
+        { "param": "L2 A Cut", "widget": "knob", "polarity": "bipolar" },
+        { "param": "L2 A Res", "widget": "knob", "polarity": "bipolar" },
+        { "param": "L2 A Grit", "widget": "knob", "polarity": "bipolar" },
+        "empty",
+
+        { "param": "L2 B Cut", "widget": "knob", "polarity": "bipolar" },
+        { "param": "L2 B Res", "widget": "knob", "polarity": "bipolar" },
+        { "param": "L2 B Grit", "widget": "knob", "polarity": "bipolar" },
         "empty"
       ]
     },
     {
       "name": "SIDECHN",
+      "background": "bg_sidechn.png",
       "controls": [
-        { "widget": "text", "text": "Sidechain" },
         { "param": "SC Active", "widget": "switch" },
         { "param": "SC Source", "widget": "switch" },
         { "param": "SC Target", "widget": "switch" },
         { "param": "SC Mode", "widget": "switch" },
+
         { "param": "SC Thresh", "widget": "knob" },
         { "param": "SC Amount", "widget": "knob", "polarity": "bipolar" },
         "empty",
+        "empty",
 
-        { "widget": "text", "text": "SC Env & Filt" },
         { "param": "SC Attack", "widget": "knob" },
         { "param": "SC Release", "widget": "knob" },
         { "param": "SC HPF", "widget": "knob" },
         { "param": "SC LPF", "widget": "knob" },
+
+        "empty",
         "empty",
         "empty",
         "empty"
@@ -123,20 +138,23 @@
     },
     {
       "name": "GATE",
+      "background": "bg_gate.png",
       "controls": [
-        { "widget": "text", "text": "Trance Gate" },
         { "param": "Gate Active", "widget": "switch" },
         { "param": "Gate Pattern", "widget": "knob", "overlay": "menu" },
         { "param": "Gate Rate", "widget": "switch" },
-        { "param": "Gate Mix", "widget": "fader" },
         { "param": "Gate Depth", "widget": "knob" },
+
+        { "param": "Gate Mix", "widget": "fader" },
+        "empty",
         "empty",
         "empty",
 
-        { "widget": "text", "text": "Gate Env" },
         { "param": "Gate Start", "widget": "fader" },
         { "param": "Gate Hold", "widget": "fader" },
         { "param": "Gate End", "widget": "fader" },
+        "empty",
+
         "empty",
         "empty",
         "empty",
@@ -144,25 +162,33 @@
       ]
     },
     {
-      "name": "DLY+LIM",
+      "name": "DLY",
+      "background": "bg_dly.png",
       "controls": [
-        { "widget": "text", "text": "Delay" },
         { "param": "Delay Active", "widget": "switch" },
         { "param": "Delay Sync", "widget": "switch" },
         { "param": "Ping-Pong", "widget": "switch" },
+        { "param": "Delay FB", "widget": "knob" },
+
         { "param": "Delay Time", "widget": "knob", "visibleWhen": { "param": "Delay Sync", "choice": "Off" } },
         { "param": "Delay Tempo", "widget": "switch", "visibleWhen": { "param": "Delay Sync", "choice": "On" } },
-        { "param": "Delay FB", "widget": "knob" },
-        { "param": "Delay Mix", "widget": "fader" },
-
-        { "widget": "text", "text": "Limiter" },
+        "empty",
+        { "param": "Delay Mix", "widget": "fader" }
+      ]
+    },
+    {
+      "name": "LIM",
+      "background": "bg_lim.png",
+      "controls": [
         { "param": "Limit Active", "widget": "switch" },
         { "param": "Limit Mode", "widget": "switch" },
         { "param": "Limit Drive", "widget": "knob" },
         { "param": "Limit Ceil", "widget": "knob" },
+
         { "param": "Limit Rel", "widget": "knob" },
-        { "param": "Limit Mix", "widget": "fader" },
-        "empty"
+        "empty",
+        "empty",
+        { "param": "Limit Mix", "widget": "fader" }
       ]
     }
   ]
