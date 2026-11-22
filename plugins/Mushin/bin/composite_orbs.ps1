@@ -74,3 +74,22 @@ for ($r = 0; $r -lt 2; $r++) {
 }
 
 $orbsImg.Dispose()
+
+# Stack gate_pat_0..7.png into a single 8-frame vertical FilmStrip (gate_pat_strip.png)
+$gw = 918
+$gh = 107
+$gateStrip = New-Object System.Drawing.Bitmap($gw, ($gh * 8), [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+$gg = [System.Drawing.Graphics]::FromImage($gateStrip)
+for ($i = 0; $i -lt 8; $i++) {
+    $gpPath = Join-Path $assetsDir ("gate_pat_" + $i + ".png")
+    if (Test-Path $gpPath) {
+        $gpImg = [System.Drawing.Bitmap]::FromFile($gpPath)
+        $gg.DrawImage($gpImg, 0, ($i * $gh), $gw, $gh)
+        $gpImg.Dispose()
+    }
+}
+$gg.Dispose()
+$gateStripPath = Join-Path $assetsDir "gate_pat_strip.png"
+$gateStrip.Save($gateStripPath, [System.Drawing.Imaging.ImageFormat]::Png)
+$gateStrip.Dispose()
+Write-Host "Wrote $gateStripPath"

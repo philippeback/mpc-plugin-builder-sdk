@@ -1844,6 +1844,58 @@
                             }
                         ]
                     }
+                },
+                {
+                    "key": "gatePatStrip",
+                    "value": {
+                        "version": 2,
+                        "actions": [],
+                        "backgroundData": {
+                            "version": 1,
+                            "focussed": {
+                                "version": 1,
+                                "colour": "00000000",
+                                "image": ""
+                            },
+                            "unfocussed": {
+                                "version": 1,
+                                "colour": "00000000",
+                                "image": ""
+                            }
+                        },
+                        "ignoreMousePresses": true,
+                        "disableCoarseDataWheel": true,
+                        "componentsData": [
+                            {
+                                "version": 2,
+                                "componentData": {
+                                    "version": 1,
+                                    "name": "knob",
+                                    "type": "Knob",
+                                    "data": {
+                                        "version": 2,
+                                        "knobType": "FilmStrip",
+                                        "filmStrip": "gate_pat_strip.png",
+                                        "numFrames": 8,
+                                        "invert": false,
+                                        "handleName": "Data"
+                                    }
+                                },
+                                "handle remapping": {
+                                    "version": 1,
+                                    "map": []
+                                },
+                                "bounds": {
+                                    "version": 1,
+                                    "acceptsHWFocus": "No",
+                                    "showWhenDataModelInvalid": "Show",
+                                    "whenVisible": "Always",
+                                    "boundsType": "Absolute",
+                                    "bounds": "0 0 918 107"
+                                }
+                            }
+                        ]
+                    }
                 }
             ]
         },
@@ -7532,216 +7584,29 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "gate_pat_0",
-                                "type": "Image",
+                                "name": "gate_pat_strip",
+                                "type": "gatePatStrip",
                                 "data": {
                                     "version": 1,
-                                    "image": "gate_pat_0.png"
+                                    "handleName": "Data"
                                 }
                             },
                             "handle remapping": {
                                 "version": 1,
-                                "map": []
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 53"
+                                    }
+                                ]
                             },
                             "bounds": {
-                                "version": 2,
+                                "version": 1,
                                 "acceptsHWFocus": "No",
                                 "showWhenDataModelInvalid": "Show",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "23 196 918 107",
-                                "additionalInvalidatingHandles": [
-                                    "IndexedEnabling/0/8/Parameter 53"
-                                ]
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "gate_pat_1",
-                                "type": "Image",
-                                "data": {
-                                    "version": 1,
-                                    "image": "gate_pat_1.png"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 2,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "23 196 918 107",
-                                "additionalInvalidatingHandles": [
-                                    "IndexedEnabling/1/8/Parameter 53"
-                                ]
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "gate_pat_2",
-                                "type": "Image",
-                                "data": {
-                                    "version": 1,
-                                    "image": "gate_pat_2.png"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 2,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "23 196 918 107",
-                                "additionalInvalidatingHandles": [
-                                    "IndexedEnabling/2/8/Parameter 53"
-                                ]
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "gate_pat_3",
-                                "type": "Image",
-                                "data": {
-                                    "version": 1,
-                                    "image": "gate_pat_3.png"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 2,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "23 196 918 107",
-                                "additionalInvalidatingHandles": [
-                                    "IndexedEnabling/3/8/Parameter 53"
-                                ]
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "gate_pat_4",
-                                "type": "Image",
-                                "data": {
-                                    "version": 1,
-                                    "image": "gate_pat_4.png"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 2,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "23 196 918 107",
-                                "additionalInvalidatingHandles": [
-                                    "IndexedEnabling/4/8/Parameter 53"
-                                ]
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "gate_pat_5",
-                                "type": "Image",
-                                "data": {
-                                    "version": 1,
-                                    "image": "gate_pat_5.png"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 2,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "23 196 918 107",
-                                "additionalInvalidatingHandles": [
-                                    "IndexedEnabling/5/8/Parameter 53"
-                                ]
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "gate_pat_6",
-                                "type": "Image",
-                                "data": {
-                                    "version": 1,
-                                    "image": "gate_pat_6.png"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 2,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "23 196 918 107",
-                                "additionalInvalidatingHandles": [
-                                    "IndexedEnabling/6/8/Parameter 53"
-                                ]
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "gate_pat_7",
-                                "type": "Image",
-                                "data": {
-                                    "version": 1,
-                                    "image": "gate_pat_7.png"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 2,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "23 196 918 107",
-                                "additionalInvalidatingHandles": [
-                                    "IndexedEnabling/7/8/Parameter 53"
-                                ]
+                                "bounds": "23 196 918 107"
                             }
                         }
                     ]

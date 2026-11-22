@@ -242,32 +242,75 @@ def make_macro_orb_strip(orb_idx, param_idx, cx, cy):
     })
 
 
-def make_gate_pattern_image(idx_pattern, pat_idx):
+def make_gate_pat_local_def():
+    return to_obj({
+        "key": "gatePatStrip",
+        "value": {
+            "version": 2,
+            "actions": [],
+            "backgroundData": {
+                "version": 1,
+                "focussed": {"version": 1, "colour": "00000000", "image": ""},
+                "unfocussed": {"version": 1, "colour": "00000000", "image": ""},
+            },
+            "ignoreMousePresses": True,
+            "disableCoarseDataWheel": True,
+            "componentsData": [
+                {
+                    "version": 2,
+                    "componentData": {
+                        "version": 1,
+                        "name": "knob",
+                        "type": "Knob",
+                        "data": {
+                            "version": 2,
+                            "knobType": "FilmStrip",
+                            "filmStrip": "gate_pat_strip.png",
+                            "numFrames": 8,
+                            "invert": False,
+                            "handleName": "Data",
+                        },
+                    },
+                    "handle remapping": {"version": 1, "map": []},
+                    "bounds": {
+                        "version": 1,
+                        "acceptsHWFocus": "No",
+                        "showWhenDataModelInvalid": "Show",
+                        "whenVisible": "Always",
+                        "boundsType": "Absolute",
+                        "bounds": "0 0 918 107",
+                    },
+                }
+            ],
+        },
+    })
+
+
+def make_gate_pattern_strip(idx_pattern):
     return to_obj({
         "version": 2,
         "componentData": {
             "version": 1,
-            "name": f"gate_pat_{pat_idx}",
-            "type": "Image",
+            "name": "gate_pat_strip",
+            "type": "gatePatStrip",
             "data": {
                 "version": 1,
-                "image": f"gate_pat_{pat_idx}.png",
+                "handleName": "Data",
             },
         },
         "handle remapping": {
             "version": 1,
-            "map": [],
+            "map": [
+                {"key": "Data", "value": f"Parameter {idx_pattern}"},
+            ],
         },
         "bounds": {
-            "version": 2,
+            "version": 1,
             "acceptsHWFocus": "No",
             "showWhenDataModelInvalid": "Show",
             "whenVisible": "Always",
             "boundsType": "Absolute",
             "bounds": "23 196 918 107",
-            "additionalInvalidatingHandles": [
-                f"IndexedEnabling/{pat_idx}/8/Parameter {idx_pattern}"
-            ],
         },
     })
 
@@ -423,6 +466,7 @@ def main():
 
     for i in range(8):
         local_defs.append(make_orb_local_def(i))
+    local_defs.append(make_gate_pat_local_def())
 
     for tab in tabs:
         tname = obj_get(tab, "tabName")
@@ -441,10 +485,9 @@ def main():
         elif tname == "GATE":
             cdef = obj_get(tab, "componentDefinition")
             comps = obj_get(cdef, "componentsData")
-            for pat_idx in range(8):
-                comps.append(
-                    make_gate_pattern_image(params_by_name["Gate Pattern"], pat_idx)
-                )
+            comps.append(
+                make_gate_pattern_strip(params_by_name["Gate Pattern"])
+            )
 
     with open(tui_path, "w", encoding="utf-8") as f:
         f.write(gen_ui.dump_json(tui) + "\n")
