@@ -12,6 +12,31 @@
   "qlinkGroups": "rows",
   "pages": [
     {
+      "name": "MAIN",
+      "background": "bg_main.png",
+      "controls": [
+        { "param": "EXHAUSTION",  "widget": "knob" },
+        { "param": "CHOKE",       "widget": "knob" },
+        { "param": "INFO DECAY",  "widget": "knob" },
+        { "param": "CORRUPT MIX", "widget": "knob" },
+
+        "empty",
+        "empty",
+        "empty",
+        "empty",
+
+        { "param": "KINETIC MOD", "widget": "knob" },
+        { "param": "RESONATOR",   "widget": "knob" },
+        { "param": "GATE CARVE",  "widget": "knob" },
+        { "param": "SMASH",       "widget": "knob" },
+
+        "empty",
+        "empty",
+        "empty",
+        "empty"
+      ]
+    },
+    {
       "name": "S-CURVE",
       "background": "bg_scurve.png",
       "controls": [

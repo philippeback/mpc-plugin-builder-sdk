@@ -590,6 +590,9 @@ public:
         kDelayActive, kDelayTime, kDelayFeedback, kDelayMix, kDelayPingPong, kDelaySync, kDelayTempo,
         // Limiter (71..76)
         kLimActive, kLimMode, kLimDrive, kLimCeiling, kLimRelease, kLimMix,
+        // Performance Macros (77..84 - appended at end to preserve parameter IDs)
+        kMacroExhaustion, kMacroChoke, kMacroDecay, kMacroCorrupt,
+        kMacroKinetic, kMacroResonator, kMacroGate, kMacroSmash,
 
         kNumParams
     };
@@ -713,6 +716,16 @@ public:
         addParam(floatParam ("limiter_release", "Limit Rel",    10.0f, 1000.0f, 100.0f, "ms", 0));
         addParam(floatParam ("limiter_mix",     "Limit Mix",    0.0f, 1.0f, 1.0f, "", 2));
 
+        // Performance Macros (0..100%)
+        addParam(floatParam ("macro_exhaustion", "EXHAUSTION",  0.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam ("macro_choke",      "CHOKE",       0.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam ("macro_decay",      "INFO DECAY",  0.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam ("macro_corrupt",    "CORRUPT MIX", 0.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam ("macro_kinetic",    "KINETIC MOD", 0.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam ("macro_resonator",  "RESONATOR",   0.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam ("macro_gate",       "GATE CARVE",  0.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam ("macro_smash",      "SMASH",       0.0f, 1.0f, 0.0f, "", 2));
+
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
         addBuiltInPrograms();
@@ -777,25 +790,35 @@ public:
         const double sr = ctx.sampleRate;
         const int n = ctx.numFrames;
 
+        // 0. Performance Macros (0..1; 0 leaves underlying parameters untouched)
+        const float mExh     = get(kMacroExhaustion);
+        const float mChoke   = get(kMacroChoke);
+        const float mDecay   = get(kMacroDecay);
+        const float mCorrupt = get(kMacroCorrupt);
+        const float mKinetic = get(kMacroKinetic);
+        const float mReso    = get(kMacroResonator);
+        const float mGate    = get(kMacroGate);
+        const float mSmash   = get(kMacroSmash);
+
         // 1. Update per-block parameters
-        const float baseDrive = get(kDrive);
-        const bool exhausted = getBool(kExhaustion);
+        const float baseDrive = mpc::clamp(get(kDrive) + 12.0f * mExh, 1.0f, 32.0f);
+        const bool exhausted = getBool(kExhaustion) || (mExh > 0.65f);
         waveshaper_.setDrive(baseDrive);
         waveshaper_.setExhaustion(exhausted);
         waveshaper_.setThreshold(mpc::dsp::dbToGain(get(kThreshold)));
         waveshaper_.setAutoGain(getBool(kAutoGain));
 
-        const float baseFACutoff = get(kFACutoff);
-        const float baseFAReso = get(kFAReso);
-        const float baseFAGrit = get(kFAGrit);
+        const float baseFACutoff = mpc::clamp(get(kFACutoff) * std::pow(2.0f, -3.5f * mChoke), 20.0f, 20000.0f);
+        const float baseFAReso = mpc::clamp(get(kFAReso) + 0.35f * mChoke, 0.0f, 0.98f);
+        const float baseFAGrit = mpc::clamp(get(kFAGrit) + 0.5f * mReso, 0.0f, 1.0f);
         filterA_.setDrive(get(kFADrive));
         filterA_.setGrit(baseFAGrit);
         filterA_.setType(getInt(kFAType));
         filterA_.setMode(getInt(kFAMode));
 
-        const float baseFBCutoff = get(kFBCutoff);
-        const float baseFBReso = get(kFBReso);
-        const float baseFBGrit = get(kFBGrit);
+        const float baseFBCutoff = mpc::clamp(get(kFBCutoff) * std::pow(2.0f, -2.0f * mChoke), 20.0f, 20000.0f);
+        const float baseFBReso = mpc::clamp(get(kFBReso) + 0.35f * mChoke, 0.0f, 0.98f);
+        const float baseFBGrit = mpc::clamp(get(kFBGrit) + 0.5f * mReso, 0.0f, 1.0f);
         filterB_.setDrive(get(kFBDrive));
         filterB_.setGrit(baseFBGrit);
         filterB_.setType(getInt(kFBType));
@@ -803,9 +826,9 @@ public:
 
         const bool parallelRouting = (getInt(kRouting) == 1);
 
-        lfo1_.setFrequency(get(kLfo1Freq));
+        lfo1_.setFrequency(mpc::clamp(get(kLfo1Freq) + 6.0f * mKinetic, 0.1f, 25.0f));
         lfo1_.setShape(getInt(kLfo1Wave));
-        lfo2_.setFrequency(get(kLfo2Freq));
+        lfo2_.setFrequency(mpc::clamp(get(kLfo2Freq) + 8.5f * mKinetic, 0.1f, 25.0f));
         lfo2_.setShape(getInt(kLfo2Wave));
 
         float mod1[6], mod2[6];
@@ -813,6 +836,9 @@ public:
             mod1[t] = get(kModL1T1 + t);
             mod2[t] = get(kModL2T1 + t);
         }
+        mod1[0] = mpc::clamp(mod1[0] + 0.45f * mKinetic, -1.0f, 1.0f);
+        mod2[3] = mpc::clamp(mod2[3] + 0.45f * mKinetic, -1.0f, 1.0f);
+        mod2[4] = mpc::clamp(mod2[4] + 0.35f * mKinetic, -1.0f, 1.0f);
 
         sidechain_.setActive(getBool(kScActive));
         sidechain_.setSource(getInt(kScSource));
@@ -824,12 +850,12 @@ public:
             get(kScHpf), get(kScLpf)
         );
 
-        smoothedGain_.setTarget(get(kGain));
-        smoothedMix_.setTarget(get(kMix));
+        smoothedGain_.setTarget(std::max(0.0f, get(kGain) * (1.0f - 0.35f * mExh)));
+        smoothedMix_.setTarget(get(kMix) + (1.0f - get(kMix)) * mCorrupt);
 
-        const bool noiseActive = getBool(kNoiseActive);
-        const int noiseRoute = getInt(kNoiseRoute);
-        const float noiseGain = mpc::dsp::dbToGain(get(kNoiseLevel));
+        const bool noiseActive = getBool(kNoiseActive) || (mCorrupt > 0.05f);
+        const int noiseRoute = (mCorrupt > 0.05f && !getBool(kNoiseActive)) ? 1 : getInt(kNoiseRoute);
+        const float noiseGain = mpc::dsp::dbToGain(get(kNoiseLevel) + 24.0f * mCorrupt);
         const float fmAmount = get(kNoiseFmMod);
         const bool needNoise = noiseActive || (sidechain_.isActive() && sidechain_.getSource() == SidechainProcessor::Source::TestSignal);
         if (needNoise) {
@@ -837,27 +863,28 @@ public:
             noiseOsc_.setFrequency(get(kNoiseFreq));
         }
 
-        const bool qeActive = getBool(kQeActive);
-        float targetQeDepth = get(kQeDepth);
+        const bool qeActive = getBool(kQeActive) || (mDecay > 0.02f);
+        float targetQeDepth = (mDecay > 0.02f) ? std::min(get(kQeDepth), 16.0f - 14.0f * mDecay) : get(kQeDepth);
         if (getBool(kQeLink) && exhausted) targetQeDepth = 4.0f;
         smoothedQeDepth_.setTarget(targetQeDepth);
-        smoothedQeMix_.setTarget(get(kQeMix));
-        const int downsampleFactor = getInt(kQeDownsample);
+        smoothedQeMix_.setTarget(std::max(get(kQeMix), mDecay));
+        const int downsampleFactor = std::max(getInt(kQeDownsample), 1 + (int)(11.0f * mDecay));
 
-        const bool delayActive = getBool(kDelayActive);
-        smoothedDelayTime_.setTarget(get(kDelayTime));
-        smoothedDelayFb_.setTarget(get(kDelayFeedback));
-        smoothedDelayMix_.setTarget(get(kDelayMix));
+        const bool delayActive = getBool(kDelayActive) || (mReso > 0.05f);
+        const float delayTimeTarget = (!getBool(kDelayActive) && mReso > 0.05f) ? (32.0f - 20.0f * mReso) : get(kDelayTime);
+        smoothedDelayTime_.setTarget(delayTimeTarget);
+        smoothedDelayFb_.setTarget(std::max(get(kDelayFeedback), 0.88f * mReso));
+        smoothedDelayMix_.setTarget(std::max(get(kDelayMix), 0.45f * mReso));
         const bool delayPingPong = getBool(kDelayPingPong);
         const bool delaySync = getBool(kDelaySync);
         const int delayTempoVal = getInt(kDelayTempo);
 
-        const bool limActive = getBool(kLimActive);
-        const int limMode = getInt(kLimMode);
-        smoothedLimDrive_.setTarget(get(kLimDrive));
+        const bool limActive = getBool(kLimActive) || (mSmash > 0.02f);
+        const int limMode = (mSmash > 0.3f) ? 1 : getInt(kLimMode);
+        smoothedLimDrive_.setTarget(mpc::clamp(get(kLimDrive) + 18.0f * mSmash, 0.0f, 24.0f));
         smoothedLimCeil_.setTarget(get(kLimCeiling));
         smoothedLimRel_.setTarget(get(kLimRelease));
-        smoothedLimMix_.setTarget(get(kLimMix));
+        smoothedLimMix_.setTarget(std::max(get(kLimMix), mSmash));
 
         // Trance Gate block params
         const float bpm = mpc::dsp::safeBpm(ctx.transport.bpm);
@@ -876,7 +903,8 @@ public:
 
         double startSamples = (get(kTgStart) * 0.001) * sr;
         double endSamples = (get(kTgEnd) * 0.001) * sr;
-        const double holdWidthSamples = stepSamples * (get(kTgHold) * 0.01);
+        const float tgHoldPct = (mGate > 0.05f) ? std::min(get(kTgHold), 75.0f - 47.0f * mGate) : get(kTgHold);
+        const double holdWidthSamples = stepSamples * (tgHoldPct * 0.01);
         const double maxTrans = stepSamples * 0.5;
         if (startSamples > maxTrans) startSamples = maxTrans;
         if (endSamples > maxTrans) endSamples = maxTrans;
@@ -885,9 +913,10 @@ public:
         if (decayStart < attackEnd) {
             attackEnd = decayStart = holdWidthSamples * 0.5;
         }
-        const float baseAtten = 1.0f - get(kTgDepth) * 0.01f;
-        const float tgMix = get(kTgMix);
-        const bool tgActive = getBool(kTgActive) && (stepSamples > 0.0);
+        const float tgDepthPct = std::max(get(kTgDepth), 100.0f * mGate);
+        const float baseAtten = 1.0f - tgDepthPct * 0.01f;
+        const float tgMix = std::max(get(kTgMix), mGate);
+        const bool tgActive = (getBool(kTgActive) || mGate > 0.05f) && (stepSamples > 0.0);
 
         const float* inL = ctx.inputs[0];
         const float* inR = (ctx.numInputs > 1 && ctx.inputs[1]) ? ctx.inputs[1] : ctx.inputs[0];

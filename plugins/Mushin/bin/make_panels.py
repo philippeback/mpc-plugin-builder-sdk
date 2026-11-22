@@ -36,17 +36,28 @@ FONT_5X7 = {
     "G": [0b01110, 0b10001, 0b10000, 0b10111, 0b10001, 0b10001, 0b01110],
     "H": [0b10001, 0b10001, 0b10001, 0b11111, 0b10001, 0b10001, 0b10001],
     "I": [0b01110, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b01110],
+    "J": [0b00111, 0b00010, 0b00010, 0b00010, 0b10010, 0b10010, 0b01100],
+    "K": [0b10001, 0b10010, 0b10100, 0b11000, 0b10100, 0b10010, 0b10001],
     "L": [0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b11111],
     "M": [0b10001, 0b11011, 0b10101, 0b10101, 0b10001, 0b10001, 0b10001],
     "N": [0b10001, 0b11001, 0b10101, 0b10011, 0b10001, 0b10001, 0b10001],
     "O": [0b01110, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01110],
+    "P": [0b11110, 0b10001, 0b10001, 0b11110, 0b10000, 0b10000, 0b10000],
+    "Q": [0b01110, 0b10001, 0b10001, 0b10001, 0b10101, 0b10010, 0b01101],
     "R": [0b11110, 0b10001, 0b10001, 0b11110, 0b10100, 0b10010, 0b10001],
     "S": [0b01111, 0b10000, 0b10000, 0b01110, 0b00001, 0b00001, 0b11110],
     "T": [0b11111, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100],
     "U": [0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01110],
     "V": [0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01010, 0b00100],
+    "W": [0b10001, 0b10001, 0b10001, 0b10101, 0b10101, 0b11011, 0b10001],
     "X": [0b10001, 0b10001, 0b01010, 0b00100, 0b01010, 0b10001, 0b10001],
     "Y": [0b10001, 0b10001, 0b01010, 0b00100, 0b00100, 0b00100, 0b00100],
+    "Z": [0b11111, 0b00001, 0b00010, 0b00100, 0b01000, 0b10000, 0b11111],
+    ",": [0b00000, 0b00000, 0b00000, 0b00000, 0b00100, 0b00100, 0b01000],
+    "/": [0b00001, 0b00010, 0b00010, 0b00100, 0b01000, 0b01000, 0b10000],
+    ">": [0b10000, 0b01000, 0b00100, 0b00010, 0b00100, 0b01000, 0b10000],
+    ":": [0b00000, 0b00100, 0b00100, 0b00000, 0b00100, 0b00100, 0b00000],
+    ".": [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00100, 0b00000],
 }
 
 PAGES = [
@@ -216,10 +227,106 @@ def generate_gate_patterns(assets_dir):
         print(f"Wrote {out_path}")
 
 
+def draw_text_5x7(buf, w, h, x0, y0, text, col, scale=2):
+    char_w = 5 * scale
+    gap = 2 * scale
+    for ci, ch in enumerate(text):
+        glyph = FONT_5X7.get(ch.upper(), FONT_5X7[" "])
+        gx = x0 + ci * (char_w + gap)
+        for r in range(7):
+            bits = glyph[r]
+            for c in range(5):
+                if bits & (1 << (4 - c)):
+                    for sy in range(scale):
+                        py = y0 + r * scale + sy
+                        if 0 <= py < h:
+                            for sx in range(scale):
+                                px = gx + c * scale + sx
+                                if 0 <= px < w:
+                                    idx = (py * w + px) * 4
+                                    buf[idx : idx + 4] = bytes(col)
+
+
+def draw_aa_line(buf, w, h, x0, y0, x1, y1, col, thickness=2.0):
+    min_x = max(0, int(min(x0, x1) - thickness - 2))
+    max_x = min(w - 1, int(max(x0, x1) + thickness + 2))
+    min_y = max(0, int(min(y0, y1) - thickness - 2))
+    max_y = min(h - 1, int(max(y0, y1) + thickness + 2))
+    dx = x1 - x0
+    dy = y1 - y0
+    len_sq = dx * dx + dy * dy
+    if len_sq < 1e-6:
+        return
+    half_t = thickness * 0.5
+    for py in range(min_y, max_y + 1):
+        row_off = py * w
+        for px in range(min_x, max_x + 1):
+            t = max(0.0, min(1.0, ((px + 0.5 - x0) * dx + (py + 0.5 - y0) * dy) / len_sq))
+            dist = math.hypot(px + 0.5 - (x0 + t * dx), py + 0.5 - (y0 + t * dy)) - half_t
+            if dist < 1.0:
+                a = max(0.0, min(1.0, 1.0 - dist)) * (col[3] / 255.0)
+                idx = (row_off + px) * 4
+                cur = (buf[idx], buf[idx + 1], buf[idx + 2], 255)
+                buf[idx : idx + 4] = bytes(blend(cur, col, a))
+
+
+def draw_polyline(buf, w, h, pts, col, thickness=2.2):
+    for i in range(len(pts) - 1):
+        draw_aa_line(buf, w, h, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], col, thickness)
+
+
+def draw_filled_box(buf, w, h, x0, y0, bw, bh, fill_col, border_col=None):
+    x1 = min(w, x0 + bw)
+    y1 = min(h, y0 + bh)
+    x0 = max(0, x0)
+    y0 = max(0, y0)
+    for py in range(y0, y1):
+        row_off = py * w
+        for px in range(x0, x1):
+            is_edge = border_col and (px == x0 or px == x1 - 1 or py == y0 or py == y1 - 1)
+            col = border_col if is_edge else fill_col
+            idx = (row_off + px) * 4
+            buf[idx : idx + 4] = bytes(col)
+
+
+def generate_main_bg(assets_dir):
+    buf = bytearray(bytes((0x08, 0x0A, 0x0E, 255)) * (W * H))
+    cyan = (0x00, 0xE5, 0xFF, 255)
+    cyan_glow = (0x00, 0xE5, 0xFF, 90)
+    magenta = (0xFF, 0x4D, 0x8D, 255)
+    mag_glow = (0xFF, 0x4D, 0x8D, 90)
+    grid_col = (0x18, 0x20, 0x2A, 255)
+    box_bg = (0x0C, 0x10, 0x16, 255)
+    box_border = (0x22, 0x2C, 0x38, 255)
+
+    # Subtle scanlines & micro-grid
+    for y in range(0, H, 4):
+        for x in range(W):
+            idx = (y * W + x) * 4
+            buf[idx : idx + 4] = bytes((0x0A, 0x0D, 0x12, 255))
+
+    # Top hero header (right-aligned so it never collides with Bank 1's title)
+    draw_text_5x7(buf, W, H, 510, 10, "S-CURVE > FILTER > DECAY > GATE > DLY > LIM", (0x8B, 0x94, 0x9E, 255), scale=1)
+    draw_text_5x7(buf, W, H, 886, 6, "MUSHIN // MACRO PERFORMANCE", cyan, scale=2)
+
+    # Bank 1 & Bank 2 outer stylized panels (spaced cleanly clear of Q-Link highlights)
+    draw_panel(buf, 8, 24, 1264, 288, "BANK 1 - CORE DESTRUCTION & CHOKE")
+    draw_panel(buf, 8, 324, 1264, 296, "BANK 2 - MOTION, SPACE & RHYTHM")
+
+    # Left accent rails
+    draw_filled_box(buf, W, H, 8, 38, 4, 260, cyan)
+    draw_filled_box(buf, W, H, 8, 338, 4, 268, magenta)
+
+    out_path = os.path.join(assets_dir, "bg_main.png")
+    write_png(out_path, W, H, buf)
+    print(f"Wrote {out_path}")
+
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     assets_dir = os.path.join(os.path.dirname(script_dir), "assets")
     os.makedirs(assets_dir, exist_ok=True)
+    generate_main_bg(assets_dir)
     generate_gate_patterns(assets_dir)
 
     for filename, top_title, bot_title in PAGES:
