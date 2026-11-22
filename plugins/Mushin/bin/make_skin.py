@@ -538,6 +538,13 @@ def main():
             comps.append(
                 make_gate_pattern_strip(params_by_name["Gate Pattern"])
             )
+            comps.append(
+                make_gate_envelope(
+                    params_by_name["Gate Start"],
+                    params_by_name["Gate Hold"],
+                    params_by_name["Gate End"],
+                )
+            )
 
     # Ensure all static Text labels (including gen_ui segment button captions)
     # use handleName "Invalid" and showWhenDataModelInvalid "Show" so the MPC
@@ -557,6 +564,7 @@ def main():
         f.write(gen_ui.dump_json(tui) + "\n")
 
     # Map MAIN (Tab 1) Q-Links to consecutive top-down banks (Bank 1 = Q13..16, Bank 2 = Q9..12)
+    # and LFO (Tab 4) Q-Links to consecutive banks (Bank 1 = LFO 1&2, Bank 2 = Noise row 1, Bank 3 = Noise row 2)
     qlinks_path = os.path.join(SKINS_DIR, "Q-Links.json")
     with open(qlinks_path, "r", encoding="utf-8") as f:
         qlinks = json.load(f)
@@ -567,6 +575,31 @@ def main():
                 ql[f"Q-Link {13 + i}"] = params_by_name[macro_names[i]]
                 ql[f"Q-Link {9 + i}"] = params_by_name[macro_names[4 + i]]
                 ql[f"Q-Link {5 + i}"] = -1
+                ql[f"Q-Link {1 + i}"] = -1
+        elif entry.get("Tab") == 4:
+            ql = entry["Q-Links"]
+            lfo_b1 = [
+                params_by_name["LFO 1 Freq"],
+                params_by_name["LFO 1 Wave"],
+                params_by_name["LFO 2 Freq"],
+                params_by_name["LFO 2 Wave"],
+            ]
+            lfo_b2 = [
+                params_by_name["Noise Active"],
+                params_by_name["Noise Type"],
+                params_by_name["Noise Freq"],
+                params_by_name["Noise Level"],
+            ]
+            lfo_b3 = [
+                params_by_name["Noise Route"],
+                params_by_name["Filter FM"],
+                -1,
+                -1,
+            ]
+            for i in range(4):
+                ql[f"Q-Link {13 + i}"] = lfo_b1[i]
+                ql[f"Q-Link {9 + i}"] = lfo_b2[i]
+                ql[f"Q-Link {5 + i}"] = lfo_b3[i]
                 ql[f"Q-Link {1 + i}"] = -1
     with open(qlinks_path, "w", encoding="utf-8") as f:
         json.dump(qlinks, f, indent=4)

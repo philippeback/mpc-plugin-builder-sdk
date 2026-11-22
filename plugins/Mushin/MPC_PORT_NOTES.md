@@ -18,16 +18,26 @@ On the MPC, if `Plugin Skins/TUI.json` fails to parse or contains an unrecognize
     - `gate_pat_strip.png` (8-frame vertical filmstrip bound to `Gate Pattern`)
     - `orb_strip_0.png` .. `orb_strip_7.png` (16-frame vertical filmstrips bound to the 8 `MAIN` macro parameters)
 
-### 3. Untested `Envelope` (`AHDS`) Component Sensitivity
-- **Cause:** As noted in `docs/ui-reference.md` (§6.13), `"type": "Envelope"` requires exact per-type stage-handle keys on hardware and can fail the entire `TUI.json` load if any key mismatches.
-- **Fix:** Removed the experimental `AHDS` `Envelope` widget from `GATE` and kept the `Start` / `Hold` / `End` faders alongside the 8-frame `gate_pat_strip.png` pattern display.
+### 3. `Envelope` (`AHDS`) Component Stage Handles on `GATE`
+- **Cause:** As noted in `docs/ui-reference.md` (§6.13), `"type": "Envelope"` requires exact per-type stage-handle keys in order and can fail `TUI.json` loading if any key mismatches.
+- **Fix:** `bin/make_skin.py` (`make_gate_envelope`) configures `envelopeType: "AHDS"` with `attackHandle`, `holdHandle`, `decayHandle` bound to `Gate Start`, `Gate Hold`, `Gate End` and `sustainHandle` / `attackShapeHandle` / `decayShapeHandle` set to `"Invalid"` (`forceHideShapeHandles: true`), placed in Row 4 (`23 498 1238 107`) inside the `GATE ENV` panel below the `Start` / `Hold` / `End` faders.
 
 ### 4. Custom `FilmStrip` Widgets Wrapped in `localComponentDefinitions`
 - **Cause:** `gen_ui.py` instantiates controls on tabs via `localComponentDefinitions` with `"handle remapping"`, rather than placing raw `"type": "Knob"` entries directly on a tab.
 - **Fix:** `bin/make_skin.py` defines `orbStrip0..7` and `gatePatStrip` in `localComponentDefinitions` (`acceptsHWFocus: "No"`, `ignoreMousePresses: true`) and instantiates them on `MAIN` and `GATE`.
 
+### 5. Segmented Button Icons & Static `Text` Label Visibility
+- **Cause:** On MPC hardware, `"type": "Text"` labels with `"handleName": "Data"` are hidden as unbound handles unless `"handleName": "Invalid"` and `"showWhenDataModelInvalid": "Show"` are set. Additionally, segmented switch `Text` overlays over `seg2/3/4_{on,off}.png` rendered as blank blue/gray boxes on hardware.
+- **Fix:**
+  - `bin/make_skin.py` sets `"handleName": "Invalid"` and `"showWhenDataModelInvalid": "Show"` on static `Text` labels.
+  - `bin/make_button_icons.ps1` bakes crisp anti-aliased icons/shapes directly onto the `seg2`/`seg3`/`seg4` pill bases (`44` `btn_*_{on,off}.png` files), and `bin/make_skin.py` binds them via per-switch `localComponentDefinitions` (`radioFType`, `radioFMode`, `radioRoute`, `radioNRoute`, `radioGRate`, `radioDTempo`, `radioLMode`) while removing the redundant `seg *` `Text` overlays.
+
+### 6. Consecutive Q-Link Banks When Leaving Empty Visual Rows
+- **Cause:** `gen_ui.py` maps each 4-slot row directly to a Q-Link bank (`Q-Link 13..16`, `9..12`, `5..8`, `1..4`). Leaving an all-`"empty"` visual row (such as Row 2 on `LFO` between `LFO 1 & 2` and `NOISE OSC`) leaves an all-`-1` bank gap in `Q-Links.json`, causing MPC Q-Link bank cycling to skip the next row.
+- **Fix:** `bin/make_skin.py` compacts `Screen Mode Q-Links` on `MAIN` (Tab 1) and `LFO` (Tab 4) into consecutive top-down banks (`13..16` -> `9..12` -> `5..8`) with trailing unused slots set to `-1`.
+
 ## Additional Port Design Decisions
 
 - **Permanent Parameter Identity & Hidden Sidechain:** All 77 original parameters stay in their exact order (`0..76`), with the 8 performance macros appended at `77..84`. `SIDECHN` is omitted from `ui.json` (hidden from the UI) while remaining saved and automatable.
-- **DRY Panel Labels:** `Mushin.cpp` keeps unique parameter names for DAW/MPC automation, while `bin/make_skin.py` removes `"type": "Name"` from `localComponentDefinitions` and places concise panel-scoped `"type": "Text"` labels (`Active`, `Mix`, `Cutoff`, `Reso`, etc.) inside each rounded panel.
+- **Native `Name` Labels with Unique `id`s:** `Mushin.cpp` keeps unique parameter `id` strings for state/DAW compatibility while using concise panel-scoped `Name` strings (`Active`, `Mix`, `Cutoff`, `Reso`, `Drive`, `Grit`, `Type`, `Mode`, etc.) so native `"type": "Name"` labels render cleanly inside each panel. `bin/make_skin.py` maps parameter indices via `UI_PARAM_KEYS` into `build/params_ui.json` so `gen_ui.py` binds every control unambiguously.
 - **Note on `preview_ui.py` vs. Hardware:** `bin/preview_ui.py` is a permissive browser Canvas previewer; always treat `tools/validate.py` and hardware testing on the MPC as the source of truth for `TUI.json` compatibility.

@@ -5115,7 +5115,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "23 196 278 107"
+                                "bounds": "663 45 278 107"
                             }
                         },
                         {
@@ -5144,7 +5144,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "343 196 278 107"
+                                "bounds": "983 45 278 107"
                             }
                         },
                         {
@@ -5324,8 +5324,7 @@
                     ]
                 },
                 "qlinkBoundsData": [
-                    "13 35 618 127",
-                    "13 186 618 127",
+                    "13 35 1258 127",
                     "13 336 1258 127",
                     "13 487 618 127"
                 ]
@@ -5994,6 +5993,60 @@
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
                                 "bounds": "23 196 918 107"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "gate_env",
+                                "type": "Envelope",
+                                "data": {
+                                    "version": 1,
+                                    "envelopeType": "AHDS",
+                                    "envelopeStyle": "WithoutHeader",
+                                    "envelopeName": "GATE ENV",
+                                    "backgroundColour": "ff10141a",
+                                    "scaleColour": "ff262e3a",
+                                    "lineColour": "ff00e5ff",
+                                    "fillColour": "3300e5ff",
+                                    "highlightColour": "ffffffff",
+                                    "lineWidth": 3,
+                                    "handleWidth": 15,
+                                    "handleHeight": 10,
+                                    "handleShape": "Circle",
+                                    "handleLineWidth": 2,
+                                    "handleLineColour": "ffffffff",
+                                    "handleFillColour": "ff10141a",
+                                    "handleTextColour": "ffffffff",
+                                    "handleLineWidthOnPressed": 2,
+                                    "handleLineColourOnPressed": "ffffffff",
+                                    "handleFillColourOnPressed": "ff00e5ff",
+                                    "handleTextColourOnPressed": "ffffffff",
+                                    "handleArrowLineColourOnPressed": "ffffffff",
+                                    "handleArrowFillColourOnPressed": "ff00e5ff",
+                                    "attackHandle": "Parameter 55",
+                                    "holdHandle": "Parameter 56",
+                                    "decayHandle": "Parameter 57",
+                                    "sustainHandle": "Invalid",
+                                    "attackShapeHandle": "Invalid",
+                                    "decayShapeHandle": "Invalid",
+                                    "forceHideShapeHandles": true,
+                                    "forceCurveShape": 0.5,
+                                    "curveType": "Quadratic"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "23 498 1238 107"
                             }
                         }
                     ]
