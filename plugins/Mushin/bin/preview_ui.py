@@ -209,22 +209,52 @@ for (const def of TUI.pageData.componentDefinitions.localComponentDefinitions) {
 }
 
 const tabs = TUI.pageData.tabs;
-tabBar.style.gridTemplateColumns = `repeat(${tabs.length}, 1fr)`;
-
-// Build tab buttons
+const fnGroups = [];
+const fnMap = new Map();
 tabs.forEach((tab, idx) => {
+  const fk = tab.fnKeyIndex ?? idx;
+  if (!fnMap.has(fk)) {
+    const grp = { fnKeyIndex: fk, subTabs: [], activeSub: 0 };
+    fnMap.set(fk, grp);
+    fnGroups.push(grp);
+  }
+  fnMap.get(fk).subTabs.push({ tab, idx });
+});
+fnGroups.sort((a, b) => a.fnKeyIndex - b.fnKeyIndex);
+fnGroups.forEach(g => g.subTabs.sort((a, b) => (a.tab.fnKeySubIndex ?? 0) - (b.tab.fnKeySubIndex ?? 0)));
+
+tabBar.style.gridTemplateColumns = `repeat(${fnGroups.length}, 1fr)`;
+
+function updateTabButtons() {
+  document.querySelectorAll(".tab-btn").forEach((b, gIdx) => {
+    const grp = fnGroups[gIdx];
+    const cur = grp.subTabs[grp.activeSub];
+    const isActive = cur.idx === activeTabIdx;
+    b.classList.toggle("active", isActive);
+    b.textContent = grp.subTabs.length > 1
+      ? `${cur.tab.tabName} (${grp.activeSub + 1}/${grp.subTabs.length})`
+      : cur.tab.tabName;
+  });
+}
+
+// Build 6 function-key tab buttons (clicking active key cycles sub-tabs)
+fnGroups.forEach((grp) => {
   const btn = document.createElement("button");
-  btn.className = "tab-btn" + (idx === 0 ? " active" : "");
-  btn.textContent = tab.tabName;
+  btn.className = "tab-btn";
   btn.onclick = () => {
-    activeTabIdx = idx;
+    const cur = grp.subTabs[grp.activeSub];
+    if (cur.idx === activeTabIdx && grp.subTabs.length > 1) {
+      grp.activeSub = (grp.activeSub + 1) % grp.subTabs.length;
+    }
+    activeTabIdx = grp.subTabs[grp.activeSub].idx;
     selectedParamIdx = -1;
     activeQlinkGroup = 0;
-    document.querySelectorAll(".tab-btn").forEach((b, i) => b.classList.toggle("active", i === idx));
+    updateTabButtons();
     render();
   };
   tabBar.appendChild(btn);
 });
+updateTabButtons();
 
 function formatParamValue(pIdx) {
   const p = PARAMS_INFO.params[pIdx];

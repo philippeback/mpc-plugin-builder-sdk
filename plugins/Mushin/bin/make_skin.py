@@ -560,23 +560,41 @@ def main():
                     bounds_obj = obj_get(c, "bounds")
                     obj_set(bounds_obj, "showWhenDataModelInvalid", "Show")
 
+    # Assign 6 function-key tabs with LFO MTX as LFO SubTab 2 (fnKeyIndex 3, fnKeySubIndex 1)
+    fn_key_map = {
+        "MAIN": (0, 0),
+        "S-CURVE": (1, 0),
+        "FILTER": (2, 0),
+        "LFO": (3, 0),
+        "LFO MTX": (3, 1),
+        "GATE": (4, 0),
+        "DLY+LIM": (5, 0),
+    }
+    for tab in tabs:
+        tname = obj_get(tab, "tabName")
+        if tname in fn_key_map:
+            fk, sub = fn_key_map[tname]
+            obj_set(tab, "fnKeyIndex", fk)
+            obj_set(tab, "fnKeySubIndex", sub)
+
     with open(tui_path, "w", encoding="utf-8") as f:
         f.write(gen_ui.dump_json(tui) + "\n")
 
-    # Map MAIN (Tab 1) Q-Links to consecutive top-down banks (Bank 1 = Q13..16, Bank 2 = Q9..12)
-    # and LFO (Tab 4) Q-Links to consecutive banks (Bank 1 = LFO 1&2, Bank 2 = Noise row 1, Bank 3 = Noise row 2)
+    # Map MAIN (Tab 1) and LFO (Tab 4) Q-Links to consecutive top-down banks,
+    # and remap Tab/SubTab to match the 6 function-key tabs (LFO MTX -> Tab 4 SubTab 2).
     qlinks_path = os.path.join(SKINS_DIR, "Q-Links.json")
     with open(qlinks_path, "r", encoding="utf-8") as f:
         qlinks = json.load(f)
     for entry in qlinks["Screen Mode Q-Links"]["map"]:
-        if entry.get("Tab") == 1:
+        t = entry.get("Tab")
+        if t == 1:
             ql = entry["Q-Links"]
             for i in range(4):
                 ql[f"Q-Link {13 + i}"] = params_by_name[macro_names[i]]
                 ql[f"Q-Link {9 + i}"] = params_by_name[macro_names[4 + i]]
                 ql[f"Q-Link {5 + i}"] = -1
                 ql[f"Q-Link {1 + i}"] = -1
-        elif entry.get("Tab") == 4:
+        elif t == 4:
             ql = entry["Q-Links"]
             lfo_b1 = [
                 params_by_name["LFO 1 Freq"],
@@ -601,6 +619,15 @@ def main():
                 ql[f"Q-Link {9 + i}"] = lfo_b2[i]
                 ql[f"Q-Link {5 + i}"] = lfo_b3[i]
                 ql[f"Q-Link {1 + i}"] = -1
+        elif t == 5:
+            entry["Tab"] = 4
+            entry["SubTab"] = 2
+        elif t == 6:
+            entry["Tab"] = 5
+            entry["SubTab"] = 1
+        elif t == 7:
+            entry["Tab"] = 6
+            entry["SubTab"] = 1
     with open(qlinks_path, "w", encoding="utf-8") as f:
         json.dump(qlinks, f, indent=4)
 

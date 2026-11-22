@@ -162,8 +162,8 @@
       ]
     },
     {
-      "name": "DLY",
-      "background": "bg_dly.png",
+      "name": "DLY+LIM",
+      "background": "bg_dly_lim.png",
       "controls": [
         { "param": "Delay Active", "widget": "switch" },
         { "param": "Delay Sync", "widget": "switch" },
@@ -173,13 +173,8 @@
         { "param": "Delay FB", "widget": "knob" },
         { "param": "Delay Time", "widget": "knob", "visibleWhen": { "param": "Delay Sync", "choice": "Off" } },
         { "param": "Delay Tempo", "widget": "switch", "visibleWhen": { "param": "Delay Sync", "choice": "On" } },
-        { "param": "Delay Mix", "widget": "fader" }
-      ]
-    },
-    {
-      "name": "LIM",
-      "background": "bg_lim.png",
-      "controls": [
+        { "param": "Delay Mix", "widget": "fader" },
+
         { "param": "Limit Active", "widget": "switch" },
         { "param": "Limit Drive", "widget": "knob" },
         { "param": "Limit Rel", "widget": "knob" },

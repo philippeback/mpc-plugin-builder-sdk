@@ -5332,8 +5332,8 @@
             {
                 "version": 1,
                 "tabName": "LFO MTX",
-                "fnKeyIndex": 4,
-                "fnKeySubIndex": 0,
+                "fnKeyIndex": 3,
+                "fnKeySubIndex": 1,
                 "componentDefinition": {
                     "version": 2,
                     "actions": [],
@@ -5713,7 +5713,7 @@
             {
                 "version": 1,
                 "tabName": "GATE",
-                "fnKeyIndex": 5,
+                "fnKeyIndex": 4,
                 "fnKeySubIndex": 0,
                 "componentDefinition": {
                     "version": 2,
@@ -6059,8 +6059,8 @@
             },
             {
                 "version": 1,
-                "tabName": "DLY",
-                "fnKeyIndex": 6,
+                "tabName": "DLY+LIM",
+                "fnKeyIndex": 5,
                 "fnKeySubIndex": 0,
                 "componentDefinition": {
                     "version": 2,
@@ -6070,12 +6070,12 @@
                         "focussed": {
                             "version": 1,
                             "colour": "ff0d0f12",
-                            "image": "bg_dly.png"
+                            "image": "bg_dly_lim.png"
                         },
                         "unfocussed": {
                             "version": 1,
                             "colour": "ff0d0f12",
-                            "image": "bg_dly.png"
+                            "image": "bg_dly_lim.png"
                         }
                     },
                     "ignoreMousePresses": false,
@@ -6289,38 +6289,7 @@
                                 "boundsType": "Absolute",
                                 "bounds": "983 196 278 107"
                             }
-                        }
-                    ]
-                },
-                "qlinkBoundsData": [
-                    "13 35 938 127",
-                    "13 186 1258 127"
-                ]
-            },
-            {
-                "version": 1,
-                "tabName": "LIM",
-                "fnKeyIndex": 7,
-                "fnKeySubIndex": 0,
-                "componentDefinition": {
-                    "version": 2,
-                    "actions": [],
-                    "backgroundData": {
-                        "version": 1,
-                        "focussed": {
-                            "version": 1,
-                            "colour": "ff0d0f12",
-                            "image": "bg_lim.png"
                         },
-                        "unfocussed": {
-                            "version": 1,
-                            "colour": "ff0d0f12",
-                            "image": "bg_lim.png"
-                        }
-                    },
-                    "ignoreMousePresses": false,
-                    "disableCoarseDataWheel": false,
-                    "componentsData": [
                         {
                             "version": 2,
                             "componentData": {
@@ -6347,7 +6316,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "23 45 278 107"
+                                "bounds": "23 346 278 107"
                             }
                         },
                         {
@@ -6376,7 +6345,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "343 45 278 107"
+                                "bounds": "343 346 278 107"
                             }
                         },
                         {
@@ -6405,7 +6374,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "663 45 278 107"
+                                "bounds": "663 346 278 107"
                             }
                         },
                         {
@@ -6434,7 +6403,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "983 45 278 107"
+                                "bounds": "983 346 278 107"
                             }
                         },
                         {
@@ -6463,7 +6432,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "23 196 278 107"
+                                "bounds": "23 497 278 107"
                             }
                         },
                         {
@@ -6492,14 +6461,16 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "983 196 278 107"
+                                "bounds": "983 497 278 107"
                             }
                         }
                     ]
                 },
                 "qlinkBoundsData": [
-                    "13 35 1258 127",
-                    "13 186 1258 127"
+                    "13 35 938 127",
+                    "13 186 1258 127",
+                    "13 336 1258 127",
+                    "13 487 1258 127"
                 ]
             }
         ]

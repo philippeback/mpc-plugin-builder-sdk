@@ -66,8 +66,7 @@ PAGES = [
     ("bg_lfo.png",     "LFO 1 & 2",    "NOISE OSC"),
     ("bg_matrix.png",  "LFO 1 MATRIX", "LFO 2 MATRIX"),
     ("bg_gate.png",    "TRANCE GATE",  "GATE ENV"),
-    ("bg_dly.png",     "DELAY",        None),
-    ("bg_lim.png",     "LIMITER",      None),
+    ("bg_dly_lim.png", "DELAY",        "LIMITER"),
 ]
 
 
