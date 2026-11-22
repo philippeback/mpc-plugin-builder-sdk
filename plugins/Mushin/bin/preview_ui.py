@@ -294,8 +294,8 @@ function renderComponent(comp, offsetX = 0, offsetY = 0, paramOverride = null) {
     ctx.font = `${weight} ${Math.round(fh * 0.78)}px "Titillium Web", "Segoe UI", sans-serif`;
     ctx.textBaseline = "middle";
     let text = d.text || "";
-    if (d.type === "ParameterName" && pIdx !== null) text = PARAMS_INFO.params[pIdx].name;
-    else if (d.type === "ParameterValue" && pIdx !== null) text = formatParamValue(pIdx);
+    if ((d.type === "Name" || d.type === "ParameterName") && pIdx !== null) text = PARAMS_INFO.params[pIdx].name;
+    else if ((d.type === "Value" || d.type === "ParameterValue") && pIdx !== null) text = formatParamValue(pIdx);
 
     if (ts.justification === "centre") {
       ctx.textAlign = "center";
@@ -327,10 +327,38 @@ function renderComponent(comp, offsetX = 0, offsetY = 0, paramOverride = null) {
     return;
   }
 
-  if (type === "FilmStrip") {
+  if (type === "Knob" || type === "FilmStrip") {
     const d = cd.data;
     const normVal = pIdx !== null ? paramValues[pIdx] : 0;
-    drawFilmStrip(d.image, d.numFrames, normVal, x, y, w, h);
+    const imgName = d.filmStrip || d.image;
+    drawFilmStrip(imgName, d.numFrames || 127, normVal, x, y, w, h);
+    return;
+  }
+
+  if (type === "Button") {
+    const d = cd.data;
+    const nGrp = d.numButtonsInGroup || 1;
+    let isOn = false;
+    if (pIdx !== null) {
+      if (nGrp === 1) {
+        isOn = paramValues[pIdx] >= 0.5;
+      } else {
+        isOn = getParamChoiceIndex(pIdx) === ((d.buttonId || 1) - 1);
+      }
+    }
+    const imgName = isOn ? d.onImage : d.offImage;
+    if (imgs[imgName]) ctx.drawImage(imgs[imgName], x, y, w, h);
+    if (nGrp > 1 && pIdx !== null) {
+      const p = PARAMS_INFO.params[pIdx];
+      const label = (p && p.choices && p.choices[(d.buttonId || 1) - 1]) ? p.choices[(d.buttonId || 1) - 1] : String(d.buttonId || "");
+      ctx.save();
+      ctx.fillStyle = isOn ? "#0d0f12" : "#f0f4f8";
+      ctx.font = '700 13px "Titillium Web", "Segoe UI", sans-serif';
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, x + w / 2, y + h / 2, w - 6);
+      ctx.restore();
+    }
     return;
   }
 
@@ -491,7 +519,7 @@ canvas.addEventListener("mousedown", evt => {
         render();
         return;
       }
-      if (type === "seg2" || type === "seg3" || type === "seg4") {
+      if (type === "radio2" || type === "radio3" || type === "radio4" || type === "seg2" || type === "seg3" || type === "seg4") {
         const n = parseInt(type.slice(3), 10);
         const segW = n === 2 ? 122 : (n === 3 ? 80 : 58);
         const xs = n === 2 ? [15, 141] : (n === 3 ? [15, 99, 183] : [15, 77, 139, 201]);
