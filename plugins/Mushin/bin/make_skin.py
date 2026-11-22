@@ -166,6 +166,82 @@ def make_label_entry(name, text, x, y, w, h, height, colour, when_visible):
     })
 
 
+def make_orb_local_def(orb_idx):
+    return to_obj({
+        "key": f"orbStrip{orb_idx}",
+        "value": {
+            "version": 2,
+            "actions": [],
+            "backgroundData": {
+                "version": 1,
+                "focussed": {"version": 1, "colour": "00000000", "image": ""},
+                "unfocussed": {"version": 1, "colour": "00000000", "image": ""},
+            },
+            "ignoreMousePresses": True,
+            "disableCoarseDataWheel": True,
+            "componentsData": [
+                {
+                    "version": 2,
+                    "componentData": {
+                        "version": 1,
+                        "name": "knob",
+                        "type": "Knob",
+                        "data": {
+                            "version": 2,
+                            "knobType": "FilmStrip",
+                            "filmStrip": f"orb_strip_{orb_idx}.png",
+                            "numFrames": 16,
+                            "invert": False,
+                            "handleName": "Data",
+                        },
+                    },
+                    "handle remapping": {"version": 1, "map": []},
+                    "bounds": {
+                        "version": 1,
+                        "acceptsHWFocus": "No",
+                        "showWhenDataModelInvalid": "Show",
+                        "whenVisible": "Always",
+                        "boundsType": "Absolute",
+                        "bounds": "0 0 114 114",
+                    },
+                }
+            ],
+        },
+    })
+
+
+def make_macro_orb_strip(orb_idx, param_idx, cx, cy):
+    size = 114
+    x = cx - size // 2
+    y = cy - size // 2
+    return to_obj({
+        "version": 2,
+        "componentData": {
+            "version": 1,
+            "name": f"macro_orb_{orb_idx}",
+            "type": f"orbStrip{orb_idx}",
+            "data": {
+                "version": 1,
+                "handleName": "Data",
+            },
+        },
+        "handle remapping": {
+            "version": 1,
+            "map": [
+                {"key": "Data", "value": f"Parameter {param_idx}"},
+            ],
+        },
+        "bounds": {
+            "version": 1,
+            "acceptsHWFocus": "No",
+            "showWhenDataModelInvalid": "Show",
+            "whenVisible": "Always",
+            "boundsType": "Absolute",
+            "bounds": f"{x} {y} {size} {size}",
+        },
+    })
+
+
 def make_gate_pattern_image(idx_pattern, pat_idx):
     return to_obj({
         "version": 2,
@@ -338,21 +414,37 @@ def main():
     with open(PARAMS_PATH, "r", encoding="utf-8") as f:
         params_by_name = {p["name"]: p["index"] for p in json.load(f)["params"]}
 
+    macro_names = [
+        "EXHAUSTION", "CHOKE", "INFO DECAY", "CORRUPT MIX",
+        "KINETIC MOD", "RESONATOR", "GATE CARVE", "SMASH",
+    ]
+    col_centers = [162, 482, 802, 1122]
+    row_centers = [244, 548]
+
+    for i in range(8):
+        local_defs.append(make_orb_local_def(i))
+
     for tab in tabs:
-        if obj_get(tab, "tabName") == "GATE":
+        tname = obj_get(tab, "tabName")
+        if tname == "MAIN":
+            cdef = obj_get(tab, "componentDefinition")
+            comps = obj_get(cdef, "componentsData")
+            for i, mname in enumerate(macro_names):
+                comps.append(
+                    make_macro_orb_strip(
+                        i,
+                        params_by_name[mname],
+                        col_centers[i % 4],
+                        row_centers[i // 4],
+                    )
+                )
+        elif tname == "GATE":
             cdef = obj_get(tab, "componentDefinition")
             comps = obj_get(cdef, "componentsData")
             for pat_idx in range(8):
                 comps.append(
                     make_gate_pattern_image(params_by_name["Gate Pattern"], pat_idx)
                 )
-            comps.append(
-                make_gate_envelope(
-                    params_by_name["Gate Start"],
-                    params_by_name["Gate Hold"],
-                    params_by_name["Gate End"],
-                )
-            )
 
     with open(tui_path, "w", encoding="utf-8") as f:
         f.write(gen_ui.dump_json(tui) + "\n")
