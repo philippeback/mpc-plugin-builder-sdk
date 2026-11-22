@@ -20,6 +20,8 @@ SKINS_DIR = os.path.join(PLUGIN_DIR, "skins")
 PARAMS_PATH = os.path.join(BUILD_DIR, "params.json")
 UI_PATH = os.path.join(PLUGIN_DIR, "ui.json")
 GEN_UI_PATH = os.path.join(SDK_ROOT, "tools", "gen_ui.py")
+sys.path.insert(0, os.path.join(SDK_ROOT, "tools"))
+import gen_ui  # noqa: E402
 
 # Map global parameter name -> concise panel-scoped display label
 DRY_LABELS = {
@@ -98,8 +100,33 @@ DRY_LABELS = {
 }
 
 
+def to_obj(v):
+    if isinstance(v, gen_ui.Obj):
+        return v
+    if isinstance(v, dict):
+        return gen_ui.Obj([(k, to_obj(val)) for k, val in v.items()])
+    if isinstance(v, list):
+        return [to_obj(x) for x in v]
+    return v
+
+
+def obj_get(o, key, default=None):
+    for k, v in o:
+        if k == key:
+            return v
+    return default
+
+
+def obj_set(o, key, val):
+    for i, (k, _) in enumerate(o):
+        if k == key:
+            o[i] = (key, val)
+            return
+    o.append((key, val))
+
+
 def make_label_entry(name, text, x, y, w, h, height, colour, when_visible):
-    return {
+    return to_obj({
         "version": 2,
         "componentData": {
             "version": 1,
@@ -136,11 +163,11 @@ def make_label_entry(name, text, x, y, w, h, height, colour, when_visible):
             "boundsType": "Absolute",
             "bounds": f"{x} {y} {w} {h}",
         },
-    }
+    })
 
 
 def make_gate_pattern_image(idx_pattern, pat_idx):
-    return {
+    return to_obj({
         "version": 2,
         "componentData": {
             "version": 1,
@@ -166,11 +193,11 @@ def make_gate_pattern_image(idx_pattern, pat_idx):
                 f"IndexedEnabling/{pat_idx}/8/Parameter {idx_pattern}"
             ],
         },
-    }
+    })
 
 
 def make_gate_envelope(idx_start, idx_hold, idx_end):
-    return {
+    return to_obj({
         "version": 2,
         "componentData": {
             "version": 1,
@@ -223,7 +250,7 @@ def make_gate_envelope(idx_start, idx_hold, idx_end):
             "boundsType": "Absolute",
             "bounds": "23 498 1238 107",
         },
-    }
+    })
 
 
 def main():
@@ -248,40 +275,51 @@ def main():
     with open(tui_path, "r", encoding="utf-8") as f:
         raw_text = f.read()
 
-    # gen_ui.py emits valid JSON (except duplicate "version" keys in overlays if any,
-    # which json.loads handles by keeping the last; we only need to preserve structure
-    # or check if overlays exist). Here TUI.json has no duplicate keys in tabs/localDefs.
-    tui = json.loads(raw_text)
+    # Preserve duplicate keys (such as duplicate "version" keys in overlay widgets)
+    # using gen_ui.Obj and gen_ui.dump_json so the MPC firmware parses TUI.json.
+    tui = json.loads(raw_text, object_pairs_hook=gen_ui.Obj)
+
+    page_data = obj_get(tui, "pageData")
+    comp_defs = obj_get(page_data, "componentDefinitions")
+    local_defs = obj_get(comp_defs, "localComponentDefinitions")
 
     # Record each localDef's "name" Label geometry, then remove it from the localDef
     name_specs = {}
-    for ldef in tui["pageData"]["componentDefinitions"]["localComponentDefinitions"]:
-        key = ldef["key"]
-        comps = ldef["value"]["componentsData"]
+    for ldef in local_defs:
+        key = obj_get(ldef, "key")
+        val = obj_get(ldef, "value")
+        comps = obj_get(val, "componentsData")
         kept = []
         for c in comps:
-            cd = c["componentData"]
-            if cd.get("type") == "Label" and cd.get("data", {}).get("type") == "Name":
-                bx, by, bw, bh = [int(v) for v in c["bounds"]["bounds"].split()]
-                ts = cd["data"]["textStyle"]
-                name_specs[key] = (bx, by, bw, bh, ts["font"]["height"], ts["colour"])
+            cd = obj_get(c, "componentData")
+            cdata = obj_get(cd, "data")
+            if obj_get(cd, "type") == "Label" and obj_get(cdata, "type") == "Name":
+                bounds_obj = obj_get(c, "bounds")
+                bx, by, bw, bh = [int(v) for v in obj_get(bounds_obj, "bounds").split()]
+                ts = obj_get(cdata, "textStyle")
+                font = obj_get(ts, "font")
+                name_specs[key] = (bx, by, bw, bh, obj_get(font, "height"), obj_get(ts, "colour"))
             else:
                 kept.append(c)
-        ldef["value"]["componentsData"] = kept
+        obj_set(val, "componentsData", kept)
 
     # Add a panel-scoped Text Label for each control on every tab
-    for tab in tui["pageData"]["tabs"]:
-        comps = tab["componentDefinition"]["componentsData"]
+    tabs = obj_get(page_data, "tabs")
+    for tab in tabs:
+        cdef = obj_get(tab, "componentDefinition")
+        comps = obj_get(cdef, "componentsData")
         new_comps = []
         for idx, c in enumerate(comps):
             new_comps.append(c)
-            ctype = c["componentData"].get("type")
+            cd = obj_get(c, "componentData")
+            ctype = obj_get(cd, "type")
             if ctype in name_specs:
-                bx, by, bw, bh = [int(v) for v in c["bounds"]["bounds"].split()]
+                bounds_obj = obj_get(c, "bounds")
+                bx, by, bw, bh = [int(v) for v in obj_get(bounds_obj, "bounds").split()]
                 nx, ny, nw, nh, fh, col = name_specs[ctype]
-                orig_name = c["componentData"].get("name", "")
+                orig_name = obj_get(cd, "name", "")
                 short_name = DRY_LABELS.get(orig_name, orig_name)
-                when_vis = c["bounds"].get("whenVisible", "Always")
+                when_vis = obj_get(bounds_obj, "whenVisible", "Always")
                 new_comps.append(
                     make_label_entry(
                         f"lbl_{idx}",
@@ -295,18 +333,20 @@ def main():
                         when_vis,
                     )
                 )
-        tab["componentDefinition"]["componentsData"] = new_comps
+        obj_set(cdef, "componentsData", new_comps)
 
     with open(PARAMS_PATH, "r", encoding="utf-8") as f:
         params_by_name = {p["name"]: p["index"] for p in json.load(f)["params"]}
 
-    for tab in tui["pageData"]["tabs"]:
-        if tab.get("tabName") == "GATE":
+    for tab in tabs:
+        if obj_get(tab, "tabName") == "GATE":
+            cdef = obj_get(tab, "componentDefinition")
+            comps = obj_get(cdef, "componentsData")
             for pat_idx in range(8):
-                tab["componentDefinition"]["componentsData"].append(
+                comps.append(
                     make_gate_pattern_image(params_by_name["Gate Pattern"], pat_idx)
                 )
-            tab["componentDefinition"]["componentsData"].append(
+            comps.append(
                 make_gate_envelope(
                     params_by_name["Gate Start"],
                     params_by_name["Gate Hold"],
@@ -315,7 +355,7 @@ def main():
             )
 
     with open(tui_path, "w", encoding="utf-8") as f:
-        json.dump(tui, f, indent=4)
+        f.write(gen_ui.dump_json(tui) + "\n")
 
     print(f"Patched DRY labels into {tui_path}")
     return 0

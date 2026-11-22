@@ -1274,6 +1274,7 @@
                                     "name": "overlay",
                                     "type": "KnobOverlay",
                                     "data": {
+                                        "version": 2,
                                         "version": 1,
                                         "actions": [
                                             {
@@ -1335,6 +1336,7 @@
                                     "name": "overlay",
                                     "type": "KnobOverlay",
                                     "data": {
+                                        "version": 2,
                                         "version": 1,
                                         "actions": [
                                             {
@@ -1396,6 +1398,7 @@
                                     "name": "overlay",
                                     "type": "MenuOverlay",
                                     "data": {
+                                        "version": 1,
                                         "version": 1,
                                         "actions": [
                                             {
