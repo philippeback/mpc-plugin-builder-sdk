@@ -808,8 +808,8 @@ public:
         waveshaper_.setThreshold(mpc::dsp::dbToGain(get(kThreshold)));
         waveshaper_.setAutoGain(getBool(kAutoGain));
 
-        const float baseFACutoff = mpc::clamp(get(kFACutoff) * std::pow(2.0f, -7.0f * mChoke), 20.0f, 20000.0f);
-        const float baseFAReso = mpc::clamp(get(kFAReso) + 0.50f * mChoke, 0.0f, 0.98f);
+        const float baseFACutoff = mpc::clamp(get(kFACutoff) * std::pow(2.0f, -7.0f * mChoke - 3.5f * mKinetic), 20.0f, 20000.0f);
+        const float baseFAReso = mpc::clamp(get(kFAReso) + 0.50f * mChoke + 0.35f * mKinetic, 0.0f, 0.98f);
         const float baseFAGrit = mpc::clamp(get(kFAGrit) + 0.5f * mReso, 0.0f, 1.0f);
         filterA_.setDrive(get(kFADrive));
         filterA_.setGrit(baseFAGrit);
@@ -819,8 +819,8 @@ public:
         const bool chokeBand = (mChoke > 0.02f && getInt(kFBMode) == 0 && get(kFBCutoff) > 15000.0f);
         const float baseFBCutoff = chokeBand
             ? mpc::clamp(20.0f * std::pow(2.0f, 5.0f * mChoke), 20.0f, 20000.0f)
-            : mpc::clamp(get(kFBCutoff) * std::pow(2.0f, -4.0f * mChoke), 20.0f, 20000.0f);
-        const float baseFBReso = mpc::clamp(get(kFBReso) + 0.50f * mChoke, 0.0f, 0.98f);
+            : mpc::clamp(get(kFBCutoff) * std::pow(2.0f, -4.0f * mChoke - 2.5f * mKinetic), 20.0f, 20000.0f);
+        const float baseFBReso = mpc::clamp(get(kFBReso) + 0.50f * mChoke + 0.35f * mKinetic, 0.0f, 0.98f);
         const float baseFBGrit = mpc::clamp(get(kFBGrit) + 0.5f * mReso, 0.0f, 1.0f);
         filterB_.setDrive(get(kFBDrive));
         filterB_.setGrit(baseFBGrit);
@@ -839,8 +839,9 @@ public:
             mod1[t] = get(kModL1T1 + t);
             mod2[t] = get(kModL2T1 + t);
         }
-        mod1[0] = mpc::clamp(mod1[0] + 0.45f * mKinetic, -1.0f, 1.0f);
-        mod2[3] = mpc::clamp(mod2[3] + 0.45f * mKinetic, -1.0f, 1.0f);
+        mod1[0] = mpc::clamp(mod1[0] + 0.70f * mKinetic, -1.0f, 1.0f);
+        mod1[1] = mpc::clamp(mod1[1] + 0.25f * mKinetic, -1.0f, 1.0f);
+        mod2[3] = mpc::clamp(mod2[3] + 0.70f * mKinetic, -1.0f, 1.0f);
         mod2[4] = mpc::clamp(mod2[4] + 0.35f * mKinetic, -1.0f, 1.0f);
 
         sidechain_.setActive(getBool(kScActive));
