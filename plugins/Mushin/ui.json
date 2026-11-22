@@ -1,5 +1,14 @@
 {
-  "kit": "mpc-red",
+  "kit": {
+    "theme": "cyan",
+    "accent": "ff00e5ff"
+  },
+  "style": {
+    "background": "ff0d0f12",
+    "accent": "ff00e5ff",
+    "text": "fff0f4f8",
+    "muted": "ff8b949e"
+  },
   "qlinkGroups": "rows",
   "pages": [
     {

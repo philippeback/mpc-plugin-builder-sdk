@@ -625,17 +625,17 @@ public:
         addParam(floatParam ("filter_a_resonance", "A Reso",   0.0f, 1.0f, 0.1f, "", 2));
         addParam(floatParam ("filter_a_drive",     "A Drive",  1.0f, 10.0f, 1.0f, "x", 1));
         addParam(floatParam ("filter_a_grit",      "A Grit",   0.0f, 1.0f, 0.0f, "", 2));
-        addParam(choiceParam("filter_a_type",      "A Type",   {"Clean", "Vintage", "Acid", "Digital"}, 0));
-        addParam(choiceParam("filter_a_mode",      "A Mode",   {"Lowpass", "Highpass", "Bandpass", "Notch"}, 0));
+        addParam(choiceParam("filter_a_type",      "A Type",   {"CLN", "VINT", "ACID", "DIGI"}, 0));
+        addParam(choiceParam("filter_a_mode",      "A Mode",   {"LP", "HP", "BP", "NOTCH"}, 0));
 
         // Filter B & Routing
         addParam(logParam   ("filter_b_cutoff",    "B Cutoff", 20.0f, 20000.0f, 20000.0f, "Hz", 0));
         addParam(floatParam ("filter_b_resonance", "B Reso",   0.0f, 1.0f, 0.1f, "", 2));
         addParam(floatParam ("filter_b_drive",     "B Drive",  1.0f, 10.0f, 1.0f, "x", 1));
         addParam(floatParam ("filter_b_grit",      "B Grit",   0.0f, 1.0f, 0.0f, "", 2));
-        addParam(choiceParam("filter_b_type",      "B Type",   {"Clean", "Vintage", "Acid", "Digital"}, 0));
-        addParam(choiceParam("filter_b_mode",      "B Mode",   {"Lowpass", "Highpass", "Bandpass", "Notch"}, 0));
-        addParam(choiceParam("routing",            "Routing",  {"Serial", "Parallel"}, 0));
+        addParam(choiceParam("filter_b_type",      "B Type",   {"CLN", "VINT", "ACID", "DIGI"}, 0));
+        addParam(choiceParam("filter_b_mode",      "B Mode",   {"LP", "HP", "BP", "NOTCH"}, 0));
+        addParam(choiceParam("routing",            "Routing",  {"SERIAL", "PARAL"}, 0));
 
         // LFOs
         addParam(logParam   ("lfo1_freq", "LFO 1 Freq", 0.1f, 20.0f, 1.0f, "Hz", 2));
@@ -660,13 +660,13 @@ public:
 
         // Sidechain
         addParam(boolParam  ("sc_active",    "SC Active",  false));
-        addParam(choiceParam("sc_source",    "SC Source",  {"Internal", "External", "Test Sig"}, 0));
+        addParam(choiceParam("sc_source",    "SC Source",  {"INT", "EXT", "TEST"}, 0));
         addParam(floatParam ("sc_threshold", "SC Thresh",  -60.0f, 0.0f, -24.0f, "dB", 1));
         addParam(floatParam ("sc_attack",    "SC Attack",  0.1f, 500.0f, 10.0f, "ms", 1));
         addParam(floatParam ("sc_release",   "SC Release", 1.0f, 2000.0f, 100.0f, "ms", 0));
-        addParam(choiceParam("sc_mode",      "SC Mode",    {"Peak", "RMS"}, 0));
+        addParam(choiceParam("sc_mode",      "SC Mode",    {"PEAK", "RMS"}, 0));
         addParam(floatParam ("sc_amount",    "SC Amount",  -100.0f, 100.0f, 0.0f, "%", 0));
-        addParam(choiceParam("sc_target",    "SC Target",  {"Drive", "Cutoff", "Gain"}, 2));
+        addParam(choiceParam("sc_target",    "SC Target",  {"DRIVE", "CUT", "GAIN"}, 2));
         addParam(logParam   ("sc_hp_freq",   "SC HPF",     20.0f, 2000.0f, 20.0f, "Hz", 0));
         addParam(logParam   ("sc_lp_freq",   "SC LPF",     500.0f, 20000.0f, 20000.0f, "Hz", 0));
 
@@ -675,7 +675,7 @@ public:
         addParam(choiceParam("noise_type",    "Noise Type",   {"White", "Pink", "Sine", "Triangle", "Saw", "Square"}, 0));
         addParam(logParam   ("noise_freq",    "Noise Freq",   20.0f, 20000.0f, 440.0f, "Hz", 0));
         addParam(floatParam ("noise_level",   "Noise Level",  -60.0f, 0.0f, -20.0f, "dB", 1));
-        addParam(choiceParam("noise_routing", "Noise Route",  {"Pre-Dist", "Pre-Filt", "Post-Filt"}, 0));
+        addParam(choiceParam("noise_routing", "Noise Route",  {"PRE-D", "PRE-F", "POST"}, 0));
         addParam(floatParam ("noise_fm_mod",  "Filter FM",    0.0f, 1.0f, 0.0f, "", 2));
 
         // Trance Gate
@@ -707,7 +707,7 @@ public:
 
         // Limiter
         addParam(boolParam  ("limiter_active",  "Limit Active", false));
-        addParam(choiceParam("limiter_mode",    "Limit Mode",   {"Clean", "LMC"}, 0));
+        addParam(choiceParam("limiter_mode",    "Limit Mode",   {"CLEAN", "LMC"}, 0));
         addParam(floatParam ("limiter_drive",   "Limit Drive",  0.0f, 24.0f, 0.0f, "dB", 1));
         addParam(floatParam ("limiter_ceiling", "Limit Ceil",   -12.0f, 0.0f, -0.1f, "dB", 1));
         addParam(floatParam ("limiter_release", "Limit Rel",    10.0f, 1000.0f, 100.0f, "ms", 0));
