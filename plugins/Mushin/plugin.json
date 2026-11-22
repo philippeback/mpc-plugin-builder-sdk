@@ -1,0 +1,17 @@
+{
+  "name": "Mushin",
+  "manufacturer": "PhilippeBack",
+  "version": "1.0.0",
+  "format": "vst2",
+  "kind": "effect",
+  "uid": "Msh2",
+  "numInputs": 2,
+  "numOutputs": 2,
+  "category": "Effect",
+  "file32": "VST/mushin-arm32.so",
+  "file64": "VST/mushin-arm64.so",
+  "description": "Mushin multi-stage saturation, dual filter LFO matrix, information decay, sidechain, noise, trance gate, stereo delay, and limiter effect.",
+  "author": "PhilippeBack",
+  "url": "",
+  "license": "CC-BY-NC-ND-4.0"
+}

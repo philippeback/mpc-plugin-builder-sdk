@@ -8,6 +8,7 @@ dist/
 # Users' own plugin projects live here; the SDK repo only tracks the placeholder
 plugins/*
 !plugins/.gitkeep
+!plugins/Mushin/
 
 # Python
 __pycache__/
