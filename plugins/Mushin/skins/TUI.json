@@ -1507,36 +1507,6 @@
                 ]
             },
             {
-                "key": "Parameter 35",
-                "value": [
-                    "Off",
-                    "On"
-                ]
-            },
-            {
-                "key": "Parameter 36",
-                "value": [
-                    "INT",
-                    "EXT",
-                    "TEST"
-                ]
-            },
-            {
-                "key": "Parameter 40",
-                "value": [
-                    "PEAK",
-                    "RMS"
-                ]
-            },
-            {
-                "key": "Parameter 42",
-                "value": [
-                    "DRIVE",
-                    "CUT",
-                    "GAIN"
-                ]
-            },
-            {
                 "key": "Parameter 45",
                 "value": [
                     "Off",
@@ -5668,1014 +5638,8 @@
             },
             {
                 "version": 1,
-                "tabName": "SIDECHN",
-                "fnKeyIndex": 4,
-                "fnKeySubIndex": 0,
-                "componentDefinition": {
-                    "version": 2,
-                    "actions": [],
-                    "backgroundData": {
-                        "version": 1,
-                        "focussed": {
-                            "version": 1,
-                            "colour": "ff0d0f12",
-                            "image": "bg_sidechn.png"
-                        },
-                        "unfocussed": {
-                            "version": 1,
-                            "colour": "ff0d0f12",
-                            "image": "bg_sidechn.png"
-                        }
-                    },
-                    "ignoreMousePresses": false,
-                    "disableCoarseDataWheel": false,
-                    "componentsData": [
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Active",
-                                "type": "toggle",
-                                "data": {
-                                    "version": 1,
-                                    "handleName": "Data"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": [
-                                    {
-                                        "key": "Data",
-                                        "value": "Parameter 35"
-                                    }
-                                ]
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "Yes",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "23 45 278 107"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "lbl_0",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 26.0
-                                        },
-                                        "colour": "ff8b949e",
-                                        "justification": "left",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "Active"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "38 57 170 36"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Source",
-                                "type": "radio3",
-                                "data": {
-                                    "version": 1,
-                                    "handleName": "Data"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": [
-                                    {
-                                        "key": "Data",
-                                        "value": "Parameter 36"
-                                    }
-                                ]
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "Yes",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "343 45 278 107"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "lbl_1",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 24.0
-                                        },
-                                        "colour": "ff8b949e",
-                                        "justification": "left",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "Source"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "358 53 248 34"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Source seg 0",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 22.0
-                                        },
-                                        "colour": "fff0f4f8",
-                                        "justification": "horizontallyCentred verticallyCentred",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "INT"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "358 99 80 40"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Source seg 1",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 22.0
-                                        },
-                                        "colour": "fff0f4f8",
-                                        "justification": "horizontallyCentred verticallyCentred",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "EXT"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "442 99 80 40"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Source seg 2",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 22.0
-                                        },
-                                        "colour": "fff0f4f8",
-                                        "justification": "horizontallyCentred verticallyCentred",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "TEST"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "526 99 80 40"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Target",
-                                "type": "radio3",
-                                "data": {
-                                    "version": 1,
-                                    "handleName": "Data"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": [
-                                    {
-                                        "key": "Data",
-                                        "value": "Parameter 42"
-                                    }
-                                ]
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "Yes",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "663 45 278 107"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "lbl_5",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 24.0
-                                        },
-                                        "colour": "ff8b949e",
-                                        "justification": "left",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "Target"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "678 53 248 34"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Target seg 0",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 22.0
-                                        },
-                                        "colour": "fff0f4f8",
-                                        "justification": "horizontallyCentred verticallyCentred",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "DRIVE"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "678 99 80 40"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Target seg 1",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 22.0
-                                        },
-                                        "colour": "fff0f4f8",
-                                        "justification": "horizontallyCentred verticallyCentred",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "CUT"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "762 99 80 40"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Target seg 2",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 22.0
-                                        },
-                                        "colour": "fff0f4f8",
-                                        "justification": "horizontallyCentred verticallyCentred",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "GAIN"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "846 99 80 40"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Mode",
-                                "type": "radio2",
-                                "data": {
-                                    "version": 1,
-                                    "handleName": "Data"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": [
-                                    {
-                                        "key": "Data",
-                                        "value": "Parameter 40"
-                                    }
-                                ]
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "Yes",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "983 45 278 107"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "lbl_9",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 24.0
-                                        },
-                                        "colour": "ff8b949e",
-                                        "justification": "left",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "Mode"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "998 53 248 34"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Mode seg 0",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 22.0
-                                        },
-                                        "colour": "fff0f4f8",
-                                        "justification": "horizontallyCentred verticallyCentred",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "PEAK"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "998 99 122 40"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Mode seg 1",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 22.0
-                                        },
-                                        "colour": "fff0f4f8",
-                                        "justification": "horizontallyCentred verticallyCentred",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "RMS"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "1124 99 122 40"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Thresh",
-                                "type": "knobUni",
-                                "data": {
-                                    "version": 1,
-                                    "handleName": "Data"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": [
-                                    {
-                                        "key": "Data",
-                                        "value": "Parameter 37"
-                                    }
-                                ]
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "Yes",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "23 196 278 107"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "lbl_12",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 26.0
-                                        },
-                                        "colour": "ff8b949e",
-                                        "justification": "left",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "Thresh"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "133 208 156 36"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Amount",
-                                "type": "knobBi",
-                                "data": {
-                                    "version": 1,
-                                    "handleName": "Data"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": [
-                                    {
-                                        "key": "Data",
-                                        "value": "Parameter 41"
-                                    }
-                                ]
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "Yes",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "343 196 278 107"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "lbl_13",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 26.0
-                                        },
-                                        "colour": "ff8b949e",
-                                        "justification": "left",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "Amount"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "453 208 156 36"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Attack",
-                                "type": "knobUni",
-                                "data": {
-                                    "version": 1,
-                                    "handleName": "Data"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": [
-                                    {
-                                        "key": "Data",
-                                        "value": "Parameter 38"
-                                    }
-                                ]
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "Yes",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "23 346 278 107"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "lbl_14",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 26.0
-                                        },
-                                        "colour": "ff8b949e",
-                                        "justification": "left",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "Attack"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "133 358 156 36"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC Release",
-                                "type": "knobUni",
-                                "data": {
-                                    "version": 1,
-                                    "handleName": "Data"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": [
-                                    {
-                                        "key": "Data",
-                                        "value": "Parameter 39"
-                                    }
-                                ]
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "Yes",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "343 346 278 107"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "lbl_15",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 26.0
-                                        },
-                                        "colour": "ff8b949e",
-                                        "justification": "left",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "Release"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "453 358 156 36"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC HPF",
-                                "type": "knobUni",
-                                "data": {
-                                    "version": 1,
-                                    "handleName": "Data"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": [
-                                    {
-                                        "key": "Data",
-                                        "value": "Parameter 43"
-                                    }
-                                ]
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "Yes",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "663 346 278 107"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "lbl_16",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 26.0
-                                        },
-                                        "colour": "ff8b949e",
-                                        "justification": "left",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "HPF"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "773 358 156 36"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "SC LPF",
-                                "type": "knobUni",
-                                "data": {
-                                    "version": 1,
-                                    "handleName": "Data"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": [
-                                    {
-                                        "key": "Data",
-                                        "value": "Parameter 44"
-                                    }
-                                ]
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "Yes",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "983 346 278 107"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "lbl_17",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 26.0
-                                        },
-                                        "colour": "ff8b949e",
-                                        "justification": "left",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "LPF"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "1093 358 156 36"
-                            }
-                        }
-                    ]
-                },
-                "qlinkBoundsData": [
-                    "13 35 1258 127",
-                    "13 186 618 127",
-                    "13 336 1258 127"
-                ]
-            },
-            {
-                "version": 1,
                 "tabName": "GATE",
-                "fnKeyIndex": 5,
+                "fnKeyIndex": 4,
                 "fnKeySubIndex": 0,
                 "componentDefinition": {
                     "version": 2,
@@ -7104,7 +6068,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "23 196 278 107"
+                                "bounds": "983 196 278 107"
                             }
                         },
                         {
@@ -7142,7 +6106,7 @@
                                 "showWhenDataModelInvalid": "Show",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "38 204 135 34"
+                                "bounds": "998 204 135 34"
                             }
                         },
                         {
@@ -7350,6 +6314,222 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
+                                "name": "gate_pat_0",
+                                "type": "Image",
+                                "data": {
+                                    "version": 1,
+                                    "image": "gate_pat_0.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "23 196 918 107",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/0/8/Parameter 53"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "gate_pat_1",
+                                "type": "Image",
+                                "data": {
+                                    "version": 1,
+                                    "image": "gate_pat_1.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "23 196 918 107",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/1/8/Parameter 53"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "gate_pat_2",
+                                "type": "Image",
+                                "data": {
+                                    "version": 1,
+                                    "image": "gate_pat_2.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "23 196 918 107",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/2/8/Parameter 53"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "gate_pat_3",
+                                "type": "Image",
+                                "data": {
+                                    "version": 1,
+                                    "image": "gate_pat_3.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "23 196 918 107",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/3/8/Parameter 53"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "gate_pat_4",
+                                "type": "Image",
+                                "data": {
+                                    "version": 1,
+                                    "image": "gate_pat_4.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "23 196 918 107",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/4/8/Parameter 53"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "gate_pat_5",
+                                "type": "Image",
+                                "data": {
+                                    "version": 1,
+                                    "image": "gate_pat_5.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "23 196 918 107",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/5/8/Parameter 53"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "gate_pat_6",
+                                "type": "Image",
+                                "data": {
+                                    "version": 1,
+                                    "image": "gate_pat_6.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "23 196 918 107",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/6/8/Parameter 53"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "gate_pat_7",
+                                "type": "Image",
+                                "data": {
+                                    "version": 1,
+                                    "image": "gate_pat_7.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "23 196 918 107",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/7/8/Parameter 53"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
                                 "name": "gate_env",
                                 "type": "Envelope",
                                 "data": {
@@ -7404,14 +6584,14 @@
                 },
                 "qlinkBoundsData": [
                     "13 35 1258 127",
-                    "13 186 298 127",
+                    "973 186 298 127",
                     "13 336 938 127"
                 ]
             },
             {
                 "version": 1,
                 "tabName": "DLY",
-                "fnKeyIndex": 6,
+                "fnKeyIndex": 5,
                 "fnKeySubIndex": 0,
                 "componentDefinition": {
                     "version": 2,
@@ -7659,7 +6839,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "983 45 278 107"
+                                "bounds": "23 196 278 107"
                             }
                         },
                         {
@@ -7697,7 +6877,7 @@
                                 "showWhenDataModelInvalid": "Show",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "1093 57 156 36"
+                                "bounds": "133 208 156 36"
                             }
                         },
                         {
@@ -7726,7 +6906,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "23 196 278 107",
+                                "bounds": "343 196 278 107",
                                 "additionalInvalidatingHandles": [
                                     "IndexedEnabling/0/2/Parameter 69"
                                 ]
@@ -7767,7 +6947,7 @@
                                 "showWhenDataModelInvalid": "Show",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "133 208 156 36"
+                                "bounds": "453 208 156 36"
                             }
                         },
                         {
@@ -7796,7 +6976,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "343 196 278 107",
+                                "bounds": "663 196 278 107",
                                 "additionalInvalidatingHandles": [
                                     "IndexedEnabling/1/2/Parameter 69"
                                 ]
@@ -7837,7 +7017,7 @@
                                 "showWhenDataModelInvalid": "Show",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "358 204 248 34"
+                                "bounds": "678 204 248 34"
                             }
                         },
                         {
@@ -7875,7 +7055,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "358 250 58 40",
+                                "bounds": "678 250 58 40",
                                 "additionalInvalidatingHandles": [
                                     "IndexedEnabling/1/2/Parameter 69"
                                 ]
@@ -7916,7 +7096,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "420 250 58 40",
+                                "bounds": "740 250 58 40",
                                 "additionalInvalidatingHandles": [
                                     "IndexedEnabling/1/2/Parameter 69"
                                 ]
@@ -7957,7 +7137,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "482 250 58 40",
+                                "bounds": "802 250 58 40",
                                 "additionalInvalidatingHandles": [
                                     "IndexedEnabling/1/2/Parameter 69"
                                 ]
@@ -7998,7 +7178,7 @@
                                 "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "544 250 58 40",
+                                "bounds": "864 250 58 40",
                                 "additionalInvalidatingHandles": [
                                     "IndexedEnabling/1/2/Parameter 69"
                                 ]
@@ -8074,14 +7254,14 @@
                     ]
                 },
                 "qlinkBoundsData": [
-                    "13 35 1258 127",
+                    "13 35 938 127",
                     "13 186 1258 127"
                 ]
             },
             {
                 "version": 1,
                 "tabName": "LIM",
-                "fnKeyIndex": 7,
+                "fnKeyIndex": 6,
                 "fnKeySubIndex": 0,
                 "componentDefinition": {
                     "version": 2,
@@ -8173,8 +7353,8 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "Limit Mode",
-                                "type": "radio2",
+                                "name": "Limit Drive",
+                                "type": "knobUni",
                                 "data": {
                                     "version": 1,
                                     "handleName": "Data"
@@ -8185,7 +7365,7 @@
                                 "map": [
                                     {
                                         "key": "Data",
-                                        "value": "Parameter 72"
+                                        "value": "Parameter 73"
                                     }
                                 ]
                             },
@@ -8212,7 +7392,7 @@
                                             "version": 1,
                                             "name": "Titillium Web",
                                             "style": "Regular",
-                                            "height": 24.0
+                                            "height": 26.0
                                         },
                                         "colour": "ff8b949e",
                                         "justification": "left",
@@ -8220,7 +7400,7 @@
                                     },
                                     "type": "Text",
                                     "handleName": "Data",
-                                    "text": "Mode"
+                                    "text": "Drive"
                                 }
                             },
                             "handle remapping": {
@@ -8233,90 +7413,14 @@
                                 "showWhenDataModelInvalid": "Show",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "358 53 248 34"
+                                "bounds": "453 57 156 36"
                             }
                         },
                         {
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "Limit Mode seg 0",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 22.0
-                                        },
-                                        "colour": "fff0f4f8",
-                                        "justification": "horizontallyCentred verticallyCentred",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "CLEAN"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "358 99 122 40"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "Limit Mode seg 1",
-                                "type": "Label",
-                                "data": {
-                                    "version": 1,
-                                    "textStyle": {
-                                        "version": 1,
-                                        "font": {
-                                            "version": 1,
-                                            "name": "Titillium Web",
-                                            "style": "Regular",
-                                            "height": 22.0
-                                        },
-                                        "colour": "fff0f4f8",
-                                        "justification": "horizontallyCentred verticallyCentred",
-                                        "case": "Original"
-                                    },
-                                    "type": "Text",
-                                    "handleName": "Data",
-                                    "text": "LMC"
-                                }
-                            },
-                            "handle remapping": {
-                                "version": 1,
-                                "map": []
-                            },
-                            "bounds": {
-                                "version": 1,
-                                "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Hide",
-                                "whenVisible": "Always",
-                                "boundsType": "Absolute",
-                                "bounds": "484 99 122 40"
-                            }
-                        },
-                        {
-                            "version": 2,
-                            "componentData": {
-                                "version": 1,
-                                "name": "Limit Drive",
+                                "name": "Limit Rel",
                                 "type": "knobUni",
                                 "data": {
                                     "version": 1,
@@ -8328,7 +7432,7 @@
                                 "map": [
                                     {
                                         "key": "Data",
-                                        "value": "Parameter 73"
+                                        "value": "Parameter 75"
                                     }
                                 ]
                             },
@@ -8345,7 +7449,7 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "lbl_4",
+                                "name": "lbl_2",
                                 "type": "Label",
                                 "data": {
                                     "version": 1,
@@ -8363,7 +7467,7 @@
                                     },
                                     "type": "Text",
                                     "handleName": "Data",
-                                    "text": "Drive"
+                                    "text": "Release"
                                 }
                             },
                             "handle remapping": {
@@ -8412,7 +7516,7 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "lbl_5",
+                                "name": "lbl_3",
                                 "type": "Label",
                                 "data": {
                                     "version": 1,
@@ -8450,8 +7554,8 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "Limit Rel",
-                                "type": "knobUni",
+                                "name": "Limit Mode",
+                                "type": "radio2",
                                 "data": {
                                     "version": 1,
                                     "handleName": "Data"
@@ -8462,7 +7566,7 @@
                                 "map": [
                                     {
                                         "key": "Data",
-                                        "value": "Parameter 75"
+                                        "value": "Parameter 72"
                                     }
                                 ]
                             },
@@ -8479,7 +7583,7 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "lbl_6",
+                                "name": "lbl_4",
                                 "type": "Label",
                                 "data": {
                                     "version": 1,
@@ -8489,7 +7593,7 @@
                                             "version": 1,
                                             "name": "Titillium Web",
                                             "style": "Regular",
-                                            "height": 26.0
+                                            "height": 24.0
                                         },
                                         "colour": "ff8b949e",
                                         "justification": "left",
@@ -8497,7 +7601,7 @@
                                     },
                                     "type": "Text",
                                     "handleName": "Data",
-                                    "text": "Release"
+                                    "text": "Mode"
                                 }
                             },
                             "handle remapping": {
@@ -8510,7 +7614,83 @@
                                 "showWhenDataModelInvalid": "Show",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "133 208 156 36"
+                                "bounds": "38 204 248 34"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "Limit Mode seg 0",
+                                "type": "Label",
+                                "data": {
+                                    "version": 1,
+                                    "textStyle": {
+                                        "version": 1,
+                                        "font": {
+                                            "version": 1,
+                                            "name": "Titillium Web",
+                                            "style": "Regular",
+                                            "height": 22.0
+                                        },
+                                        "colour": "fff0f4f8",
+                                        "justification": "horizontallyCentred verticallyCentred",
+                                        "case": "Original"
+                                    },
+                                    "type": "Text",
+                                    "handleName": "Data",
+                                    "text": "CLEAN"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "38 250 122 40"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "Limit Mode seg 1",
+                                "type": "Label",
+                                "data": {
+                                    "version": 1,
+                                    "textStyle": {
+                                        "version": 1,
+                                        "font": {
+                                            "version": 1,
+                                            "name": "Titillium Web",
+                                            "style": "Regular",
+                                            "height": 22.0
+                                        },
+                                        "colour": "fff0f4f8",
+                                        "justification": "horizontallyCentred verticallyCentred",
+                                        "case": "Original"
+                                    },
+                                    "type": "Text",
+                                    "handleName": "Data",
+                                    "text": "LMC"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "164 250 122 40"
                             }
                         },
                         {

@@ -243,8 +243,19 @@ function getParamChoiceIndex(pIdx) {
 }
 
 function checkVisible(comp) {
-  // Handle TUI.json visibility rules if present
-  const vis = comp.bounds && comp.bounds.whenVisible;
+  if (!comp.bounds) return true;
+  const inv = comp.bounds.additionalInvalidatingHandles;
+  if (Array.isArray(inv)) {
+    for (const h of inv) {
+      const m = String(h).match(/^IndexedEnabling\/(\d+)\/(\d+)\/Parameter (\d+)$/);
+      if (m) {
+        const targetIdx = parseInt(m[1], 10);
+        const pIdx = parseInt(m[3], 10);
+        if (getParamChoiceIndex(pIdx) !== targetIdx) return false;
+      }
+    }
+  }
+  const vis = comp.bounds.whenVisible;
   if (!vis || vis === "Always") return true;
   if (typeof vis === "object" && vis.handleName) {
     const m = String(vis.handleName).match(/Parameter (\d+)/);
@@ -459,15 +470,17 @@ function renderComponent(comp, offsetX = 0, offsetY = 0, paramOverride = null) {
   if (localDefs[type]) {
     const def = localDefs[type];
 
-    // Cell card background
+    // Cell card background (draw border only when touch-selected)
     ctx.save();
-    ctx.fillStyle = "rgba(22, 27, 34, 0.72)";
-    ctx.strokeStyle = (pIdx !== null && pIdx === selectedParamIdx) ? "#ffd60a" : "#262e3a";
-    ctx.lineWidth = (pIdx !== null && pIdx === selectedParamIdx) ? 2 : 1;
+    ctx.fillStyle = "rgba(22, 27, 34, 0.55)";
     ctx.beginPath();
     ctx.roundRect(x, y, w, h, 6);
     ctx.fill();
-    ctx.stroke();
+    if (pIdx !== null && pIdx === selectedParamIdx) {
+      ctx.strokeStyle = "#ffd60a";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
     ctx.restore();
 
     if (type === "seg2" || type === "seg3" || type === "seg4") {

@@ -139,6 +139,36 @@ def make_label_entry(name, text, x, y, w, h, height, colour, when_visible):
     }
 
 
+def make_gate_pattern_image(idx_pattern, pat_idx):
+    return {
+        "version": 2,
+        "componentData": {
+            "version": 1,
+            "name": f"gate_pat_{pat_idx}",
+            "type": "Image",
+            "data": {
+                "version": 1,
+                "image": f"gate_pat_{pat_idx}.png",
+            },
+        },
+        "handle remapping": {
+            "version": 1,
+            "map": [],
+        },
+        "bounds": {
+            "version": 2,
+            "acceptsHWFocus": "No",
+            "showWhenDataModelInvalid": "Show",
+            "whenVisible": "Always",
+            "boundsType": "Absolute",
+            "bounds": "23 196 918 107",
+            "additionalInvalidatingHandles": [
+                f"IndexedEnabling/{pat_idx}/8/Parameter {idx_pattern}"
+            ],
+        },
+    }
+
+
 def make_gate_envelope(idx_start, idx_hold, idx_end):
     return {
         "version": 2,
@@ -272,6 +302,10 @@ def main():
 
     for tab in tui["pageData"]["tabs"]:
         if tab.get("tabName") == "GATE":
+            for pat_idx in range(8):
+                tab["componentDefinition"]["componentsData"].append(
+                    make_gate_pattern_image(params_by_name["Gate Pattern"], pat_idx)
+                )
             tab["componentDefinition"]["componentsData"].append(
                 make_gate_envelope(
                     params_by_name["Gate Start"],

@@ -54,7 +54,6 @@ PAGES = [
     ("bg_filter.png",  "FILTER A",     "FILTER B"),
     ("bg_lfo.png",     "LFO 1 & 2",    "NOISE OSC"),
     ("bg_matrix.png",  "LFO 1 MATRIX", "LFO 2 MATRIX"),
-    ("bg_sidechn.png", "SIDECHAIN",    "SC ENV & FILT"),
     ("bg_gate.png",    "TRANCE GATE",  "GATE ENV"),
     ("bg_dly.png",     "DELAY",        None),
     ("bg_lim.png",     "LIMITER",      None),
@@ -161,10 +160,67 @@ def draw_panel(buf, x0, y0, pw, ph, title):
                                     buf[idx : idx + 4] = bytes(TITLE_COL)
 
 
+GATE_PATTERNS = [
+    ("gate_pat_0.png", 0xAAAA),
+    ("gate_pat_1.png", 0x5555),
+    ("gate_pat_2.png", 0xEEEE),
+    ("gate_pat_3.png", 0x9999),
+    ("gate_pat_4.png", 0xF0F0),
+    ("gate_pat_5.png", 0xD7D7),
+    ("gate_pat_6.png", 0x8888),
+    ("gate_pat_7.png", 0x8912),
+]
+
+
+def generate_gate_patterns(assets_dir):
+    gw, gh = 918, 107
+    card_bg = (0x10, 0x14, 0x1A, 255)
+    step_off = (0x16, 0x1B, 0x22, 255)
+    step_on = (0x00, 0xE5, 0xFF, 255)
+    step_border = (0x26, 0x2E, 0x3A, 255)
+
+    pad_x = 16
+    gap = 8
+    step_w = (gw - pad_x * 2 - gap * 15) // 16
+    step_h = 56
+    sy0 = (gh - step_h) // 2
+    sy1 = sy0 + step_h
+
+    for fname, mask in GATE_PATTERNS:
+        buf = bytearray(bytes(card_bg) * (gw * gh))
+        # Outer subtle card border
+        for x in range(gw):
+            for y in (0, gh - 1):
+                idx = (y * gw + x) * 4
+                buf[idx : idx + 4] = bytes(step_border)
+        for y in range(gh):
+            for x in (0, gw - 1):
+                idx = (y * gw + x) * 4
+                buf[idx : idx + 4] = bytes(step_border)
+
+        for step in range(16):
+            active = (mask & (1 << step)) != 0
+            fill = step_on if active else step_off
+            sx0 = pad_x + step * (step_w + gap)
+            sx1 = sx0 + step_w
+            for y in range(sy0, sy1):
+                row_off = y * gw
+                for x in range(sx0, sx1):
+                    is_edge = (x == sx0 or x == sx1 - 1 or y == sy0 or y == sy1 - 1)
+                    col = step_border if (is_edge and not active) else fill
+                    idx = (row_off + x) * 4
+                    buf[idx : idx + 4] = bytes(col)
+
+        out_path = os.path.join(assets_dir, fname)
+        write_png(out_path, gw, gh, buf)
+        print(f"Wrote {out_path}")
+
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     assets_dir = os.path.join(os.path.dirname(script_dir), "assets")
     os.makedirs(assets_dir, exist_ok=True)
+    generate_gate_patterns(assets_dir)
 
     for filename, top_title, bot_title in PAGES:
         buf = bytearray(bytes(BG) * (W * H))
