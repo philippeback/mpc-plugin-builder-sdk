@@ -11,7 +11,7 @@ if (-not (Test-Path $orbsPath)) {
 $orbsImg = [System.Drawing.Bitmap]::FromFile($orbsPath)
 $cellW = $orbsImg.Width / 4.0
 $cellH = $orbsImg.Height / 2.0
-$size = 114
+$size = 180
 $numFrames = 16
 
 for ($r = 0; $r -lt 2; $r++) {
@@ -28,7 +28,7 @@ for ($r = 0; $r -lt 2; $r++) {
         for ($f = 0; $f -lt $numFrames; $f++) {
             $t = $f / [double]($numFrames - 1)
             $fy = $f * $size
-            $pad = 6
+            $pad = 8
             $orbRect = New-Object System.Drawing.RectangleF($pad, ($fy + $pad), ($size - $pad * 2), ($size - $pad * 2))
 
             # Brightness/contrast ramp from dormant (0.35) to energized (1.15)

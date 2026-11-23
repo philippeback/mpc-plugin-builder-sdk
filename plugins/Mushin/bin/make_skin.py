@@ -227,19 +227,66 @@ def make_multi_icon_radio_def(local_defs, new_key, prefix, xs, width):
 
 
 def make_orb_local_def(orb_idx):
+    accent = "ff00e5ff" if orb_idx < 4 else "ffff4d8d"
     return to_obj({
-        "key": f"orbStrip{orb_idx}",
+        "key": f"macroOrb{orb_idx}",
         "value": {
             "version": 2,
-            "actions": [],
+            "actions": [
+                {
+                    "version": 1,
+                    "onAction": "Mouse Down",
+                    "handler": "Q-Link",
+                    "handleName": "Data",
+                    "additionalData": "",
+                },
+                {
+                    "version": 1,
+                    "onAction": "Double Click",
+                    "handler": "Show Overlay",
+                    "handleName": "Data",
+                    "additionalData": "knob overlay",
+                },
+                {
+                    "version": 1,
+                    "onAction": "Enter Pressed",
+                    "handler": "Show Overlay",
+                    "handleName": "Data",
+                    "additionalData": "knob overlay",
+                },
+            ],
             "backgroundData": {
                 "version": 1,
                 "focussed": {"version": 1, "colour": "00000000", "image": ""},
                 "unfocussed": {"version": 1, "colour": "00000000", "image": ""},
             },
-            "ignoreMousePresses": True,
-            "disableCoarseDataWheel": True,
+            "ignoreMousePresses": False,
+            "disableCoarseDataWheel": False,
             "componentsData": [
+                {
+                    "version": 2,
+                    "componentData": {
+                        "version": 1,
+                        "name": "focus",
+                        "type": "Focus",
+                        "data": {
+                            "version": 1,
+                            "backgroundColour": "19ffffff",
+                            "outlineColour": accent,
+                            "backgroundInset": 4.0,
+                            "outlineThickness": 1.0,
+                        },
+                    },
+                    "handle remapping": {"version": 1, "map": []},
+                    "bounds": {
+                        "version": 1,
+                        "acceptsHWFocus": "No",
+                        "showWhenDataModelInvalid": "Show",
+                        "whenVisible": "WhenFocussed",
+                        "boundsType": "Absolute",
+                        "bounds": "0 0 278 250",
+                    },
+                },
                 {
                     "version": 2,
                     "componentData": {
@@ -262,42 +309,78 @@ def make_orb_local_def(orb_idx):
                         "showWhenDataModelInvalid": "Show",
                         "whenVisible": "Always",
                         "boundsType": "Absolute",
-                        "bounds": "0 0 114 114",
+                        "bounds": "49 6 180 180",
                     },
-                }
+                },
+                {
+                    "version": 2,
+                    "componentData": {
+                        "version": 1,
+                        "name": "name",
+                        "type": "Label",
+                        "data": {
+                            "version": 1,
+                            "textStyle": {
+                                "version": 1,
+                                "font": {
+                                    "version": 1,
+                                    "name": "Titillium Web",
+                                    "style": "Regular",
+                                    "height": 24.0,
+                                },
+                                "colour": "fff0f4f8",
+                                "justification": "horizontallyCentred",
+                                "case": "Original",
+                            },
+                            "type": "Name",
+                            "handleName": "Data",
+                        },
+                    },
+                    "handle remapping": {"version": 1, "map": []},
+                    "bounds": {
+                        "version": 1,
+                        "acceptsHWFocus": "No",
+                        "showWhenDataModelInvalid": "Show",
+                        "whenVisible": "Always",
+                        "boundsType": "Absolute",
+                        "bounds": "10 188 258 30",
+                    },
+                },
+                {
+                    "version": 2,
+                    "componentData": {
+                        "version": 1,
+                        "name": "value",
+                        "type": "Label",
+                        "data": {
+                            "version": 1,
+                            "textStyle": {
+                                "version": 1,
+                                "font": {
+                                    "version": 1,
+                                    "name": "Titillium Web",
+                                    "style": "Regular",
+                                    "height": 24.0,
+                                },
+                                "colour": accent,
+                                "justification": "horizontallyCentred",
+                                "case": "Original",
+                            },
+                            "type": "Value",
+                            "handleName": "Data",
+                        },
+                    },
+                    "handle remapping": {"version": 1, "map": []},
+                    "bounds": {
+                        "version": 1,
+                        "acceptsHWFocus": "No",
+                        "showWhenDataModelInvalid": "Show",
+                        "whenVisible": "Always",
+                        "boundsType": "Absolute",
+                        "bounds": "10 216 258 28",
+                    },
+                },
             ],
-        },
-    })
-
-
-def make_macro_orb_strip(orb_idx, param_idx, cx, cy):
-    size = 114
-    x = cx - size // 2
-    y = cy - size // 2
-    return to_obj({
-        "version": 2,
-        "componentData": {
-            "version": 1,
-            "name": f"macro_orb_{orb_idx}",
-            "type": f"orbStrip{orb_idx}",
-            "data": {
-                "version": 1,
-                "handleName": "Data",
-            },
-        },
-        "handle remapping": {
-            "version": 1,
-            "map": [
-                {"key": "Data", "value": f"Parameter {param_idx}"},
-            ],
-        },
-        "bounds": {
-            "version": 1,
-            "acceptsHWFocus": "No",
-            "showWhenDataModelInvalid": "Show",
-            "whenVisible": "Always",
-            "boundsType": "Absolute",
-            "bounds": f"{x} {y} {size} {size}",
         },
     })
 
@@ -563,17 +646,19 @@ def main():
     for tab in tabs:
         tname = obj_get(tab, "tabName")
         if tname == "MAIN":
+            slot_x = [16, 336, 656, 976]
             cdef = obj_get(tab, "componentDefinition")
             comps = obj_get(cdef, "componentsData")
-            for i, mname in enumerate(macro_names):
-                comps.append(
-                    make_macro_orb_strip(
-                        i,
-                        params_by_name[mname],
-                        col_centers[i % 4],
-                        row_centers[i // 4],
-                    )
-                )
+            for c in comps:
+                cd = obj_get(c, "componentData")
+                cname = obj_get(cd, "name") or ""
+                if cname in macro_names:
+                    idx = macro_names.index(cname)
+                    obj_set(cd, "type", f"macroOrb{idx}")
+                    bounds_obj = obj_get(c, "bounds")
+                    y = 46 if idx < 4 else 348
+                    obj_set(bounds_obj, "bounds", f"{slot_x[idx % 4]} {y} 278 250")
+            obj_set(tab, "qlinkBoundsData", ["12 42 1246 258", "12 344 1246 258"])
         elif tname == "GATE":
             cdef = obj_get(tab, "componentDefinition")
             comps = obj_get(cdef, "componentsData")
