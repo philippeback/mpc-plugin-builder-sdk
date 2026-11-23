@@ -189,6 +189,43 @@ def make_icon_radio_def(local_defs, base_key, new_key, prefix, count):
     return cloned
 
 
+def make_lfo_wave_radio_def(local_defs):
+    base_def = None
+    for entry in local_defs:
+        if obj_get(entry, "key") == "radio4":
+            base_def = entry
+            break
+    if base_def is None:
+        raise RuntimeError("Missing base localComponentDefinition radio4")
+    cloned = copy.deepcopy(base_def)
+    obj_set(cloned, "key", "radioLfoWave")
+    val = obj_get(cloned, "value")
+    xs = [16, 66, 116, 166, 216]
+    new_comps = []
+    template_btn = None
+    for c in obj_get(val, "componentsData"):
+        cd = obj_get(c, "componentData")
+        if obj_get(cd, "type") == "Button":
+            if template_btn is None:
+                template_btn = c
+        else:
+            new_comps.append(c)
+    for idx, x in enumerate(xs):
+        btn = copy.deepcopy(template_btn)
+        cd = obj_get(btn, "componentData")
+        obj_set(cd, "name", f"seg {idx}")
+        bdata = obj_get(cd, "data")
+        obj_set(bdata, "onImage", f"btn_lfowave_{idx}_on.png")
+        obj_set(bdata, "offImage", f"btn_lfowave_{idx}_off.png")
+        obj_set(bdata, "buttonId", idx)
+        obj_set(bdata, "numButtonsInGroup", 5)
+        bounds_obj = obj_get(btn, "bounds")
+        obj_set(bounds_obj, "bounds", f"{x} 54 46 40")
+        new_comps.append(btn)
+    obj_set(val, "componentsData", new_comps)
+    return cloned
+
+
 def make_orb_local_def(orb_idx):
     return to_obj({
         "key": f"orbStrip{orb_idx}",
@@ -490,6 +527,7 @@ def main():
     ]
     for base_k, new_k, prefix, cnt in icon_radio_specs:
         local_defs.append(make_icon_radio_def(local_defs, base_k, new_k, prefix, cnt))
+    local_defs.append(make_lfo_wave_radio_def(local_defs))
 
     switch_type_map = {
         "A Type": "radioFType",
@@ -501,6 +539,8 @@ def main():
         "Gate Rate": "radioGRate",
         "Delay Tempo": "radioDTempo",
         "Limit Mode": "radioLMode",
+        "LFO 1 Wave": "radioLfoWave",
+        "LFO 2 Wave": "radioLfoWave",
     }
     seg_prefixes = tuple(f"{k} seg " for k in switch_type_map)
 
@@ -513,7 +553,7 @@ def main():
             cname = obj_get(cd, "name") or ""
             if obj_get(cd, "type") == "Label" and cname.startswith(seg_prefixes):
                 continue
-            if cname in switch_type_map and str(obj_get(cd, "type")).startswith("radio"):
+            if cname in switch_type_map and (str(obj_get(cd, "type")).startswith("radio") or cname in ("LFO 1 Wave", "LFO 2 Wave")):
                 obj_set(cd, "type", switch_type_map[cname])
             filtered.append(c)
         obj_set(cdef, "componentsData", filtered)

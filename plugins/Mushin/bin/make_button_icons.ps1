@@ -289,4 +289,63 @@ foreach ($state in @("on", "off")) {
     $pen.Dispose()
 }
 
-Write-Host "Generated 44 icon button PNGs in $SkinsDir"
+# 8. LFO Wave (46x40): 0=Sine, 1=Triangle, 2=Saw, 3=Square, 4=Random
+function New-Seg5Canvas([string]$BasePath) {
+    $src = [System.Drawing.Bitmap]::FromFile($BasePath)
+    $bmp = New-Object System.Drawing.Bitmap(46, 40, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+    $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+    # Copy left 23px and right 23px from 58x40 seg4 base to preserve rounded borders
+    $g.DrawImage($src, (New-Object System.Drawing.Rectangle(0, 0, 23, 40)), (New-Object System.Drawing.Rectangle(0, 0, 23, 40)), [System.Drawing.GraphicsUnit]::Pixel)
+    $g.DrawImage($src, (New-Object System.Drawing.Rectangle(23, 0, 23, 40)), (New-Object System.Drawing.Rectangle(($src.Width - 23), 0, 23, 40)), [System.Drawing.GraphicsUnit]::Pixel)
+    $src.Dispose()
+    return @($bmp, $g)
+}
+
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg4_$state.png"
+    $col = Get-StrokeColor $isOn
+    $pen = New-Object System.Drawing.Pen($col, 2.1)
+    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+
+    # 0: Sine
+    $bmp, $g = New-Seg5Canvas $base
+    $pts = @()
+    for ($i = 0; $i -le 16; $i++) {
+        $t = $i / 16.0
+        $x = 10.0 + $t * 26.0
+        $y = 20.0 - 7.5 * [Math]::Sin($t * 2.0 * [Math]::PI)
+        $pts += [float]$x; $pts += [float]$y
+    }
+    Draw-Curve $g $pen $pts
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_0_$state.png")
+
+    # 1: Triangle
+    $bmp, $g = New-Seg5Canvas $base
+    Draw-Polyline $g $pen @(10, 20, 16.5, 12, 29.5, 28, 36, 20)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_1_$state.png")
+
+    # 2: Saw
+    $bmp, $g = New-Seg5Canvas $base
+    Draw-Polyline $g $pen @(10, 27, 23, 13, 23, 27, 36, 13)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_2_$state.png")
+
+    # 3: Square
+    $bmp, $g = New-Seg5Canvas $base
+    Draw-Polyline $g $pen @(10, 26, 10, 13, 23, 13, 23, 27, 36, 27, 36, 14)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_3_$state.png")
+
+    # 4: Random (stepped S&H)
+    $bmp, $g = New-Seg5Canvas $base
+    Draw-Polyline $g $pen @(10, 22, 16, 22, 16, 13, 22, 13, 22, 27, 29, 27, 29, 17, 36, 17)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_4_$state.png")
+
+    $pen.Dispose()
+}
+
+Write-Host "Generated 54 icon button PNGs in $SkinsDir"

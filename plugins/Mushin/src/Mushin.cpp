@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 #include <vector>
 
 namespace {
@@ -728,7 +729,62 @@ public:
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
+        for (int i = 0; i < kNumParams; ++i) {
+            baseValues_[i] = get(i);
+        }
+
         addBuiltInPrograms();
+    }
+
+    void parameterChanged(int index, float plainValue) override
+    {
+        if (index < 0 || index >= kNumParams) return;
+        if (isBulkLoading()) {
+            baseValues_[index] = plainValue;
+            return;
+        }
+        if (updatingFromMacro_) return;
+
+        if (index >= kMacroExhaustion && index <= kMacroSmash) {
+            baseValues_[index] = plainValue;
+            applyMacros();
+        } else {
+            updateBaseFromTarget(index, plainValue);
+            if (index == kRouting && get(kMacroChoke) > 0.02f) {
+                applyMacros();
+            }
+        }
+    }
+
+    void saveExtraState(std::vector<uint8_t>& out) override
+    {
+        out.clear();
+        out.push_back('M'); out.push_back('S'); out.push_back('H'); out.push_back('B');
+        const uint32_t ver = 1;
+        for (int b = 0; b < 4; ++b) out.push_back((uint8_t)(ver >> (8 * b)));
+        for (int i = 0; i < kNumParams; ++i) {
+            uint32_t bits = 0;
+            std::memcpy(&bits, &baseValues_[i], 4);
+            for (int b = 0; b < 4; ++b) out.push_back((uint8_t)(bits >> (8 * b)));
+        }
+    }
+
+    void loadExtraState(const uint8_t* data, size_t size) override
+    {
+        const size_t expected = 8 + (size_t)kNumParams * 4;
+        if (data == nullptr || size < expected || std::memcmp(data, "MSHB", 4) != 0) {
+            return;
+        }
+        uint32_t ver = 0;
+        for (int b = 0; b < 4; ++b) ver |= (uint32_t)data[4 + b] << (8 * b);
+        if (ver != 1) return;
+        size_t pos = 8;
+        for (int i = 0; i < kNumParams; ++i) {
+            uint32_t bits = 0;
+            for (int b = 0; b < 4; ++b) bits |= (uint32_t)data[pos + (size_t)b] << (8 * b);
+            pos += 4;
+            std::memcpy(&baseValues_[i], &bits, 4);
+        }
     }
 
     void prepare(double sampleRate, int /*maxBlockSize*/) override
@@ -790,48 +846,33 @@ public:
         const double sr = ctx.sampleRate;
         const int n = ctx.numFrames;
 
-        // 0. Performance Macros (0..1; 0 leaves underlying parameters untouched)
-        const float mExh     = get(kMacroExhaustion);
-        const float mChoke   = get(kMacroChoke);
-        const float mDecay   = get(kMacroDecay);
-        const float mCorrupt = get(kMacroCorrupt);
-        const float mKinetic = get(kMacroKinetic);
-        const float mReso    = get(kMacroResonator);
-        const float mGate    = get(kMacroGate);
-        const float mSmash   = get(kMacroSmash);
-
-        // 1. Update per-block parameters
-        const float baseDrive = mpc::clamp(get(kDrive) + 12.0f * mExh, 1.0f, 32.0f);
-        const bool exhausted = getBool(kExhaustion) || (mExh > 0.65f);
-        waveshaper_.setDrive(baseDrive);
-        waveshaper_.setExhaustion(exhausted);
+        // 1. Update per-block parameters (macros already reflected into underlying params)
+        waveshaper_.setDrive(mpc::clamp(get(kDrive), 1.0f, 32.0f));
+        waveshaper_.setExhaustion(getBool(kExhaustion));
         waveshaper_.setThreshold(mpc::dsp::dbToGain(get(kThreshold)));
         waveshaper_.setAutoGain(getBool(kAutoGain));
 
-        const float baseFACutoff = mpc::clamp(get(kFACutoff) * std::pow(2.0f, -7.0f * mChoke - 3.5f * mKinetic), 20.0f, 20000.0f);
-        const float baseFAReso = mpc::clamp(get(kFAReso) + 0.50f * mChoke + 0.35f * mKinetic, 0.0f, 0.98f);
-        const float baseFAGrit = mpc::clamp(get(kFAGrit) + 0.5f * mReso, 0.0f, 1.0f);
+        const float baseFACutoff = mpc::clamp(get(kFACutoff), 20.0f, 20000.0f);
+        const float baseFAReso = mpc::clamp(get(kFAReso), 0.0f, 0.98f);
+        const float baseFAGrit = mpc::clamp(get(kFAGrit), 0.0f, 1.0f);
         filterA_.setDrive(get(kFADrive));
         filterA_.setGrit(baseFAGrit);
         filterA_.setType(getInt(kFAType));
         filterA_.setMode(getInt(kFAMode));
 
-        const bool chokeBand = (mChoke > 0.02f && getInt(kFBMode) == 0 && get(kFBCutoff) > 15000.0f);
-        const float baseFBCutoff = chokeBand
-            ? mpc::clamp(20.0f * std::pow(2.0f, 5.0f * mChoke), 20.0f, 20000.0f)
-            : mpc::clamp(get(kFBCutoff) * std::pow(2.0f, -4.0f * mChoke - 2.5f * mKinetic), 20.0f, 20000.0f);
-        const float baseFBReso = mpc::clamp(get(kFBReso) + 0.50f * mChoke + 0.35f * mKinetic, 0.0f, 0.98f);
-        const float baseFBGrit = mpc::clamp(get(kFBGrit) + 0.5f * mReso, 0.0f, 1.0f);
+        const float baseFBCutoff = mpc::clamp(get(kFBCutoff), 20.0f, 20000.0f);
+        const float baseFBReso = mpc::clamp(get(kFBReso), 0.0f, 0.98f);
+        const float baseFBGrit = mpc::clamp(get(kFBGrit), 0.0f, 1.0f);
         filterB_.setDrive(get(kFBDrive));
         filterB_.setGrit(baseFBGrit);
         filterB_.setType(getInt(kFBType));
-        filterB_.setMode(chokeBand ? 1 : getInt(kFBMode));
+        filterB_.setMode(getInt(kFBMode));
 
         const bool parallelRouting = (getInt(kRouting) == 1);
 
-        lfo1_.setFrequency(mpc::clamp(get(kLfo1Freq) + 6.0f * mKinetic, 0.1f, 25.0f));
+        lfo1_.setFrequency(mpc::clamp(get(kLfo1Freq), 0.1f, 25.0f));
         lfo1_.setShape(getInt(kLfo1Wave));
-        lfo2_.setFrequency(mpc::clamp(get(kLfo2Freq) + 8.5f * mKinetic, 0.1f, 25.0f));
+        lfo2_.setFrequency(mpc::clamp(get(kLfo2Freq), 0.1f, 25.0f));
         lfo2_.setShape(getInt(kLfo2Wave));
 
         float mod1[6], mod2[6];
@@ -839,10 +880,6 @@ public:
             mod1[t] = get(kModL1T1 + t);
             mod2[t] = get(kModL2T1 + t);
         }
-        mod1[0] = mpc::clamp(mod1[0] + 0.70f * mKinetic, -1.0f, 1.0f);
-        mod1[1] = mpc::clamp(mod1[1] + 0.25f * mKinetic, -1.0f, 1.0f);
-        mod2[3] = mpc::clamp(mod2[3] + 0.70f * mKinetic, -1.0f, 1.0f);
-        mod2[4] = mpc::clamp(mod2[4] + 0.35f * mKinetic, -1.0f, 1.0f);
 
         sidechain_.setActive(getBool(kScActive));
         sidechain_.setSource(getInt(kScSource));
@@ -854,12 +891,12 @@ public:
             get(kScHpf), get(kScLpf)
         );
 
-        smoothedGain_.setTarget(std::max(0.0f, get(kGain) * (1.0f - 0.35f * mExh)));
-        smoothedMix_.setTarget(get(kMix) + (1.0f - get(kMix)) * mCorrupt);
+        smoothedGain_.setTarget(std::max(0.0f, get(kGain)));
+        smoothedMix_.setTarget(get(kMix));
 
-        const bool noiseActive = getBool(kNoiseActive) || (mCorrupt > 0.05f);
-        const int noiseRoute = (mCorrupt > 0.05f && !getBool(kNoiseActive)) ? 1 : getInt(kNoiseRoute);
-        const float noiseGain = mpc::dsp::dbToGain(get(kNoiseLevel) + 24.0f * mCorrupt);
+        const bool noiseActive = getBool(kNoiseActive);
+        const int noiseRoute = getInt(kNoiseRoute);
+        const float noiseGain = mpc::dsp::dbToGain(get(kNoiseLevel));
         const float fmAmount = get(kNoiseFmMod);
         const bool needNoise = noiseActive || (sidechain_.isActive() && sidechain_.getSource() == SidechainProcessor::Source::TestSignal);
         if (needNoise) {
@@ -867,28 +904,27 @@ public:
             noiseOsc_.setFrequency(get(kNoiseFreq));
         }
 
-        const bool qeActive = getBool(kQeActive) || (mDecay > 0.02f);
-        float targetQeDepth = (mDecay > 0.02f) ? std::min(get(kQeDepth), 16.0f - 14.0f * mDecay) : get(kQeDepth);
-        if (getBool(kQeLink) && exhausted) targetQeDepth = 4.0f;
+        const bool qeActive = getBool(kQeActive);
+        float targetQeDepth = get(kQeDepth);
+        if (getBool(kQeLink) && getBool(kExhaustion)) targetQeDepth = 4.0f;
         smoothedQeDepth_.setTarget(targetQeDepth);
-        smoothedQeMix_.setTarget(std::max(get(kQeMix), mDecay));
-        const int downsampleFactor = std::max(getInt(kQeDownsample), 1 + (int)(11.0f * mDecay));
+        smoothedQeMix_.setTarget(get(kQeMix));
+        const int downsampleFactor = std::max(1, getInt(kQeDownsample));
 
-        const bool delayActive = getBool(kDelayActive) || (mReso > 0.05f);
-        const float delayTimeTarget = (!getBool(kDelayActive) && mReso > 0.05f) ? (32.0f - 20.0f * mReso) : get(kDelayTime);
-        smoothedDelayTime_.setTarget(delayTimeTarget);
-        smoothedDelayFb_.setTarget(std::max(get(kDelayFeedback), 0.88f * mReso));
-        smoothedDelayMix_.setTarget(std::max(get(kDelayMix), 0.45f * mReso));
+        const bool delayActive = getBool(kDelayActive);
+        smoothedDelayTime_.setTarget(get(kDelayTime));
+        smoothedDelayFb_.setTarget(get(kDelayFeedback));
+        smoothedDelayMix_.setTarget(get(kDelayMix));
         const bool delayPingPong = getBool(kDelayPingPong);
         const bool delaySync = getBool(kDelaySync);
         const int delayTempoVal = getInt(kDelayTempo);
 
-        const bool limActive = getBool(kLimActive) || (mSmash > 0.02f);
-        const int limMode = (mSmash > 0.3f) ? 1 : getInt(kLimMode);
-        smoothedLimDrive_.setTarget(mpc::clamp(get(kLimDrive) + 18.0f * mSmash, 0.0f, 24.0f));
+        const bool limActive = getBool(kLimActive);
+        const int limMode = getInt(kLimMode);
+        smoothedLimDrive_.setTarget(mpc::clamp(get(kLimDrive), 0.0f, 24.0f));
         smoothedLimCeil_.setTarget(get(kLimCeiling));
         smoothedLimRel_.setTarget(get(kLimRelease));
-        smoothedLimMix_.setTarget(std::max(get(kLimMix), mSmash));
+        smoothedLimMix_.setTarget(get(kLimMix));
 
         // Trance Gate block params
         const float bpm = mpc::dsp::safeBpm(ctx.transport.bpm);
@@ -907,7 +943,7 @@ public:
 
         double startSamples = (get(kTgStart) * 0.001) * sr;
         double endSamples = (get(kTgEnd) * 0.001) * sr;
-        const float tgHoldPct = (mGate > 0.05f) ? std::min(get(kTgHold), 75.0f - 47.0f * mGate) : get(kTgHold);
+        const float tgHoldPct = get(kTgHold);
         const double holdWidthSamples = stepSamples * (tgHoldPct * 0.01);
         const double maxTrans = stepSamples * 0.5;
         if (startSamples > maxTrans) startSamples = maxTrans;
@@ -917,10 +953,10 @@ public:
         if (decayStart < attackEnd) {
             attackEnd = decayStart = holdWidthSamples * 0.5;
         }
-        const float tgDepthPct = std::max(get(kTgDepth), 100.0f * mGate);
+        const float tgDepthPct = get(kTgDepth);
         const float baseAtten = 1.0f - tgDepthPct * 0.01f;
-        const float tgMix = std::max(get(kTgMix), mGate);
-        const bool tgActive = (getBool(kTgActive) || mGate > 0.05f) && (stepSamples > 0.0);
+        const float tgMix = get(kTgMix);
+        const bool tgActive = getBool(kTgActive) && (stepSamples > 0.0);
 
         const float* inL = ctx.inputs[0];
         const float* inR = (ctx.numInputs > 1 && ctx.inputs[1]) ? ctx.inputs[1] : ctx.inputs[0];
@@ -1074,6 +1110,166 @@ public:
     }
 
 private:
+    void setTargetParam(int idx, float val)
+    {
+        const float clamped = mpc::clamp(val, param(idx).min, param(idx).max);
+        if (std::fabs(clamped - get(idx)) <= 1e-5f) return;
+        set(idx, clamped);
+        notifyHostParameterChanged(idx);
+    }
+
+    void applyMacros()
+    {
+        updatingFromMacro_ = true;
+
+        const float mExh     = get(kMacroExhaustion);
+        const float mChoke   = get(kMacroChoke);
+        const float mDecay   = get(kMacroDecay);
+        const float mCorrupt = get(kMacroCorrupt);
+        const float mKinetic = get(kMacroKinetic);
+        const float mReso    = get(kMacroResonator);
+        const float mGate    = get(kMacroGate);
+        const float mSmash   = get(kMacroSmash);
+
+        // EXHAUSTION
+        setTargetParam(kDrive, mpc::clamp(baseValues_[kDrive] + 12.0f * mExh, 1.0f, 20.0f));
+        setTargetParam(kExhaustion, (baseValues_[kExhaustion] >= 0.5f || mExh > 0.65f) ? 1.0f : 0.0f);
+        setTargetParam(kGain, std::max(0.0f, baseValues_[kGain] * (1.0f - 0.35f * mExh)));
+
+        // CHOKE + KINETIC MOD + RESONATOR (Filters)
+        setTargetParam(kFACutoff, mpc::clamp(baseValues_[kFACutoff] * std::pow(2.0f, -7.0f * mChoke - 3.5f * mKinetic), 20.0f, 20000.0f));
+        setTargetParam(kFAReso, mpc::clamp(baseValues_[kFAReso] + 0.50f * mChoke + 0.35f * mKinetic, 0.0f, 0.98f));
+        setTargetParam(kFAGrit, mpc::clamp(baseValues_[kFAGrit] + 0.5f * mReso, 0.0f, 1.0f));
+
+        const bool isParallel = ((int)std::lround(baseValues_[kRouting]) == 1);
+        const bool chokeBand = (!isParallel && mChoke > 0.02f && (int)std::lround(baseValues_[kFBMode]) == 0 && baseValues_[kFBCutoff] > 15000.0f);
+        const float fbCutoff = chokeBand
+            ? mpc::clamp(20.0f * std::pow(2.0f, 5.0f * mChoke), 20.0f, 20000.0f)
+            : mpc::clamp(baseValues_[kFBCutoff] * std::pow(2.0f, (isParallel ? -7.0f : -4.0f) * mChoke - 2.5f * mKinetic), 20.0f, 20000.0f);
+        setTargetParam(kFBCutoff, fbCutoff);
+        setTargetParam(kFBReso, mpc::clamp(baseValues_[kFBReso] + 0.50f * mChoke + 0.35f * mKinetic, 0.0f, 0.98f));
+        setTargetParam(kFBGrit, mpc::clamp(baseValues_[kFBGrit] + 0.5f * mReso, 0.0f, 1.0f));
+        setTargetParam(kFBMode, chokeBand ? 1.0f : baseValues_[kFBMode]);
+
+        // KINETIC MOD (LFOs & Mod Matrix)
+        setTargetParam(kLfo1Freq, mpc::clamp(baseValues_[kLfo1Freq] + 6.0f * mKinetic, 0.1f, 20.0f));
+        setTargetParam(kLfo2Freq, mpc::clamp(baseValues_[kLfo2Freq] + 8.5f * mKinetic, 0.1f, 20.0f));
+        setTargetParam(kModL1T1, mpc::clamp(baseValues_[kModL1T1] + 0.70f * mKinetic, -1.0f, 1.0f));
+        setTargetParam(kModL1T2, mpc::clamp(baseValues_[kModL1T2] + 0.25f * mKinetic, -1.0f, 1.0f));
+        setTargetParam(kModL2T4, mpc::clamp(baseValues_[kModL2T4] + 0.70f * mKinetic, -1.0f, 1.0f));
+        setTargetParam(kModL2T5, mpc::clamp(baseValues_[kModL2T5] + 0.35f * mKinetic, -1.0f, 1.0f));
+
+        // CORRUPT MIX
+        setTargetParam(kMix, baseValues_[kMix] + (1.0f - baseValues_[kMix]) * mCorrupt);
+        const bool baseNoiseOn = (baseValues_[kNoiseActive] >= 0.5f);
+        setTargetParam(kNoiseActive, (baseNoiseOn || mCorrupt > 0.05f) ? 1.0f : 0.0f);
+        setTargetParam(kNoiseRoute, (mCorrupt > 0.05f && !baseNoiseOn) ? 1.0f : baseValues_[kNoiseRoute]);
+        setTargetParam(kNoiseLevel, mpc::clamp(baseValues_[kNoiseLevel] + 24.0f * mCorrupt, -60.0f, 0.0f));
+
+        // INFO DECAY
+        setTargetParam(kQeActive, (baseValues_[kQeActive] >= 0.5f || mDecay > 0.02f) ? 1.0f : 0.0f);
+        setTargetParam(kQeDepth, (mDecay > 0.02f) ? std::min(baseValues_[kQeDepth], 16.0f - 14.0f * mDecay) : baseValues_[kQeDepth]);
+        setTargetParam(kQeMix, std::max(baseValues_[kQeMix], mDecay));
+        setTargetParam(kQeDownsample, (float)std::max((int)std::lround(baseValues_[kQeDownsample]), 1 + (int)(11.0f * mDecay)));
+
+        // RESONATOR (Delay)
+        const bool baseDelayOn = (baseValues_[kDelayActive] >= 0.5f);
+        setTargetParam(kDelayActive, (baseDelayOn || mReso > 0.05f) ? 1.0f : 0.0f);
+        setTargetParam(kDelayTime, (!baseDelayOn && mReso > 0.05f) ? (32.0f - 20.0f * mReso) : baseValues_[kDelayTime]);
+        setTargetParam(kDelayFeedback, std::max(baseValues_[kDelayFeedback], 0.88f * mReso));
+        setTargetParam(kDelayMix, std::max(baseValues_[kDelayMix], 0.45f * mReso));
+
+        // GATE CARVE
+        setTargetParam(kTgActive, (baseValues_[kTgActive] >= 0.5f || mGate > 0.05f) ? 1.0f : 0.0f);
+        setTargetParam(kTgHold, (mGate > 0.05f) ? std::min(baseValues_[kTgHold], 75.0f - 47.0f * mGate) : baseValues_[kTgHold]);
+        setTargetParam(kTgDepth, std::max(baseValues_[kTgDepth], 100.0f * mGate));
+        setTargetParam(kTgMix, std::max(baseValues_[kTgMix], mGate));
+
+        // SMASH
+        setTargetParam(kLimActive, (baseValues_[kLimActive] >= 0.5f || mSmash > 0.02f) ? 1.0f : 0.0f);
+        setTargetParam(kLimMode, (mSmash > 0.3f) ? 1.0f : baseValues_[kLimMode]);
+        setTargetParam(kLimDrive, mpc::clamp(baseValues_[kLimDrive] + 18.0f * mSmash, 0.0f, 24.0f));
+        setTargetParam(kLimMix, std::max(baseValues_[kLimMix], mSmash));
+
+        updatingFromMacro_ = false;
+    }
+
+    void updateBaseFromTarget(int idx, float val)
+    {
+        const float mExh     = get(kMacroExhaustion);
+        const float mChoke   = get(kMacroChoke);
+        const float mCorrupt = get(kMacroCorrupt);
+        const float mKinetic = get(kMacroKinetic);
+        const float mReso    = get(kMacroResonator);
+        const float mSmash   = get(kMacroSmash);
+
+        switch (idx) {
+            case kDrive:
+                baseValues_[idx] = mpc::clamp(val - 12.0f * mExh, 1.0f, 20.0f);
+                break;
+            case kGain: {
+                const float scale = 1.0f - 0.35f * mExh;
+                baseValues_[idx] = (scale > 0.01f) ? mpc::clamp(val / scale, 0.0f, 2.0f) : val;
+                break;
+            }
+            case kFACutoff:
+                baseValues_[idx] = mpc::clamp(val * std::pow(2.0f, 7.0f * mChoke + 3.5f * mKinetic), 20.0f, 20000.0f);
+                break;
+            case kFAReso:
+                baseValues_[idx] = mpc::clamp(val - 0.50f * mChoke - 0.35f * mKinetic, 0.0f, 1.0f);
+                break;
+            case kFAGrit:
+                baseValues_[idx] = mpc::clamp(val - 0.5f * mReso, 0.0f, 1.0f);
+                break;
+            case kFBCutoff: {
+                const bool isParallel = ((int)std::lround(baseValues_[kRouting]) == 1);
+                const bool chokeBand = (!isParallel && mChoke > 0.02f && (int)std::lround(baseValues_[kFBMode]) == 0 && baseValues_[kFBCutoff] > 15000.0f);
+                baseValues_[idx] = chokeBand
+                    ? val
+                    : mpc::clamp(val * std::pow(2.0f, (isParallel ? 7.0f : 4.0f) * mChoke + 2.5f * mKinetic), 20.0f, 20000.0f);
+                break;
+            }
+            case kFBReso:
+                baseValues_[idx] = mpc::clamp(val - 0.50f * mChoke - 0.35f * mKinetic, 0.0f, 1.0f);
+                break;
+            case kFBGrit:
+                baseValues_[idx] = mpc::clamp(val - 0.5f * mReso, 0.0f, 1.0f);
+                break;
+            case kLfo1Freq:
+                baseValues_[idx] = mpc::clamp(val - 6.0f * mKinetic, 0.1f, 20.0f);
+                break;
+            case kLfo2Freq:
+                baseValues_[idx] = mpc::clamp(val - 8.5f * mKinetic, 0.1f, 20.0f);
+                break;
+            case kModL1T1:
+                baseValues_[idx] = mpc::clamp(val - 0.70f * mKinetic, -1.0f, 1.0f);
+                break;
+            case kModL1T2:
+                baseValues_[idx] = mpc::clamp(val - 0.25f * mKinetic, -1.0f, 1.0f);
+                break;
+            case kModL2T4:
+                baseValues_[idx] = mpc::clamp(val - 0.70f * mKinetic, -1.0f, 1.0f);
+                break;
+            case kModL2T5:
+                baseValues_[idx] = mpc::clamp(val - 0.35f * mKinetic, -1.0f, 1.0f);
+                break;
+            case kMix: {
+                const float denom = 1.0f - mCorrupt;
+                baseValues_[idx] = (denom > 0.01f) ? mpc::clamp((val - mCorrupt) / denom, 0.0f, 1.0f) : val;
+                break;
+            }
+            case kNoiseLevel:
+                baseValues_[idx] = mpc::clamp(val - 24.0f * mCorrupt, -60.0f, 0.0f);
+                break;
+            case kLimDrive:
+                baseValues_[idx] = mpc::clamp(val - 18.0f * mSmash, 0.0f, 24.0f);
+                break;
+            default:
+                baseValues_[idx] = val;
+                break;
+        }
+    }
+
     void addPreset(const char* name, std::initializer_list<std::pair<int, float>> overrides)
     {
         std::vector<float> vals((size_t)numParams(), 0.0f);
@@ -1137,6 +1333,9 @@ private:
     mpc::dsp::Smoother smoothedQeDepth_, smoothedQeMix_;
     mpc::dsp::Smoother smoothedDelayTime_, smoothedDelayFb_, smoothedDelayMix_;
     mpc::dsp::Smoother smoothedLimDrive_, smoothedLimCeil_, smoothedLimRel_, smoothedLimMix_;
+
+    float baseValues_[kNumParams] = {};
+    bool updatingFromMacro_ = false;
 };
 
 MPC_PLUGIN_ENTRY(Mushin)
