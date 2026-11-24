@@ -1188,11 +1188,26 @@ private:
         setTargetParam(kDelayFeedback, std::max(baseValues_[kDelayFeedback], 0.88f * mReso));
         setTargetParam(kDelayMix, std::max(baseValues_[kDelayMix], 0.45f * mReso));
 
-        // GATE CARVE
-        setTargetParam(kTgActive, (baseValues_[kTgActive] >= 0.5f || mGate > 0.05f) ? 1.0f : 0.0f);
-        setTargetParam(kTgHold, (mGate > 0.05f) ? std::min(baseValues_[kTgHold], 75.0f - 47.0f * mGate) : baseValues_[kTgHold]);
-        setTargetParam(kTgDepth, std::max(baseValues_[kTgDepth], 100.0f * mGate));
-        setTargetParam(kTgMix, std::max(baseValues_[kTgMix], mGate));
+        // GATE CARVE (at mGate=0.5: 4-On-Floor, Depth=88%, Mix=0.82, Start=8.6ms, Hold=48%, End=34ms)
+        const bool baseTgOn = (baseValues_[kTgActive] >= 0.5f);
+        const bool gateMacroOn = (mGate > 0.05f);
+        setTargetParam(kTgActive, (baseTgOn || gateMacroOn) ? 1.0f : 0.0f);
+        setTargetParam(kTgPattern, (gateMacroOn && !baseTgOn) ? 4.0f : baseValues_[kTgPattern]);
+        setTargetParam(kTgStart, gateMacroOn
+            ? (baseTgOn ? std::min(baseValues_[kTgStart], 12.2f - 7.2f * mGate) : (12.2f - 7.2f * mGate))
+            : baseValues_[kTgStart]);
+        setTargetParam(kTgHold, gateMacroOn
+            ? (baseTgOn ? std::min(baseValues_[kTgHold], 68.0f - 40.0f * mGate) : (68.0f - 40.0f * mGate))
+            : baseValues_[kTgHold]);
+        setTargetParam(kTgEnd, gateMacroOn
+            ? (baseTgOn ? std::min(baseValues_[kTgEnd], 52.0f - 36.0f * mGate) : (52.0f - 36.0f * mGate))
+            : baseValues_[kTgEnd]);
+        setTargetParam(kTgDepth, gateMacroOn
+            ? (baseTgOn ? std::max(baseValues_[kTgDepth], 76.0f + 24.0f * mGate) : (76.0f + 24.0f * mGate))
+            : baseValues_[kTgDepth]);
+        setTargetParam(kTgMix, gateMacroOn
+            ? (baseTgOn ? std::max(baseValues_[kTgMix], 0.64f + 0.36f * mGate) : (0.64f + 0.36f * mGate))
+            : baseValues_[kTgMix]);
 
         // SMASH
         setTargetParam(kLimActive, (baseValues_[kLimActive] >= 0.5f || mSmash > 0.02f) ? 1.0f : 0.0f);
