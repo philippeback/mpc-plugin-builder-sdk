@@ -69,7 +69,9 @@ public:
             y = clamp(x, -currentThreshold, currentThreshold);
         } else {
             const float denom = currentThreshold + 1.0e-3f;
-            y = fastTanh(x / denom) * denom;
+            const float shaped = fastTanh(x / denom) * denom;
+            const float satMix = clamp(std::max((currentDrive - 1.0f) * 4.0f, (1.0f - currentThreshold) * 4.0f), 0.0f, 1.0f);
+            y = x + (shaped - x) * satMix;
         }
 
         if (autogain_) {
@@ -125,17 +127,22 @@ public:
         if (type_ == Type::Acid) {
             r = clamp(r * 1.15f, 0.0f, 0.99f);
         }
+        bypass_ = (type_ == Type::Clean && mode_ == Mode::Lowpass && c >= 19950.0f && drive_ <= 1.001f && grit_ <= 0.001f);
         svfL_.set(c, r);
         svfR_.set(c, r);
     }
 
     float processSample(int ch, float sample) noexcept
     {
+        if (bypass_) return sample;
+
         float preDrive = drive_;
         if (type_ == Type::Vintage) preDrive *= 1.25f;
         else if (type_ == Type::Acid) preDrive *= 1.4f;
 
-        const float x = fastTanh(sample * preDrive);
+        const float preMix = clamp((preDrive - 1.0f) * 4.0f, 0.0f, 1.0f);
+        const float driven = sample * preDrive;
+        const float x = driven + (fastTanh(driven) - driven) * preMix;
 
         SVF::Mode svfMode = SVF::Mode::Lowpass;
         switch (mode_) {
@@ -147,7 +154,8 @@ public:
 
         float filtered = (ch == 0) ? svfL_.process(x, svfMode) : svfR_.process(x, svfMode);
         float out = filtered * (1.0f + grit_);
-        return fastTanh(out);
+        const float postMix = clamp(std::max(preMix, grit_ * 10.0f), 0.0f, 1.0f);
+        return out + (fastTanh(out) - out) * postMix;
     }
 
 private:
@@ -155,6 +163,7 @@ private:
     Mode mode_ = Mode::Lowpass;
     float drive_ = 1.0f;
     float grit_ = 0.0f;
+    bool bypass_ = false;
     SVF svfL_, svfR_;
 };
 
