@@ -100,7 +100,7 @@ def blend(dst, src, alpha):
     )
 
 
-def draw_panel(buf, x0, y0, pw, ph, title):
+def draw_panel(buf, x0, y0, pw, ph, title, title_col=TITLE_COL):
     radius = 10.0
     thickness = 1.5
     scale = 2
@@ -167,7 +167,7 @@ def draw_panel(buf, x0, y0, pw, ph, title):
                                 px = gx + c * scale + sx
                                 if 0 <= px < W:
                                     idx = (py * W + px) * 4
-                                    buf[idx : idx + 4] = bytes(TITLE_COL)
+                                    buf[idx : idx + 4] = bytes(title_col)
 
 
 GATE_PATTERNS = [
@@ -328,13 +328,38 @@ def main():
     generate_main_bg(assets_dir)
     generate_gate_patterns(assets_dir)
 
+    cyan = (0x00, 0xE5, 0xFF, 255)
+    magenta = (0xFF, 0x4D, 0x8D, 255)
     for filename, top_title, bot_title in PAGES:
         buf = bytearray(bytes(BG) * (W * H))
-        draw_panel(buf, 8, 12, 1264, 300, top_title)
+        draw_panel(buf, 8, 12, 1264, 300, top_title, TITLE_COL)
         if bot_title is not None:
-            draw_panel(buf, 8, 330, 1264, 292, bot_title)
+            bot_col = magenta if bot_title in ("FILTER B", "LFO 2 MATRIX") else TITLE_COL
+            draw_panel(buf, 8, 320, 1264, 302, bot_title, bot_col)
         if filename == "bg_filter.png":
-            draw_panel(buf, 975, 478, 294, 136, "ROUTING")
+            draw_filled_box(buf, W, H, 8, 26, 4, 272, cyan)
+            draw_filled_box(buf, W, H, 8, 334, 4, 274, magenta)
+            draw_panel(buf, 975, 478, 294, 136, "ROUTING", TITLE_COL)
+            # Filter A & B Freq x Res XY telemetry bays (Row 1, cols 2-3: 656..1254, y=180..287)
+            for bx, col, lbl in [(656, cyan, "A FREQ X RES"), (962, magenta, "B FREQ X RES")]:
+                draw_filled_box(buf, W, H, bx, 180, 292, 107, (0x0C, 0x10, 0x16, 255))
+                border = (col[0] // 2, col[1] // 2, col[2] // 2, 255)
+                draw_filled_box(buf, W, H, bx, 180, 292, 1, border)
+                draw_filled_box(buf, W, H, bx, 286, 292, 1, border)
+                draw_filled_box(buf, W, H, bx, 180, 1, 107, border)
+                draw_filled_box(buf, W, H, bx + 291, 180, 1, 107, border)
+                # Subtle log-frequency & resonance grid lines
+                for gx in (bx + 73, bx + 146, bx + 219):
+                    draw_filled_box(buf, W, H, gx, 181, 1, 105, (0x18, 0x20, 0x2A, 255))
+                for gy in (180 + 35, 180 + 70):
+                    draw_filled_box(buf, W, H, bx + 1, gy, 290, 1, (0x18, 0x20, 0x2A, 255))
+                draw_text_5x7(buf, W, H, bx + 8, 186, lbl, col, scale=1)
+        elif filename == "bg_matrix.png":
+            draw_filled_box(buf, W, H, 8, 26, 4, 272, cyan)
+            draw_filled_box(buf, W, H, 8, 334, 4, 274, magenta)
+        elif filename == "bg_lfo.png":
+            draw_filled_box(buf, W, H, 16, 44, 606, 3, cyan)
+            draw_filled_box(buf, W, H, 656, 44, 606, 3, magenta)
         out_path = os.path.join(assets_dir, filename)
         write_png(out_path, W, H, buf)
         print(f"Wrote {out_path}")

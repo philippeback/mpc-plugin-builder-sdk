@@ -226,6 +226,75 @@ def make_multi_icon_radio_def(local_defs, new_key, prefix, xs, width):
     return cloned
 
 
+def make_magenta_variant(local_defs, base_key, new_key):
+    base_def = None
+    for entry in local_defs:
+        if obj_get(entry, "key") == base_key:
+            base_def = entry
+            break
+    if base_def is None:
+        raise RuntimeError(f"Missing base localComponentDefinition {base_key}")
+    cloned = copy.deepcopy(base_def)
+    obj_set(cloned, "key", new_key)
+    val = obj_get(cloned, "value")
+    for c in obj_get(val, "componentsData"):
+        cd = obj_get(c, "componentData")
+        ctype = obj_get(cd, "type")
+        cname = obj_get(cd, "name")
+        if ctype == "Focus":
+            obj_set(obj_get(cd, "data"), "outlineColour", "ffff4d8d")
+        elif ctype == "Label" and cname == "value":
+            tstyle = obj_get(obj_get(cd, "data"), "textStyle")
+            obj_set(tstyle, "colour", "ffff4d8d")
+    return cloned
+
+
+def indent_top_left_labels(local_defs):
+    """Reserve top-left space in fader, toggle, and radio cells for the host's yellow Q badge."""
+    for entry in local_defs:
+        key = str(obj_get(entry, "key") or "")
+        if not (key in ("faderUni", "toggle") or key.startswith("radio")):
+            continue
+        val = obj_get(entry, "value")
+        if val is None:
+            continue
+        for c in obj_get(val, "componentsData") or []:
+            cd = obj_get(c, "componentData")
+            if obj_get(cd, "type") == "Label" and obj_get(cd, "name") == "name":
+                bounds_obj = obj_get(c, "bounds")
+                parts = str(obj_get(bounds_obj, "bounds") or "").split()
+                if len(parts) == 4 and int(parts[0]) == 15:
+                    x, y, w, h = (int(p) for p in parts)
+                    shift = 19
+                    obj_set(bounds_obj, "bounds", f"{x + shift} {y} {max(40, w - shift)} {h}")
+
+
+def make_filter_xypad(name, x_param, y_param, puck_img, x, y, w, h):
+    return to_obj({
+        "version": 2,
+        "componentData": {
+            "version": 1,
+            "name": name,
+            "type": "XYPad",
+            "data": {
+                "version": 1,
+                "xPositionHandle": f"Parameter {x_param}",
+                "yPositionHandle": f"Parameter {y_param}",
+                "image": puck_img,
+            },
+        },
+        "handle remapping": {"version": 1, "map": []},
+        "bounds": {
+            "version": 1,
+            "acceptsHWFocus": "No",
+            "showWhenDataModelInvalid": "Show",
+            "whenVisible": "Always",
+            "boundsType": "Absolute",
+            "bounds": f"{x} {y} {w} {h}",
+        },
+    })
+
+
 def make_orb_local_def(orb_idx):
     accent = "ff00e5ff" if orb_idx < 4 else "ffff4d8d"
     return to_obj({
@@ -613,19 +682,37 @@ def main():
     local_defs.append(make_multi_icon_radio_def(local_defs, "radioLfoWave", "btn_lfowave", [16, 66, 116, 166, 216], 46))
     local_defs.append(make_multi_icon_radio_def(local_defs, "radioNoiseType", "btn_noisetype", [17, 58, 99, 140, 181, 222], 38))
 
+    # Reserve top-left margin for host's yellow Q badge before cloning magenta variants
+    indent_top_left_labels(local_defs)
+
+    # Magenta Engine B / LFO 2 variants
+    for base_k, mag_k in [
+        ("knobUni", "knobUniMag"),
+        ("knobBi", "knobBiMag"),
+        ("radioFType", "radioFTypeMag"),
+        ("radioFMode", "radioFModeMag"),
+        ("radioLfoWave", "radioLfoWaveMag"),
+    ]:
+        local_defs.append(make_magenta_variant(local_defs, base_k, mag_k))
+
     switch_type_map = {
         "A Type": "radioFType",
-        "B Type": "radioFType",
+        "B Type": "radioFTypeMag",
         "A Mode": "radioFMode",
-        "B Mode": "radioFMode",
+        "B Mode": "radioFModeMag",
         "Routing": "radioRoute",
         "Noise Route": "radioNRoute",
         "Gate Rate": "radioGRate",
         "Delay Tempo": "radioDTempo",
         "Limit Mode": "radioLMode",
         "LFO 1 Wave": "radioLfoWave",
-        "LFO 2 Wave": "radioLfoWave",
+        "LFO 2 Wave": "radioLfoWaveMag",
         "Noise Type": "radioNoiseType",
+    }
+    magenta_knob_names = {
+        "B Cutoff", "B Reso", "B Drive", "B Grit",
+        "LFO 2 Freq",
+        "L2 A Cut", "L2 A Res", "L2 A Grit", "L2 B Cut", "L2 B Res", "L2 B Grit",
     }
     seg_prefixes = tuple(f"{k} seg " for k in switch_type_map)
 
@@ -636,10 +723,16 @@ def main():
         for c in comps:
             cd = obj_get(c, "componentData")
             cname = obj_get(cd, "name") or ""
-            if obj_get(cd, "type") == "Label" and cname.startswith(seg_prefixes):
+            ctype = str(obj_get(cd, "type") or "")
+            if ctype == "Label" and cname.startswith(seg_prefixes):
                 continue
-            if cname in switch_type_map and (str(obj_get(cd, "type")).startswith("radio") or cname in ("LFO 1 Wave", "LFO 2 Wave", "Noise Type")):
+            if cname in switch_type_map and (ctype.startswith("radio") or cname in ("LFO 1 Wave", "LFO 2 Wave", "Noise Type")):
                 obj_set(cd, "type", switch_type_map[cname])
+            elif cname in magenta_knob_names:
+                if ctype == "knobUni":
+                    obj_set(cd, "type", "knobUniMag")
+                elif ctype == "knobBi":
+                    obj_set(cd, "type", "knobBiMag")
             filtered.append(c)
         obj_set(cdef, "componentsData", filtered)
 
@@ -659,6 +752,27 @@ def main():
                     y = 46 if idx < 4 else 348
                     obj_set(bounds_obj, "bounds", f"{slot_x[idx % 4]} {y} 278 250")
             obj_set(tab, "qlinkBoundsData", ["12 42 1246 258", "12 344 1246 258"])
+        elif tname == "FILTER":
+            cdef = obj_get(tab, "componentDefinition")
+            comps = obj_get(cdef, "componentsData")
+            comps.append(
+                make_filter_xypad(
+                    "filter_a_xy",
+                    params_by_name["A Cutoff"],
+                    params_by_name["A Reso"],
+                    "puck_cyan.png",
+                    656, 180, 292, 107,
+                )
+            )
+            comps.append(
+                make_filter_xypad(
+                    "filter_b_xy",
+                    params_by_name["B Cutoff"],
+                    params_by_name["B Reso"],
+                    "puck_magenta.png",
+                    962, 180, 292, 107,
+                )
+            )
         elif tname == "GATE":
             cdef = obj_get(tab, "componentDefinition")
             comps = obj_get(cdef, "componentsData")

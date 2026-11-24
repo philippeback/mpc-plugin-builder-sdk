@@ -27,14 +27,14 @@ function Save-ButtonCanvas($bmp, $g, [string]$OutPath) {
 
 function Get-StrokeColor([bool]$IsOn) {
     if ($IsOn) {
-        return [System.Drawing.Color]::FromArgb(255, 255, 255, 255)
+        return [System.Drawing.Color]::FromArgb(255, 13, 15, 18)
     }
     return [System.Drawing.Color]::FromArgb(235, 210, 222, 234)
 }
 
 function Get-AccentColor([bool]$IsOn) {
     if ($IsOn) {
-        return [System.Drawing.Color]::FromArgb(255, 255, 255, 255)
+        return [System.Drawing.Color]::FromArgb(255, 13, 15, 18)
     }
     return [System.Drawing.Color]::FromArgb(230, 0, 229, 255)
 }
@@ -405,4 +405,23 @@ foreach ($state in @("on", "off")) {
     $pen.Dispose()
 }
 
-Write-Host "Generated 66 icon button PNGs in $SkinsDir"
+# 10. Filter XYPad pucks (20x20): cyan (Filter A) & magenta (Filter B)
+foreach ($puck in @(
+    @{ Name = "puck_cyan.png";    R = 0;   G = 229; B = 255 },
+    @{ Name = "puck_magenta.png"; R = 255; G = 77;  B = 141 }
+)) {
+    $bmp = New-Object System.Drawing.Bitmap(20, 20, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $g.Clear([System.Drawing.Color]::Transparent)
+    $glow = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(75, $puck.R, $puck.G, $puck.B))
+    $fill = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, $puck.R, $puck.G, $puck.B))
+    $ring = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(255, 240, 244, 248), 2.0)
+    $g.FillEllipse($glow, 1, 1, 18, 18)
+    $g.FillEllipse($fill, 4, 4, 12, 12)
+    $g.DrawEllipse($ring, 4, 4, 12, 12)
+    $ring.Dispose(); $fill.Dispose(); $glow.Dispose()
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir $puck.Name)
+}
+
+Write-Host "Generated 68 icon/puck PNGs in $SkinsDir"
