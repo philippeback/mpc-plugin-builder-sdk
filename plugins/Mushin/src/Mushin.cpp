@@ -45,9 +45,15 @@ public:
 
     void reset()
     {
+        drive_.snap(1.0f);
+        threshold_.snap(1.0f);
+        inputPeak_ = 0.0f;
+    }
+
+    void snapToCurrent()
+    {
         drive_.snap(drive_.target());
         threshold_.snap(threshold_.target());
-        inputPeak_ = 0.0f;
     }
 
     void setDrive(float newDrive) { drive_.setTarget(newDrive); }
@@ -120,14 +126,14 @@ public:
     void setDrive(float d) { drive_ = d; }
     void setGrit(float g) { grit_ = g; }
 
-    void setCoefficients(float cutoffHz, float resonance01)
+    void setCoefficients(float cutoffHz, float resonance01, bool allowBypass = true)
     {
         const float c = clamp(cutoffHz, 20.0f, 20000.0f);
         float r = clamp(resonance01, 0.0f, 1.0f);
         if (type_ == Type::Acid) {
             r = clamp(r * 1.15f, 0.0f, 0.99f);
         }
-        bypass_ = (type_ == Type::Clean && mode_ == Mode::Lowpass && c >= 19950.0f && drive_ <= 1.001f && grit_ <= 0.001f);
+        bypass_ = (allowBypass && type_ == Type::Clean && mode_ == Mode::Lowpass && c >= 19950.0f && drive_ <= 1.001f && grit_ <= 0.001f);
         svfL_.set(c, r);
         svfR_.set(c, r);
     }
@@ -825,7 +831,12 @@ public:
 
     void reset() override
     {
+        waveshaper_.setDrive(mpc::clamp(get(kDrive), 1.0f, 32.0f));
+        waveshaper_.setExhaustion(getBool(kExhaustion));
+        waveshaper_.setThreshold(mpc::dsp::dbToGain(get(kThreshold)));
+        waveshaper_.setAutoGain(getBool(kAutoGain));
         waveshaper_.reset();
+        waveshaper_.snapToCurrent();
         filterA_.reset();
         filterB_.reset();
         lfo1_.reset();
@@ -1041,10 +1052,15 @@ public:
                     cutB *= scCut;
                 }
 
+                const bool modA = (std::fabs(mod1[0]) > 1e-4f || std::fabs(mod2[0]) > 1e-4f || fmAmount > 1e-4f ||
+                                   (sidechain_.isActive() && sidechain_.getTarget() == SidechainProcessor::Target::Cutoff));
+                const bool modB = (std::fabs(mod1[3]) > 1e-4f || std::fabs(mod2[3]) > 1e-4f || fmAmount > 1e-4f ||
+                                   (sidechain_.isActive() && sidechain_.getTarget() == SidechainProcessor::Target::Cutoff));
+
                 filterA_.setGrit(mpc::clamp(baseFAGrit + off[2], 0.0f, 1.0f));
-                filterA_.setCoefficients(cutA, mpc::clamp(baseFAReso + off[1], 0.0f, 1.0f));
+                filterA_.setCoefficients(cutA, mpc::clamp(baseFAReso + off[1], 0.0f, 1.0f), !modA);
                 filterB_.setGrit(mpc::clamp(baseFBGrit + off[5], 0.0f, 1.0f));
-                filterB_.setCoefficients(cutB, mpc::clamp(baseFBReso + off[4], 0.0f, 1.0f));
+                filterB_.setCoefficients(cutB, mpc::clamp(baseFBReso + off[4], 0.0f, 1.0f), !modB);
 
                 if (qeActive && curQeDepth != lastQeDepth) {
                     lastQeDepth = curQeDepth;
