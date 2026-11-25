@@ -77,6 +77,7 @@ DRY_LABELS = {
     "SC HPF": "HPF",
     "SC LPF": "LPF",
     "SC Mix": "Mix",
+    "SC Ratio": "Ratio",
     # Trance Gate
     "Gate Active": "Active",
     "Gate Pattern": "Pattern",

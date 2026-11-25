@@ -9168,6 +9168,35 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
+                                "name": "SC Ratio",
+                                "type": "knobUni",
+                                "data": {
+                                    "version": 1,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 90"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "Yes",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "663 346 278 107"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
                                 "name": "sc_in_meter",
                                 "type": "Meter",
                                 "data": {
@@ -9235,7 +9264,7 @@
                 "qlinkBoundsData": [
                     "13 35 1258 127",
                     "13 186 1258 127",
-                    "13 336 618 127"
+                    "13 336 938 127"
                 ]
             },
             {

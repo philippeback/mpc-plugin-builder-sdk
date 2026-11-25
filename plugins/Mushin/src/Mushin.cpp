@@ -251,13 +251,14 @@ public:
     }
 
     void setParameters(float attackMs, float releaseMs, bool isRMS, float thresholdDb,
-                       float amount, float hpFreq, float lpFreq)
+                       float amount, float hpFreq, float lpFreq, float ratio = 4.0f)
     {
         attack_ = (attackMs > 0.0f) ? std::exp(-1.0f / (float(sampleRate_) * attackMs * 0.001f)) : 0.0f;
         release_ = (releaseMs > 0.0f) ? std::exp(-1.0f / (float(sampleRate_) * releaseMs * 0.001f)) : 0.0f;
         rmsMode_ = isRMS;
         threshold_ = dbToGain(thresholdDb);
         amount_ = amount;
+        ratioScale_ = clamp((ratio - 1.0f) / 3.0f, 0.0f, 8.0f);
 
         const float clampedHp = clamp(hpFreq, 20.0f, 20000.0f);
         const float clampedLp = clamp(lpFreq, 20.0f, 20000.0f);
@@ -299,7 +300,8 @@ public:
         lastEnv_ = env;
         float modulation = 0.0f;
         if (env > threshold_ && env > 1.0e-5f) {
-            modulation = clamp((env - threshold_) / (env + threshold_ * 0.5f), 0.0f, 1.0f);
+            // Ratio scales steepness: 1:1 = 0, 4:1 = full 1.0 at +8 dB over, 20:1 = hard pump
+            modulation = clamp(((env - threshold_) / (1.5f * threshold_ + 1.0e-4f)) * ratioScale_, 0.0f, 1.0f);
         }
         return modulation * amount_;
     }
@@ -313,6 +315,7 @@ private:
     Target target_ = Target::Gain;
     float threshold_ = 0.0f;
     float amount_ = 0.0f;
+    float ratioScale_ = 1.0f;
     float hpFreq_ = 20.0f;
     float lpFreq_ = 20000.0f;
     SVF hpFilter_, lpFilter_;
@@ -618,6 +621,7 @@ public:
         kScMix,
         kScInMeter,
         kScDuckMeter,
+        kScRatio,
 
         kNumParams
     };
@@ -767,6 +771,7 @@ public:
             p.automatable = false;
             addParam(p);
         }
+        addParam(floatParam ("sc_ratio",     "SC Ratio",   1.0f, 20.0f, 4.0f, ":1", 1));
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -949,7 +954,8 @@ public:
             get(kScAttack), get(kScRelease),
             getInt(kScMode) == 1,
             get(kScThresh), get(kScAmount) * 0.01f,
-            get(kScHpf), get(kScLpf)
+            get(kScHpf), get(kScLpf),
+            get(kScRatio)
         );
 
         smoothedGain_.setTarget(std::max(0.0f, get(kGain)));
@@ -1093,7 +1099,7 @@ public:
                 float cutA = baseFACutoff * std::pow(2.0f, off[0] * 5.0f);
                 float cutB = baseFBCutoff * std::pow(2.0f, off[3] * 5.0f);
                 if (sidechain_.isActive() && sidechain_.getTarget() == SidechainProcessor::Target::Cutoff) {
-                    const float scCut = std::pow(2.0f, scMod * 2.0f);
+                    const float scCut = std::pow(2.0f, scMod * 6.0f);
                     cutA *= scCut;
                     cutB *= scCut;
                 }
