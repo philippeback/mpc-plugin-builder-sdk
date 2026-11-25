@@ -100,12 +100,12 @@ private:
 };
 
 // ---------------------------------------------------------------------------
-// Stereo Filter (Clean / Vintage / Acid / Digital / Vowel + LP / HP / BP / Notch)
+// Stereo Filter (Clean / Vowel / Acid / Digital + LP / HP / BP / Notch)
 // ---------------------------------------------------------------------------
 class MushinFilter
 {
 public:
-    enum class Type { Clean = 0, Vintage, Acid, Digital, Vowel };
+    enum class Type { Clean = 0, Vowel, Acid, Digital };
     enum class Mode { Lowpass = 0, Highpass, Bandpass, Notch };
 
     void prepare(double sampleRate)
@@ -129,7 +129,7 @@ public:
         }
     }
 
-    void setType(int t) { type_ = (Type)clamp(t, 0, 4); }
+    void setType(int t) { type_ = (Type)clamp(t, 0, 3); }
     void setMode(int m) { mode_ = (Mode)clamp(m, 0, 3); }
     void setDrive(float d) { drive_ = d; }
     void setGrit(float g) { grit_ = g; }
@@ -157,12 +157,14 @@ public:
             const float norm = clamp(std::log2(c / 20.0f) / 9.965784f, 0.0f, 1.0f) * 4.0f;
             const int i0 = clamp((int)norm, 0, 3);
             const float frac = norm - (float)i0;
-            const float fRes = clamp(0.55f + r * 0.42f, 0.55f, 0.97f);
+            // High-Q resonant formants (Q ~ 4..17) for clear vocal "oh / ah / ee" character
+            const float fRes = clamp(0.88f + r * 0.10f, 0.88f, 0.98f);
             for (int k = 0; k < 3; ++k) {
                 const float fk = kFormants[i0][k] + (kFormants[i0 + 1][k] - kFormants[i0][k]) * frac;
                 fL_[k].set(fk, fRes);
                 fR_[k].set(fk, fRes);
             }
+            vowelGain_ = clamp(0.45f - r * 0.18f, 0.24f, 0.45f);
         }
     }
 
@@ -171,8 +173,7 @@ public:
         if (bypass_) return sample;
 
         float preDrive = drive_;
-        if (type_ == Type::Vintage) preDrive *= 1.25f;
-        else if (type_ == Type::Acid) preDrive *= 1.4f;
+        if (type_ == Type::Acid) preDrive *= 1.4f;
 
         const float preMix = clamp((preDrive - 1.0f) * 4.0f, 0.0f, 1.0f);
         const float driven = sample * preDrive;
@@ -181,25 +182,21 @@ public:
         float filtered = 0.0f;
         if (type_ == Type::Vowel) {
             SVF* fb = (ch == 0) ? fL_ : fR_;
-            const float formants = 1.0f * fb[0].process(x, SVF::Mode::Bandpass)
-                                 + 0.7f * fb[1].process(x, SVF::Mode::Bandpass)
-                                 + 0.4f * fb[2].process(x, SVF::Mode::Bandpass);
+            const float f0 = fb[0].process(x, SVF::Mode::Bandpass);
+            const float f1 = fb[1].process(x, SVF::Mode::Bandpass);
+            const float f2 = fb[2].process(x, SVF::Mode::Bandpass);
             switch (mode_) {
-                case Mode::Lowpass: {
-                    const float lp = (ch == 0) ? svfL_.process(x, SVF::Mode::Lowpass) : svfR_.process(x, SVF::Mode::Lowpass);
-                    filtered = 0.70f * formants + 0.35f * lp;
+                case Mode::Lowpass:
+                    filtered = vowelGain_ * (1.25f * f0 + 0.70f * f1 + 0.25f * f2);
                     break;
-                }
-                case Mode::Highpass: {
-                    const float hp = (ch == 0) ? svfL_.process(x, SVF::Mode::Highpass) : svfR_.process(x, SVF::Mode::Highpass);
-                    filtered = 0.70f * formants + 0.35f * hp;
-                    break;
-                }
                 case Mode::Bandpass:
-                    filtered = 0.85f * formants;
+                    filtered = vowelGain_ * (1.00f * f0 + 0.85f * f1 + 0.50f * f2);
+                    break;
+                case Mode::Highpass:
+                    filtered = vowelGain_ * (0.55f * f0 + 1.00f * f1 + 0.85f * f2);
                     break;
                 case Mode::Notch:
-                    filtered = x - 0.65f * formants;
+                    filtered = x - vowelGain_ * (1.00f * f0 + 0.80f * f1 + 0.45f * f2);
                     break;
             }
         } else {
@@ -223,6 +220,7 @@ private:
     Mode mode_ = Mode::Lowpass;
     float drive_ = 1.0f;
     float grit_ = 0.0f;
+    float vowelGain_ = 0.40f;
     bool bypass_ = false;
     SVF svfL_, svfR_;
     SVF fL_[3], fR_[3];
@@ -822,6 +820,7 @@ public:
         kTgStep4, kTgStep5, kTgStep6,  kTgStep7,
         kTgStep8, kTgStep9, kTgStep10, kTgStep11,
         kTgStep12, kTgStep13, kTgStep14, kTgStep15,
+        kTgOffset,
 
         kNumParams
     };
@@ -857,7 +856,7 @@ public:
         addParam(floatParam ("filter_a_resonance", "Reso",     0.0f, 1.0f, 0.1f, "", 2));
         addParam(floatParam ("filter_a_drive",     "Drive",    1.0f, 10.0f, 1.0f, "x", 1));
         addParam(floatParam ("filter_a_grit",      "Grit",     0.0f, 1.0f, 0.0f, "", 2));
-        addParam(choiceParam("filter_a_type",      "Type",     {"CLN", "VINT", "ACID", "DIGI", "VOWL"}, 0));
+        addParam(choiceParam("filter_a_type",      "Type",     {"CLN", "VOWL", "ACID", "DIGI"}, 0));
         addParam(choiceParam("filter_a_mode",      "Mode",     {"LP", "HP", "BP", "NOTCH"}, 0));
 
         // Filter B & Routing
@@ -865,7 +864,7 @@ public:
         addParam(floatParam ("filter_b_resonance", "Reso",     0.0f, 1.0f, 0.1f, "", 2));
         addParam(floatParam ("filter_b_drive",     "Drive",    1.0f, 10.0f, 1.0f, "x", 1));
         addParam(floatParam ("filter_b_grit",      "Grit",     0.0f, 1.0f, 0.0f, "", 2));
-        addParam(choiceParam("filter_b_type",      "Type",     {"CLN", "VINT", "ACID", "DIGI", "VOWL"}, 0));
+        addParam(choiceParam("filter_b_type",      "Type",     {"CLN", "VOWL", "ACID", "DIGI"}, 0));
         addParam(choiceParam("filter_b_mode",      "Mode",     {"LP", "HP", "BP", "NOTCH"}, 0));
         addParam(choiceParam("routing",            "Path",     {"SERIAL", "PARAL"}, 0));
 
@@ -1025,6 +1024,7 @@ public:
             addParam(boolParam(id.c_str(), name.c_str(),
                                (kGateMasks[0] & (1u << i)) != 0));
         }
+        addParam(floatParam("tg_offset", "Gate Offset", -100.0f, 100.0f, 0.0f, "%", 0));
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -1302,6 +1302,7 @@ public:
         const float tgDepthPct = get(kTgDepth);
         const float baseAtten = 1.0f - tgDepthPct * 0.01f;
         const float tgMix = get(kTgMix);
+        const double tgOffsetSamples = (get(kTgOffset) * 0.01) * stepSamples;
         const bool tgActive = getBool(kTgActive) && (stepSamples > 0.0);
 
         const float* inL = ctx.inputs[0];
@@ -1355,7 +1356,7 @@ public:
             float tgGain = 1.0f;
             if (tgActive) {
                 tgGain = tranceGate_.processSample(
-                    tranceGate_.currentSamplePos() + s,
+                    tranceGate_.currentSamplePos() + s - tgOffsetSamples,
                     stepSamples, cycleSamples, patternMask,
                     holdWidthSamples, attackEnd, decayStart,
                     baseAtten, tgMix
@@ -1726,7 +1727,7 @@ private:
 
         addPreset("Warm Tape Sat", {
             {kScvActive, 1.0f}, {kDrive, 4.5f}, {kThreshold, -6.0f}, {kAutoGain, 1.0f}, {kMix, 0.85f},
-            {kFACutoff, 6500.0f}, {kFAType, 1.0f}, {kDelayActive, 1.0f}, {kDelayTime, 240.0f},
+            {kFACutoff, 6500.0f}, {kFAType, 0.0f}, {kDelayActive, 1.0f}, {kDelayTime, 240.0f},
             {kDelayFeedback, 0.25f}, {kDelayMix, 0.2f}
         });
 

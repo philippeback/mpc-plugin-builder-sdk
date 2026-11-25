@@ -83,7 +83,7 @@ function New-SegCanvas([string]$BasePath, [int]$Width) {
     return @($bmp, $g)
 }
 
-# 1. Filter Type (46x40, 5 segments): 0=Clean, 1=Vintage, 2=Acid, 3=Digital, 4=Vowel
+# 1. Filter Type (seg4: 58x40): 0=Clean, 1=Vowel, 2=Acid, 3=Digital
 foreach ($state in @("on", "off")) {
     $isOn = ($state -eq "on")
     $base = Join-Path $SkinsDir "seg4_$state.png"
@@ -94,43 +94,31 @@ foreach ($state in @("on", "off")) {
     $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
 
     # 0: Clean sine wave
-    $bmp, $g = New-SegCanvas $base 46
+    $bmp, $g = New-ButtonCanvas $base
     $pts = @()
     for ($i = 0; $i -le 16; $i++) {
         $t = $i / 16.0
-        $x = 9.0 + $t * 28.0
+        $x = 13.0 + $t * 32.0
         $y = 20.0 - 8.0 * [Math]::Sin($t * 2.0 * [Math]::PI)
         $pts += [float]$x; $pts += [float]$y
     }
     Draw-Curve $g $pen $pts
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_ftype_0_$state.png")
 
-    # 1: Vintage (warm tube tanh S-curve)
-    $bmp, $g = New-SegCanvas $base 46
-    $pts = @()
-    for ($i = 0; $i -le 16; $i++) {
-        $t = ($i / 16.0) * 2.0 - 1.0
-        $x = 9.0 + ($i / 16.0) * 28.0
-        $y = 20.0 - 8.5 * [Math]::Tanh(2.6 * $t)
-        $pts += [float]$x; $pts += [float]$y
-    }
-    Draw-Curve $g $pen $pts
+    # 1: Vowel (dual vocal formant peaks)
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Curve $g $pen @(10, 28, 16, 25, 22, 10, 29, 22, 36, 12, 42, 25, 48, 28)
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_ftype_1_$state.png")
 
     # 2: Acid (303 resonant spike)
-    $bmp, $g = New-SegCanvas $base 46
-    Draw-Curve $g $pen @(9, 18, 17, 18, 23, 9, 28, 19, 37, 29)
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Curve $g $pen @(12, 18, 22, 18, 29, 9, 34, 19, 44, 29)
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_ftype_2_$state.png")
 
     # 3: Digital (stepped staircase)
-    $bmp, $g = New-SegCanvas $base 46
-    Draw-Polyline $g $pen @(9, 27, 16, 27, 16, 20, 23, 20, 23, 13, 30, 13, 30, 27, 37, 27)
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Polyline $g $pen @(13, 27, 21, 27, 21, 20, 29, 20, 29, 13, 37, 13, 37, 27, 45, 27)
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_ftype_3_$state.png")
-
-    # 4: Vowel (dual formant peaks)
-    $bmp, $g = New-SegCanvas $base 46
-    Draw-Curve $g $pen @(8, 28, 13, 25, 17, 11, 23, 22, 29, 13, 33, 25, 38, 28)
-    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_ftype_4_$state.png")
 
     $pen.Dispose()
 }

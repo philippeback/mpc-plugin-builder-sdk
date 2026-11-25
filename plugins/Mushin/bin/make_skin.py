@@ -91,6 +91,7 @@ DRY_LABELS = {
     "Gate Start": "Start",
     "Gate Hold": "Hold",
     "Gate End": "End",
+    "Gate Offset": "Offset",
     # Delay
     "Delay Active": "Active",
     "Delay Sync": "Sync",
@@ -683,6 +684,7 @@ def main():
 
     # Bake crisp shapes/icons into segmented switch buttons
     icon_radio_specs = [
+        ("radio4", "radioFType", "btn_ftype", 4),
         ("radio4", "radioFMode", "btn_fmode", 4),
         ("radio2", "radioRoute", "btn_route", 2),
         ("radio3", "radioNRoute", "btn_nroute", 3),
@@ -693,7 +695,6 @@ def main():
     ]
     for base_k, new_k, prefix, cnt in icon_radio_specs:
         local_defs.append(make_icon_radio_def(local_defs, base_k, new_k, prefix, cnt))
-    local_defs.append(make_multi_icon_radio_def(local_defs, "radioFType", "btn_ftype", [16, 66, 116, 166, 216], 46))
     local_defs.append(make_multi_icon_radio_def(local_defs, "radioLfoWave", "btn_lfowave", [16, 66, 116, 166, 216], 46))
     local_defs.append(make_multi_icon_radio_def(local_defs, "radioNoiseType", "btn_noisetype", [17, 58, 99, 140, 181, 222], 38))
 
