@@ -858,6 +858,39 @@ def main():
                     1166, 384, 40, 190,
                 )
             )
+        elif tname == "S-CURVE":
+            cdef = obj_get(tab, "componentDefinition")
+            comps = obj_get(cdef, "componentsData")
+            comps.insert(0, to_obj({
+                "version": 2,
+                "componentData": {
+                    "version": 1,
+                    "name": "decay_viz_bg",
+                    "type": "Image",
+                    "data": {
+                        "version": 2,
+                        "imageType": "FilmStrip",
+                        "colour": "0",
+                        "image": "decay_viz_strip.png",
+                        "numFrames": 25,
+                        "handleName": "Data",
+                    },
+                },
+                "handle remapping": {
+                    "version": 1,
+                    "map": [
+                        {"key": "Data", "value": f"Parameter {params_by_name['Decay Viz']}"},
+                    ],
+                },
+                "bounds": {
+                    "version": 1,
+                    "acceptsHWFocus": "No",
+                    "showWhenDataModelInvalid": "Show",
+                    "whenVisible": "Always",
+                    "boundsType": "Absolute",
+                    "bounds": "13 336 1258 127",
+                },
+            }))
         elif tname == "DLY+LIM":
             cdef = obj_get(tab, "componentDefinition")
             comps = obj_get(cdef, "componentsData")

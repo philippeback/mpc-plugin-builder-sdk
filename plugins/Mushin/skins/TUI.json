@@ -6796,6 +6796,39 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
+                                "name": "decay_viz_bg",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "FilmStrip",
+                                    "colour": "0",
+                                    "image": "decay_viz_strip.png",
+                                    "numFrames": 25,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 97"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "13 336 1258 127"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
                                 "name": "S-Curve Active",
                                 "type": "toggle",
                                 "data": {

@@ -633,6 +633,7 @@ public:
         kScTargetReso,
         kLimGrMeter,
         kScvActive,
+        kDecayViz,
 
         kNumParams
     };
@@ -793,6 +794,11 @@ public:
             addParam(p);
         }
         addParam(boolParam  ("scv_active",   "S-Curve Active", false));
+        {
+            auto p = floatParam("decay_viz", "Decay Viz", 0.0f, 1.0f, 0.0f, "", 2);
+            p.automatable = false;
+            addParam(p);
+        }
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -1229,9 +1235,17 @@ public:
             const float inMeter01 = mpc::clamp((inDb + 60.0f) / 60.0f, 0.0f, 1.0f);
             const float duckMeter01 = mpc::clamp(blockPeakDuck, 0.0f, 1.0f);
             const float limGr01 = mpc::clamp(blockPeakLimGr, 0.0f, 1.0f);
+            float decayViz01 = 0.0f;
+            if (qeActive) {
+                const float bitSev = mpc::clamp((16.0f - targetQeDepth) / 14.0f, 0.0f, 1.0f);
+                const float dsSev  = mpc::clamp((float)(downsampleFactor - 1) / 11.0f, 0.0f, 1.0f);
+                const float rawDecay = mpc::clamp(0.55f * bitSev + 0.45f * dsSev, 0.0f, 1.0f);
+                decayViz01 = mpc::clamp(rawDecay * get(kQeMix), 0.0f, 1.0f);
+            }
             set(kScInMeter, inMeter01);
             set(kScDuckMeter, duckMeter01);
             set(kLimGrMeter, limGr01);
+            set(kDecayViz, decayViz01);
             if (++meterNotifyCounter_ >= 12) {
                 meterNotifyCounter_ = 0;
                 if (std::fabs(inMeter01 - lastSentInMeter_) > 0.005f) {
@@ -1245,6 +1259,10 @@ public:
                 if (std::fabs(limGr01 - lastSentLimGrMeter_) > 0.005f) {
                     lastSentLimGrMeter_ = limGr01;
                     notifyHostParameterChanged(kLimGrMeter);
+                }
+                if (std::fabs(decayViz01 - lastSentDecayViz_) > 0.005f) {
+                    lastSentDecayViz_ = decayViz01;
+                    notifyHostParameterChanged(kDecayViz);
                 }
             }
         }
@@ -1499,6 +1517,7 @@ private:
     float lastSentInMeter_ = -1.0f;
     float lastSentDuckMeter_ = -1.0f;
     float lastSentLimGrMeter_ = -1.0f;
+    float lastSentDecayViz_ = -1.0f;
 };
 
 MPC_PLUGIN_ENTRY(Mushin)

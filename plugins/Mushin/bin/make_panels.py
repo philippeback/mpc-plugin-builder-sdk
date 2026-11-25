@@ -322,12 +322,79 @@ def generate_main_bg(assets_dir):
     print(f"Wrote {out_path}")
 
 
+def generate_decay_viz_strip(assets_dir):
+    # 25 frames stacked vertically (629x64 per frame -> 629x1600), scaled to 1258x127 on S-CURVE Row 3
+    fw, fh = 629, 64
+    num_frames = 25
+    total_h = fh * num_frames
+    buf = bytearray(fw * total_h * 4)  # starts 100% transparent
+
+    palette = [
+        (168, 85, 247),
+        (192, 132, 252),
+        (126, 34, 206),
+        (217, 70, 239),
+        (109, 40, 217),
+    ]
+
+    for frame in range(1, num_frames):
+        t = frame / float(num_frames - 1)
+        y_base = frame * fh
+        bg_alpha = int(105 * (t ** 0.85))
+        bg_col = bytes((130, 35, 220, bg_alpha))
+
+        # Fill base purple wash for this frame
+        for py in range(fh):
+            row_start = ((y_base + py) * fw) * 4
+            buf[row_start : row_start + fw * 4] = bg_col * fw
+
+        # Pixelated squares: bigger and denser as t increases
+        sq = max(2, int(2 + 14 * (t ** 1.15)))
+        prob = 0.08 + 0.58 * t
+        sq_alpha = int(65 + 135 * t)
+
+        cols = (fw + sq - 1) // sq
+        rows = (fh + sq - 1) // sq
+        for gy in range(rows):
+            for gx in range(cols):
+                h = ((gx * 73856093) ^ (gy * 19349663) ^ 0x9E3779B9) & 0xFFFF
+                if (h / 65536.0) >= prob:
+                    continue
+                pr, pg, pb = palette[h % len(palette)]
+                # Composite square over base wash
+                sa = sq_alpha / 255.0
+                ba = bg_alpha / 255.0
+                oa = sa + ba * (1.0 - sa)
+                if oa > 1e-5:
+                    rr = int((pr * sa + 130 * ba * (1.0 - sa)) / oa)
+                    rg = int((pg * sa + 35 * ba * (1.0 - sa)) / oa)
+                    rb = int((pb * sa + 220 * ba * (1.0 - sa)) / oa)
+                    ra = int(min(255, oa * 255))
+                    px_bytes = bytes((rr, rg, rb, ra))
+                else:
+                    px_bytes = bytes((0, 0, 0, 0))
+
+                x0 = gx * sq
+                x1 = min(fw, x0 + sq)
+                w_run = x1 - x0
+                y0 = gy * sq
+                y1 = min(fh, y0 + sq)
+                for py in range(y0, y1):
+                    idx = ((y_base + py) * fw + x0) * 4
+                    buf[idx : idx + w_run * 4] = px_bytes * w_run
+
+    out_path = os.path.join(assets_dir, "decay_viz_strip.png")
+    write_png(out_path, fw, total_h, buf)
+    print(f"Wrote {out_path}")
+
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     assets_dir = os.path.join(os.path.dirname(script_dir), "assets")
     os.makedirs(assets_dir, exist_ok=True)
     generate_main_bg(assets_dir)
     generate_gate_patterns(assets_dir)
+    generate_decay_viz_strip(assets_dir)
 
     cyan = (0x00, 0xE5, 0xFF, 255)
     magenta = (0xFF, 0x4D, 0x8D, 255)
