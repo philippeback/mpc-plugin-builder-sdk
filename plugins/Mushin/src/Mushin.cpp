@@ -1493,12 +1493,11 @@ public:
             set(kDecayViz, decayViz01);
             if (currentProgram() != lastProgram_) {
                 lastProgram_ = currentProgram();
-                for (int m = kMacroExhaustion; m <= kMacroSmash; ++m) {
-                    notifyHostParameterChanged(m);
-                }
-                notifyHostParameterChanged(kTgFloor);
-                for (int i = 0; i < 16; ++i) {
-                    notifyHostParameterChanged(kTgStep0 + i);
+                requestDisplayUpdate();
+                for (int i = 0; i < kNumParams; ++i) {
+                    if (param(i).automatable) {
+                        notifyHostParameterChanged(i);
+                    }
                 }
             }
             if (++meterNotifyCounter_ >= 12) {
@@ -1752,46 +1751,105 @@ private:
         });
 
         addPreset("Mushin Pumper", {
-            {kScvActive, 1.0f}, {kDrive, 3.5f}, {kScActive, 1.0f}, {kScSource, 0.0f}, {kScTarget, 2.0f},
-            {kScThresh, -18.0f}, {kScAmount, -80.0f}, {kScAttack, 5.0f}, {kScRelease, 160.0f},
-            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 6.0f}, {kLimCeiling, -0.5f}
+            {kScvActive, 1.0f}, {kDrive, 3.0f}, {kAutoGain, 1.0f},
+            {kFACutoff, 9500.0f}, {kFAReso, 0.35f},
+            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 10.0f},
+            {kScThresh, -28.0f}, {kScAmount, -100.0f}, {kScAttack, 2.0f}, {kScRelease, 190.0f},
+            {kScLpf, 350.0f}, {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}
         });
 
-        // SAT: S-Curve & Exhaustion
+        // SAT: S-Curve & Exhaustion (06-15)
         addPreset("SAT: Hard Clip", {
             {kScvActive, 1.0f}, {kDrive, 8.0f}, {kExhaustion, 1.0f}, {kThreshold, -10.0f},
             {kAutoGain, 1.0f}, {kMix, 0.90f}, {kLimActive, 1.0f}, {kLimCeiling, -0.5f}
         });
-
         addPreset("SAT: Warm Bus", {
             {kScvActive, 1.0f}, {kDrive, 2.2f}, {kThreshold, -3.0f}, {kAutoGain, 1.0f},
             {kMix, 0.65f}, {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 2.5f}, {kLimCeiling, -0.3f}
         });
+        addPreset("SAT: Velvet Tape", {
+            {kScvActive, 1.0f}, {kDrive, 3.8f}, {kThreshold, -4.5f}, {kAutoGain, 1.0f},
+            {kMix, 0.80f}, {kFACutoff, 11000.0f}, {kFAReso, 0.15f}
+        });
+        addPreset("SAT: Tube Glow", {
+            {kScvActive, 1.0f}, {kDrive, 4.0f}, {kThreshold, -2.0f}, {kAutoGain, 1.0f},
+            {kMix, 0.75f}, {kFADrive, 2.4f}, {kFACutoff, 14000.0f}
+        });
+        addPreset("SAT: Sub Crunch", {
+            {kScvActive, 1.0f}, {kDrive, 7.0f}, {kExhaustion, 1.0f}, {kThreshold, -7.0f},
+            {kAutoGain, 1.0f}, {kFACutoff, 280.0f}, {kFAReso, 0.45f}, {kMix, 0.85f}
+        });
+        addPreset("SAT: Fuzz Wall", {
+            {kScvActive, 1.0f}, {kDrive, 15.0f}, {kExhaustion, 1.0f}, {kThreshold, -14.0f},
+            {kAutoGain, 1.0f}, {kFACutoff, 4800.0f}, {kFAReso, 0.25f}, {kLimActive, 1.0f}, {kLimCeiling, -1.0f}
+        });
+        addPreset("SAT: Edge Bite", {
+            {kScvActive, 1.0f}, {kDrive, 6.5f}, {kThreshold, -9.0f}, {kAutoGain, 1.0f},
+            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 180.0f}, {kFADrive, 2.0f}, {kFAGrit, 0.30f}
+        });
+        addPreset("SAT: Master Glue", {
+            {kScvActive, 1.0f}, {kDrive, 1.6f}, {kThreshold, -1.5f}, {kAutoGain, 1.0f}, {kMix, 0.50f},
+            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 2.0f}, {kLimCeiling, -0.2f}, {kLimRelease, 120.0f}
+        });
+        addPreset("SAT: Burned Coil", {
+            {kScvActive, 1.0f}, {kDrive, 12.0f}, {kExhaustion, 1.0f}, {kThreshold, -11.0f},
+            {kAutoGain, 1.0f}, {kNoiseActive, 1.0f}, {kNoiseType, 0.0f}, {kNoiseLevel, -36.0f}
+        });
+        addPreset("SAT: Gentle Analog", {
+            {kScvActive, 1.0f}, {kDrive, 2.0f}, {kThreshold, -2.5f}, {kAutoGain, 1.0f}, {kMix, 0.60f}
+        });
 
-        // FLT: Dual Filter & Routing
+        // FLT: Dual Filter & Routing (16-25)
         addPreset("FLT: Acid Sweep", {
             {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 650.0f}, {kFAReso, 0.78f}, {kFADrive, 2.5f},
             {kLfo1Freq, 0.35f}, {kLfo1Wave, 0.0f}, {kModL1T1, 0.55f}
         });
-
         addPreset("FLT: Parallel Band", {
             {kRouting, 1.0f}, {kFAType, 0.0f}, {kFAMode, 2.0f}, {kFACutoff, 550.0f}, {kFAReso, 0.65f},
             {kFBType, 0.0f}, {kFBMode, 2.0f}, {kFBCutoff, 2800.0f}, {kFBReso, 0.65f},
             {kLfo1Freq, 0.25f}, {kModL1T1, 0.45f}, {kLfo2Freq, 0.40f}, {kModL2T4, -0.45f}
         });
-
         addPreset("FLT: Notch Phaser", {
             {kRouting, 0.0f}, {kFAType, 0.0f}, {kFAMode, 3.0f}, {kFACutoff, 1100.0f}, {kFAReso, 0.75f},
             {kFBType, 0.0f}, {kFBMode, 3.0f}, {kFBCutoff, 2600.0f}, {kFBReso, 0.70f},
             {kLfo1Freq, 0.30f}, {kModL1T1, 0.60f}, {kLfo2Freq, 0.45f}, {kModL2T4, -0.60f}
         });
+        addPreset("FLT: 303 Squelch", {
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 420.0f}, {kFAReso, 0.88f}, {kFADrive, 3.5f}, {kFAGrit, 0.25f},
+            {kLfo1Freq, 0.85f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.70f}
+        });
+        addPreset("FLT: Dual Peak", {
+            {kRouting, 1.0f}, {kFAType, 2.0f}, {kFAMode, 2.0f}, {kFACutoff, 480.0f}, {kFAReso, 0.78f},
+            {kFBType, 2.0f}, {kFBMode, 2.0f}, {kFBCutoff, 3200.0f}, {kFBReso, 0.75f}
+        });
+        addPreset("FLT: Sub Focus", {
+            {kRouting, 0.0f}, {kFAType, 0.0f}, {kFAMode, 0.0f}, {kFACutoff, 220.0f}, {kFAReso, 0.35f},
+            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 35.0f}, {kFBReso, 0.25f}, {kFBDrive, 2.0f}
+        });
+        addPreset("FLT: Telephone", {
+            {kRouting, 0.0f}, {kFAType, 3.0f}, {kFAMode, 1.0f}, {kFACutoff, 450.0f}, {kFAReso, 0.30f},
+            {kFBType, 3.0f}, {kFBMode, 0.0f}, {kFBCutoff, 3100.0f}, {kFBReso, 0.40f}, {kFADrive, 2.2f}
+        });
+        addPreset("FLT: Stereo Split", {
+            {kRouting, 1.0f}, {kFilterMix, 0.85f}, {kFAType, 0.0f}, {kFAMode, 0.0f}, {kFACutoff, 750.0f}, {kFAReso, 0.60f},
+            {kFBType, 2.0f}, {kFBMode, 1.0f}, {kFBCutoff, 1400.0f}, {kFBReso, 0.65f},
+            {kLfo1Freq, 0.20f}, {kModL1T1, 0.50f}, {kModL1T4, -0.50f}
+        });
+        addPreset("FLT: Notch Canyon", {
+            {kFAType, 2.0f}, {kFAMode, 3.0f}, {kFACutoff, 800.0f}, {kFAReso, 0.85f},
+            {kFBType, 0.0f}, {kFBMode, 3.0f}, {kFBCutoff, 2100.0f}, {kFBReso, 0.80f},
+            {kLfo1Freq, 0.16f}, {kModL1T1, 0.70f}, {kLfo2Freq, 0.23f}, {kModL2T4, -0.65f}
+        });
+        addPreset("FLT: Midnight LP", {
+            {kFAType, 0.0f}, {kFAMode, 0.0f}, {kFACutoff, 1200.0f}, {kFAReso, 0.40f}, {kFilterMix, 0.85f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 2.0f}, {kDelayFeedback, 0.35f}, {kDelayMix, 0.25f}
+        });
 
-        // VOWL: Formant Vowel Filter
+        // VOWL: Formant Vowel Filter (26-35)
         addPreset("VOWL: Talkbox", {
             {kFAType, 1.0f}, {kFAMode, 2.0f}, {kFACutoff, 900.0f}, {kFAReso, 0.68f},
             {kFADrive, 2.0f}, {kFAGrit, 0.25f}, {kLfo1Freq, 0.50f}, {kModL1T1, 0.55f}
         });
-
         addPreset("VOWL: Choir Dual", {
             {kRouting, 1.0f}, {kFAType, 1.0f}, {kFAMode, 0.0f}, {kFACutoff, 600.0f}, {kFAReso, 0.55f},
             {kFBType, 1.0f}, {kFBMode, 1.0f}, {kFBCutoff, 2200.0f}, {kFBReso, 0.55f},
@@ -1799,69 +1857,249 @@ private:
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 1.0f}, {kDelayPingPong, 1.0f},
             {kDelayFeedback, 0.35f}, {kDelayMix, 0.30f}
         });
-
         addPreset("VOWL: Talking Gate", {
             {kFAType, 1.0f}, {kFAMode, 2.0f}, {kFACutoff, 1200.0f}, {kFAReso, 0.72f},
             {kLfo1Freq, 0.40f}, {kModL1T1, 0.60f},
             {kTgActive, 1.0f}, {kTgPattern, 11.0f}, {kTgDepth, 85.0f}, {kTgMix, 0.85f}
         });
+        addPreset("VOWL: Oh-Ah Morph", {
+            {kFAType, 1.0f}, {kFAMode, 0.0f}, {kFACutoff, 380.0f}, {kFAReso, 0.75f}, {kFADrive, 1.8f},
+            {kLfo1Freq, 0.60f}, {kLfo1Wave, 1.0f}, {kModL1T1, 0.65f}
+        });
+        addPreset("VOWL: Robot Throat", {
+            {kFAType, 1.0f}, {kFAMode, 3.0f}, {kFACutoff, 1100.0f}, {kFAReso, 0.82f}, {kFAGrit, 0.30f},
+            {kLfo1Freq, 1.80f}, {kLfo1Wave, 3.0f}, {kModL1T1, 0.45f}
+        });
+        addPreset("VOWL: Acid Choir", {
+            {kRouting, 0.0f}, {kFAType, 1.0f}, {kFAMode, 2.0f}, {kFACutoff, 820.0f}, {kFAReso, 0.65f},
+            {kFBType, 2.0f}, {kFBMode, 0.0f}, {kFBCutoff, 3200.0f}, {kFBReso, 0.65f},
+            {kLfo1Freq, 0.45f}, {kModL1T1, 0.50f}, {kLfo2Freq, 0.30f}, {kModL2T4, -0.40f}
+        });
+        addPreset("VOWL: Cyber Mouth", {
+            {kScvActive, 1.0f}, {kDrive, 3.5f}, {kAutoGain, 1.0f},
+            {kFAType, 1.0f}, {kFAMode, 1.0f}, {kFACutoff, 1500.0f}, {kFAReso, 0.78f}, {kFAGrit, 0.25f},
+            {kQeActive, 1.0f}, {kQeDepth, 9.0f}, {kQeDownsample, 2.0f}, {kQeMix, 0.40f},
+            {kLfo1Freq, 0.90f}, {kModL1T1, 0.55f}
+        });
+        addPreset("VOWL: Nasal Scream", {
+            {kScvActive, 1.0f}, {kDrive, 5.5f}, {kExhaustion, 1.0f}, {kAutoGain, 1.0f},
+            {kFAType, 1.0f}, {kFAMode, 1.0f}, {kFACutoff, 1900.0f}, {kFAReso, 0.85f}, {kFADrive, 2.5f},
+            {kLfo1Freq, 1.40f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.40f}
+        });
+        addPreset("VOWL: Vowel Wah", {
+            {kFAType, 1.0f}, {kFAMode, 2.0f}, {kFACutoff, 650.0f}, {kFAReso, 0.70f}, {kFADrive, 1.6f},
+            {kLfo1Freq, 1.10f}, {kLfo1Wave, 0.0f}, {kModL1T1, 0.60f}
+        });
+        addPreset("VOWL: Deep Chant", {
+            {kFAType, 1.0f}, {kFAMode, 0.0f}, {kFACutoff, 280.0f}, {kFAReso, 0.72f}, {kFilterMix, 0.90f},
+            {kLfo1Freq, 0.15f}, {kModL1T1, 0.45f},
+            {kDelayActive, 1.0f}, {kDelayTime, 380.0f}, {kDelayPingPong, 1.0f}, {kDelayFeedback, 0.45f}, {kDelayMix, 0.35f}
+        });
 
-        // DECY: Info Decay & Bit-Rot
+        // DECY: Info Decay & Bit-Rot (36-45)
         addPreset("DECY: 8-Bit Arcade", {
             {kScvActive, 1.0f}, {kDrive, 2.0f}, {kQeActive, 1.0f}, {kQeDepth, 8.0f},
             {kQeDownsample, 3.0f}, {kQeMix, 0.85f}
         });
-
         addPreset("DECY: Lo-Fi Dust", {
             {kQeActive, 1.0f}, {kQeDepth, 6.5f}, {kQeDownsample, 6.0f}, {kQeMix, 0.60f},
             {kNoiseActive, 1.0f}, {kNoiseType, 1.0f}, {kNoiseRoute, 1.0f}, {kNoiseLevel, -28.0f},
             {kFACutoff, 3800.0f}, {kFAReso, 0.20f}
         });
-
         addPreset("DECY: Exh Shred", {
             {kScvActive, 1.0f}, {kDrive, 5.5f}, {kExhaustion, 1.0f}, {kThreshold, -6.0f},
             {kAutoGain, 1.0f}, {kQeActive, 1.0f}, {kQeLink, 1.0f}, {kQeDownsample, 8.0f},
             {kQeMix, 0.90f}, {kFACutoff, 5200.0f}
         });
+        addPreset("DECY: Gameboy Lead", {
+            {kQeActive, 1.0f}, {kQeDepth, 4.0f}, {kQeDownsample, 5.0f}, {kQeMix, 0.90f},
+            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 250.0f}, {kFACutoff, 6500.0f}
+        });
+        addPreset("DECY: CRT Static", {
+            {kQeActive, 1.0f}, {kQeDepth, 7.5f}, {kQeDownsample, 4.0f}, {kQeMix, 0.70f},
+            {kNoiseActive, 1.0f}, {kNoiseType, 0.0f}, {kNoiseRoute, 2.0f}, {kNoiseLevel, -30.0f},
+            {kFACutoff, 4500.0f}, {kFAReso, 0.40f}
+        });
+        addPreset("DECY: Mod Bit-Rot", {
+            {kQeActive, 1.0f}, {kQeDepth, 5.5f}, {kQeDownsample, 9.0f}, {kQeMix, 0.80f},
+            {kFACutoff, 2600.0f}, {kFAReso, 0.55f}, {kLfo1Freq, 0.80f}, {kModL1T1, 0.45f}
+        });
+        addPreset("DECY: Broken Tape", {
+            {kScvActive, 1.0f}, {kDrive, 3.2f}, {kAutoGain, 1.0f},
+            {kQeActive, 1.0f}, {kQeDepth, 9.0f}, {kQeDownsample, 3.0f}, {kQeMix, 0.45f},
+            {kNoiseActive, 1.0f}, {kNoiseType, 1.0f}, {kNoiseLevel, -32.0f},
+            {kDelayActive, 1.0f}, {kDelayTime, 190.0f}, {kDelayFeedback, 0.42f}, {kDelayMix, 0.30f}
+        });
+        addPreset("DECY: 4-Bit Savage", {
+            {kScvActive, 1.0f}, {kDrive, 6.0f}, {kAutoGain, 1.0f},
+            {kQeActive, 1.0f}, {kQeDepth, 4.0f}, {kQeDownsample, 10.0f}, {kQeMix, 0.95f},
+            {kLimActive, 1.0f}, {kLimCeiling, -0.8f}
+        });
+        addPreset("DECY: Vinyl Crackle", {
+            {kQeActive, 1.0f}, {kQeDepth, 10.5f}, {kQeDownsample, 2.0f}, {kQeMix, 0.35f},
+            {kNoiseActive, 1.0f}, {kNoiseType, 1.0f}, {kNoiseLevel, -26.0f},
+            {kFAType, 0.0f}, {kFAMode, 0.0f}, {kFACutoff, 5500.0f}, {kFBMode, 1.0f}, {kFBCutoff, 85.0f}
+        });
+        addPreset("DECY: AM Radio", {
+            {kQeActive, 1.0f}, {kQeDepth, 7.0f}, {kQeDownsample, 7.0f}, {kQeMix, 0.75f},
+            {kFAMode, 1.0f}, {kFACutoff, 520.0f}, {kFBMode, 0.0f}, {kFBCutoff, 2800.0f}, {kFBReso, 0.50f}
+        });
 
-        // LFO: Modulation, Noise & FM
+        // LFO: Modulation, Noise & FM (46-55)
         addPreset("LFO: Alien FM", {
             {kNoiseActive, 1.0f}, {kNoiseType, 4.0f}, {kNoiseFreq, 140.0f}, {kNoiseLevel, -18.0f},
             {kNoiseFmMod, 0.55f}, {kFAType, 2.0f}, {kFACutoff, 1400.0f}, {kFAReso, 0.60f},
             {kLfo1Freq, 3.2f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.50f}
         });
-
         addPreset("LFO: Wobble Bass", {
             {kScvActive, 1.0f}, {kDrive, 4.0f}, {kAutoGain, 1.0f},
             {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 420.0f}, {kFAReso, 0.72f}, {kFADrive, 2.0f},
             {kLfo1Freq, 1.5f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.75f}
         });
+        addPreset("LFO: Shimmer S&H", {
+            {kFAType, 0.0f}, {kFAMode, 2.0f}, {kFACutoff, 1600.0f}, {kFAReso, 0.70f},
+            {kFBType, 0.0f}, {kFBMode, 2.0f}, {kFBCutoff, 3200.0f}, {kFBReso, 0.65f},
+            {kLfo1Freq, 4.5f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.65f},
+            {kLfo2Freq, 6.0f}, {kLfo2Wave, 4.0f}, {kModL2T4, -0.60f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 1.0f}, {kDelayPingPong, 1.0f}, {kDelayMix, 0.35f}
+        });
+        addPreset("LFO: Crossfade Mod", {
+            {kRouting, 1.0f}, {kFACutoff, 650.0f}, {kFAReso, 0.65f}, {kFBCutoff, 2400.0f}, {kFBReso, 0.65f},
+            {kLfo1Freq, 0.45f}, {kModL1T1, 0.70f}, {kModL1T4, -0.70f}
+        });
+        addPreset("LFO: Hyper Flutter", {
+            {kFAType, 2.0f}, {kFACutoff, 1800.0f}, {kFAReso, 0.55f},
+            {kLfo1Freq, 9.5f}, {kLfo1Wave, 1.0f}, {kModL1T1, 0.45f}, {kModL1T2, 0.25f}
+        });
+        addPreset("LFO: Sci-Fi Siren", {
+            {kNoiseActive, 1.0f}, {kNoiseType, 2.0f}, {kNoiseFreq, 220.0f}, {kNoiseLevel, -16.0f}, {kNoiseFmMod, 0.80f},
+            {kFAType, 2.0f}, {kFAMode, 2.0f}, {kFACutoff, 1100.0f}, {kFAReso, 0.78f},
+            {kLfo1Freq, 0.65f}, {kLfo1Wave, 0.0f}, {kModL1T1, 0.70f},
+            {kDelayActive, 1.0f}, {kDelayPingPong, 1.0f}, {kDelayFeedback, 0.50f}, {kDelayMix, 0.35f}
+        });
+        addPreset("LFO: Stepped Arps", {
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 700.0f}, {kFAReso, 0.82f},
+            {kLfo1Freq, 6.0f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.65f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayFeedback, 0.40f}, {kDelayMix, 0.30f}
+        });
+        addPreset("LFO: Dual Drift", {
+            {kFACutoff, 1200.0f}, {kFAReso, 0.50f}, {kFBCutoff, 2800.0f}, {kFBReso, 0.50f},
+            {kLfo1Freq, 0.14f}, {kModL1T1, 0.55f}, {kLfo2Freq, 0.21f}, {kModL2T4, 0.55f}
+        });
+        addPreset("LFO: Gritty Trem", {
+            {kScvActive, 1.0f}, {kDrive, 3.0f}, {kAutoGain, 1.0f},
+            {kFACutoff, 3200.0f}, {kFAReso, 0.45f}, {kFAGrit, 0.35f},
+            {kLfo1Freq, 5.5f}, {kLfo1Wave, 0.0f}, {kModL1T3, 0.65f}, {kModL1T1, 0.25f}
+        });
+        addPreset("LFO: Chaos Sweep", {
+            {kFAType, 2.0f}, {kFACutoff, 1500.0f}, {kFAReso, 0.72f},
+            {kLfo1Freq, 2.8f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.70f}, {kModL1T2, 0.35f},
+            {kLfo2Freq, 1.7f}, {kLfo2Wave, 2.0f}, {kModL2T4, -0.60f}
+        });
 
-        // GATE: 128-Pattern Gate & Offset
+        // GATE: 128-Pattern Gate & Offset (56-67)
         addPreset("GATE: Kick Safe", {
             {kTgActive, 1.0f}, {kTgPattern, 0.0f}, {kTgOffset, 35.0f}, {kTgDepth, 85.0f},
             {kTgStart, 8.0f}, {kTgHold, 55.0f}, {kTgEnd, 20.0f}
         });
-
         addPreset("GATE: Euclid 7", {
             {kTgActive, 1.0f}, {kTgPattern, 77.0f}, {kTgRate, 0.0f}, {kTgDepth, 90.0f},
             {kTgHold, 60.0f}, {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 1.0f},
             {kDelayPingPong, 1.0f}, {kDelayMix, 0.30f}
         });
-
         addPreset("GATE: DnB Chop", {
             {kScvActive, 1.0f}, {kDrive, 3.0f}, {kFAType, 2.0f}, {kFAMode, 2.0f},
             {kFACutoff, 1800.0f}, {kFAReso, 0.45f},
             {kTgActive, 1.0f}, {kTgPattern, 44.0f}, {kTgDepth, 95.0f}, {kTgHold, 45.0f}
         });
-
-        // PUMP & FULL: Sidechain & Everything
-        addPreset("PUMP: House Duck", {
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 6.0f}, {kScThresh, -20.0f},
-            {kScAmount, -90.0f}, {kScAttack, 3.0f}, {kScRelease, 140.0f},
-            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kFACutoff, 9000.0f}
+        addPreset("GATE: Trance Arp", {
+            {kTgActive, 1.0f}, {kTgPattern, 11.0f}, {kTgRate, 0.0f}, {kTgDepth, 90.0f},
+            {kTgHold, 60.0f}, {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f},
+            {kDelayPingPong, 1.0f}, {kDelayFeedback, 0.45f}, {kDelayMix, 0.35f}
+        });
+        addPreset("GATE: Triplet Hop", {
+            {kTgActive, 1.0f}, {kTgPattern, 64.0f}, {kTgRate, 0.0f}, {kTgDepth, 85.0f},
+            {kTgStart, 4.0f}, {kTgHold, 65.0f}, {kTgEnd, 25.0f}
+        });
+        addPreset("GATE: Galop Ride", {
+            {kTgActive, 1.0f}, {kTgPattern, 5.0f}, {kTgRate, 0.0f}, {kTgDepth, 80.0f},
+            {kTgHold, 55.0f}, {kFAType, 0.0f}, {kFACutoff, 4500.0f}, {kFAReso, 0.35f}
+        });
+        addPreset("GATE: Trap HiHat", {
+            {kTgActive, 1.0f}, {kTgPattern, 58.0f}, {kTgRate, 0.0f}, {kTgDepth, 95.0f},
+            {kTgStart, 2.0f}, {kTgHold, 40.0f}, {kTgEnd, 12.0f}, {kFBMode, 1.0f}, {kFBCutoff, 300.0f}
+        });
+        addPreset("GATE: Son Clave", {
+            {kTgActive, 1.0f}, {kTgPattern, 88.0f}, {kTgRate, 0.0f}, {kTgDepth, 88.0f},
+            {kTgHold, 65.0f}, {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 1.0f},
+            {kDelayPingPong, 1.0f}, {kDelayFeedback, 0.30f}, {kDelayMix, 0.25f}
+        });
+        addPreset("GATE: Accel Build", {
+            {kTgActive, 1.0f}, {kTgPattern, 104.0f}, {kTgRate, 0.0f}, {kTgDepth, 92.0f},
+            {kTgHold, 50.0f}, {kFAType, 2.0f}, {kFACutoff, 2400.0f}, {kFAReso, 0.55f}
+        });
+        addPreset("GATE: Glitch Stutter", {
+            {kTgActive, 1.0f}, {kTgPattern, 110.0f}, {kTgRate, 0.0f}, {kTgDepth, 100.0f},
+            {kTgStart, 1.0f}, {kTgHold, 45.0f}, {kTgEnd, 5.0f},
+            {kQeActive, 1.0f}, {kQeDepth, 7.0f}, {kQeDownsample, 4.0f}, {kQeMix, 0.55f}
+        });
+        addPreset("GATE: Quarter Stomp", {
+            {kTgActive, 1.0f}, {kTgPattern, 8.0f}, {kTgRate, 0.0f}, {kTgOffset, 15.0f},
+            {kTgDepth, 85.0f}, {kTgStart, 6.0f}, {kTgHold, 70.0f}, {kTgEnd, 35.0f}
+        });
+        addPreset("GATE: Swing Offbeat", {
+            {kTgActive, 1.0f}, {kTgPattern, 0.0f}, {kTgRate, 1.0f}, {kTgOffset, 28.0f},
+            {kTgDepth, 85.0f}, {kTgStart, 10.0f}, {kTgHold, 60.0f}, {kTgEnd, 30.0f}
         });
 
+        // PUMP: Deep Sidechain Ducking (no Limiter Drive undoing the pump!) (68-75)
+        addPreset("PUMP: House Duck", {
+            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 12.0f}, {kScThresh, -30.0f},
+            {kScAmount, -100.0f}, {kScAttack, 1.5f}, {kScRelease, 210.0f}, {kScLpf, 400.0f},
+            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kFACutoff, 10000.0f}, {kFAReso, 0.30f}
+        });
+        addPreset("PUMP: Test Pulse 4x4", {
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 14.0f},
+            {kScThresh, -26.0f}, {kScAmount, -100.0f}, {kScAttack, 1.0f}, {kScRelease, 240.0f},
+            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kFACutoff, 8500.0f}, {kFAReso, 0.40f}
+        });
+        addPreset("PUMP: Kick Keyed LPF", {
+            {kScActive, 1.0f}, {kScMode, 0.0f}, {kScRatio, 16.0f}, {kScThresh, -32.0f},
+            {kScAmount, -100.0f}, {kScAttack, 1.0f}, {kScRelease, 175.0f},
+            {kScHpf, 30.0f}, {kScLpf, 180.0f}, {kScTargetGain, 1.0f}
+        });
+        addPreset("PUMP: Vacuum Drop", {
+            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 20.0f}, {kScThresh, -36.0f},
+            {kScAmount, -100.0f}, {kScAttack, 0.5f}, {kScRelease, 340.0f},
+            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kFACutoff, 12000.0f}, {kFAReso, 0.45f}
+        });
+        addPreset("PUMP: Filter Breathe", {
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 7500.0f}, {kFAReso, 0.55f},
+            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 10.0f}, {kScThresh, -28.0f},
+            {kScAmount, -100.0f}, {kScAttack, 4.0f}, {kScRelease, 260.0f},
+            {kScTargetGain, 0.0f}, {kScTargetCut, 1.0f}, {kScTargetReso, 1.0f}
+        });
+        addPreset("PUMP: Drive Surge", {
+            {kScvActive, 1.0f}, {kDrive, 2.5f}, {kAutoGain, 1.0f},
+            {kScActive, 1.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f}, {kScThresh, -26.0f},
+            {kScAmount, 90.0f}, {kScAttack, 2.0f}, {kScRelease, 180.0f},
+            {kScTargetGain, 0.0f}, {kScTargetDrive, 1.0f}, {kScTargetReso, 1.0f}, {kFACutoff, 3200.0f}
+        });
+        addPreset("PUMP: French Touch", {
+            {kScvActive, 1.0f}, {kDrive, 4.0f}, {kThreshold, -5.0f}, {kAutoGain, 1.0f},
+            {kFACutoff, 6500.0f}, {kFAReso, 0.45f},
+            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 14.0f}, {kScThresh, -30.0f},
+            {kScAmount, -100.0f}, {kScAttack, 1.5f}, {kScRelease, 220.0f}, {kScLpf, 300.0f},
+            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}
+        });
+        addPreset("PUMP: Dub Suction", {
+            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 12.0f}, {kScThresh, -30.0f},
+            {kScAmount, -100.0f}, {kScAttack, 2.0f}, {kScRelease, 280.0f}, {kScTargetGain, 1.0f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 1.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.48f}, {kDelayMix, 0.35f}
+        });
+
+        // COMBO & MUSH: Multi-Engine Heavy Hitters (76-95)
         addPreset("MUSH: Full Chaos", {
             {kScvActive, 1.0f}, {kDrive, 6.5f}, {kExhaustion, 1.0f}, {kThreshold, -8.0f}, {kAutoGain, 1.0f},
             {kFAType, 1.0f}, {kFAMode, 2.0f}, {kFACutoff, 1100.0f}, {kFAReso, 0.65f},
@@ -1873,16 +2111,12 @@ private:
             {kDelayFeedback, 0.35f}, {kDelayMix, 0.25f},
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 8.0f}, {kLimCeiling, -0.5f}
         });
-
-        // COMBO: Multi-Engine Heavy Hitters (24-31)
         addPreset("COMBO: Sub Slam", {
-            {kScvActive, 1.0f}, {kDrive, 4.5f}, {kThreshold, -6.0f}, {kAutoGain, 1.0f},
-            {kFAType, 0.0f}, {kFAMode, 0.0f}, {kFACutoff, 180.0f}, {kFAReso, 0.55f}, {kFADrive, 2.2f},
-            {kFBType, 2.0f}, {kFBMode, 1.0f}, {kFBCutoff, 65.0f}, {kFBReso, 0.35f}, {kFBDrive, 2.0f},
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 4.0f}, {kScThresh, -18.0f}, {kScAmount, -65.0f},
+            {kScvActive, 1.0f}, {kDrive, 5.5f}, {kThreshold, -6.0f}, {kAutoGain, 1.0f},
+            {kFAType, 0.0f}, {kFAMode, 0.0f}, {kFACutoff, 210.0f}, {kFAReso, 0.60f}, {kFADrive, 2.5f},
+            {kFBType, 2.0f}, {kFBMode, 1.0f}, {kFBCutoff, 55.0f}, {kFBReso, 0.40f}, {kFBDrive, 2.0f},
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 9.0f}, {kLimCeiling, -0.4f}
         });
-
         addPreset("COMBO: Acid Rave", {
             {kScvActive, 1.0f}, {kDrive, 6.0f}, {kThreshold, -5.0f}, {kAutoGain, 1.0f},
             {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 550.0f}, {kFAReso, 0.82f}, {kFADrive, 3.0f},
@@ -1892,7 +2126,6 @@ private:
             {kDelayFeedback, 0.35f}, {kDelayMix, 0.25f},
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 7.0f}, {kLimCeiling, -0.5f}
         });
-
         addPreset("COMBO: Vowel Bass", {
             {kScvActive, 1.0f}, {kDrive, 5.0f}, {kExhaustion, 1.0f}, {kThreshold, -7.0f}, {kAutoGain, 1.0f},
             {kFAType, 1.0f}, {kFAMode, 2.0f}, {kFACutoff, 750.0f}, {kFAReso, 0.72f}, {kFADrive, 2.5f}, {kFAGrit, 0.35f},
@@ -1900,7 +2133,6 @@ private:
             {kLfo1Freq, 1.20f}, {kLfo1Wave, 0.0f}, {kModL1T1, 0.55f},
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 8.0f}, {kLimCeiling, -0.5f}
         });
-
         addPreset("COMBO: Industrial", {
             {kScvActive, 1.0f}, {kDrive, 9.0f}, {kExhaustion, 1.0f}, {kThreshold, -10.0f}, {kAutoGain, 1.0f},
             {kFAType, 2.0f}, {kFAMode, 2.0f}, {kFACutoff, 1400.0f}, {kFAReso, 0.65f}, {kFAGrit, 0.40f},
@@ -1908,16 +2140,14 @@ private:
             {kQeActive, 1.0f}, {kQeDepth, 6.0f}, {kQeDownsample, 4.0f}, {kQeMix, 0.65f},
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 10.0f}, {kLimCeiling, -0.5f}
         });
-
         addPreset("COMBO: Pump & Shred", {
             {kScvActive, 1.0f}, {kDrive, 5.5f}, {kExhaustion, 1.0f}, {kThreshold, -6.0f}, {kAutoGain, 1.0f},
             {kQeActive, 1.0f}, {kQeLink, 1.0f}, {kQeDownsample, 5.0f}, {kQeMix, 0.50f},
-            {kFACutoff, 4800.0f}, {kFAReso, 0.35f},
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 8.0f}, {kScThresh, -18.0f}, {kScAmount, -95.0f},
-            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kScTargetReso, 1.0f},
-            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 8.0f}, {kLimCeiling, -0.5f}
+            {kFACutoff, 6800.0f}, {kFAReso, 0.40f},
+            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 12.0f}, {kScThresh, -30.0f}, {kScAmount, -100.0f},
+            {kScAttack, 1.5f}, {kScRelease, 200.0f},
+            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kScTargetReso, 1.0f}
         });
-
         addPreset("COMBO: Dub Techno", {
             {kScvActive, 1.0f}, {kDrive, 2.8f}, {kThreshold, -4.0f}, {kAutoGain, 1.0f},
             {kRouting, 1.0f}, {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 680.0f}, {kFAReso, 0.60f},
@@ -1926,9 +2156,8 @@ private:
             {kNoiseActive, 1.0f}, {kNoiseType, 1.0f}, {kNoiseRoute, 1.0f}, {kNoiseLevel, -34.0f},
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 1.0f}, {kDelayPingPong, 1.0f},
             {kDelayFeedback, 0.58f}, {kDelayMix, 0.42f},
-            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 4.0f}, {kLimCeiling, -0.3f}
+            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 2.0f}, {kLimCeiling, -0.3f}
         });
-
         addPreset("COMBO: Cyber Gate", {
             {kScvActive, 1.0f}, {kDrive, 4.2f}, {kAutoGain, 1.0f},
             {kFAType, 1.0f}, {kFAMode, 0.0f}, {kFACutoff, 950.0f}, {kFAReso, 0.68f},
@@ -1939,12 +2168,98 @@ private:
             {kDelayFeedback, 0.38f}, {kDelayMix, 0.28f},
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 6.0f}, {kLimCeiling, -0.5f}
         });
-
         addPreset("COMBO: Drum Smash", {
-            {kScvActive, 1.0f}, {kDrive, 3.5f}, {kThreshold, -4.0f}, {kAutoGain, 1.0f}, {kMix, 0.75f},
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 5.0f}, {kScThresh, -20.0f}, {kScAmount, -55.0f},
-            {kScAttack, 12.0f}, {kScRelease, 95.0f},
-            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 11.0f}, {kLimCeiling, -0.3f}
+            {kScvActive, 1.0f}, {kDrive, 4.0f}, {kThreshold, -4.0f}, {kAutoGain, 1.0f}, {kMix, 0.80f},
+            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 38.0f}, {kFBReso, 0.30f}, {kFADrive, 1.8f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 11.0f}, {kLimRelease, 75.0f}, {kLimCeiling, -0.3f}
+        });
+        addPreset("COMBO: Neon Synth", {
+            {kRouting, 1.0f}, {kScvActive, 1.0f}, {kDrive, 2.5f}, {kAutoGain, 1.0f},
+            {kFAType, 1.0f}, {kFAMode, 0.0f}, {kFACutoff, 1400.0f}, {kFAReso, 0.45f},
+            {kFBType, 2.0f}, {kFBMode, 0.0f}, {kFBCutoff, 4200.0f}, {kFBReso, 0.40f},
+            {kLfo1Freq, 0.28f}, {kModL1T1, 0.45f}, {kLfo2Freq, 0.35f}, {kModL2T4, -0.45f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 1.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.42f}, {kDelayMix, 0.32f}
+        });
+        addPreset("COMBO: Warehouse", {
+            {kScvActive, 1.0f}, {kDrive, 7.5f}, {kExhaustion, 1.0f}, {kThreshold, -8.0f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 720.0f}, {kFAReso, 0.70f}, {kFADrive, 2.2f},
+            {kTgActive, 1.0f}, {kTgPattern, 24.0f}, {kTgOffset, 15.0f}, {kTgDepth, 80.0f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayFeedback, 0.45f}, {kDelayMix, 0.30f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 8.0f}, {kLimCeiling, -0.4f}
+        });
+        addPreset("COMBO: Glitch Talk", {
+            {kFAType, 1.0f}, {kFAMode, 2.0f}, {kFACutoff, 1000.0f}, {kFAReso, 0.75f},
+            {kLfo1Freq, 4.2f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.65f},
+            {kQeActive, 1.0f}, {kQeDepth, 5.0f}, {kQeDownsample, 6.0f}, {kQeMix, 0.65f},
+            {kTgActive, 1.0f}, {kTgPattern, 111.0f}, {kTgDepth, 95.0f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f}, {kDelayMix, 0.30f}
+        });
+        addPreset("COMBO: Acid Rain", {
+            {kRouting, 1.0f}, {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 900.0f}, {kFAReso, 0.80f},
+            {kFBType, 2.0f}, {kFBMode, 2.0f}, {kFBCutoff, 2600.0f}, {kFBReso, 0.72f},
+            {kLfo1Freq, 0.65f}, {kModL1T1, 0.60f}, {kLfo2Freq, 1.10f}, {kModL2T4, -0.55f},
+            {kNoiseActive, 1.0f}, {kNoiseType, 1.0f}, {kNoiseLevel, -30.0f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.55f}, {kDelayMix, 0.38f}, {kLimActive, 1.0f}, {kLimCeiling, -0.4f}
+        });
+        addPreset("COMBO: Future Chop", {
+            {kScvActive, 1.0f}, {kDrive, 3.0f}, {kAutoGain, 1.0f},
+            {kRouting, 1.0f}, {kFAType, 1.0f}, {kFAMode, 1.0f}, {kFACutoff, 1800.0f}, {kFAReso, 0.50f},
+            {kFBType, 0.0f}, {kFBMode, 0.0f}, {kFBCutoff, 4500.0f}, {kFBReso, 0.25f},
+            {kTgActive, 1.0f}, {kTgPattern, 15.0f}, {kTgOffset, 25.0f}, {kTgDepth, 90.0f}, {kTgHold, 55.0f},
+            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 5.0f}, {kLimCeiling, -0.3f}
+        });
+        addPreset("COMBO: Doom Drone", {
+            {kScvActive, 1.0f}, {kDrive, 8.5f}, {kExhaustion, 1.0f}, {kThreshold, -9.0f}, {kAutoGain, 1.0f},
+            {kNoiseActive, 1.0f}, {kNoiseType, 4.0f}, {kNoiseFreq, 55.0f}, {kNoiseLevel, -24.0f}, {kNoiseFmMod, 0.45f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 380.0f}, {kFAReso, 0.72f},
+            {kFBType, 0.0f}, {kFBMode, 3.0f}, {kFBCutoff, 950.0f}, {kFBReso, 0.65f},
+            {kLfo1Freq, 0.12f}, {kModL1T1, 0.50f}, {kLfo2Freq, 0.19f}, {kModL2T4, -0.45f},
+            {kQeActive, 1.0f}, {kQeDepth, 6.0f}, {kQeDownsample, 3.0f}, {kQeMix, 0.45f},
+            {kDelayActive, 1.0f}, {kDelayTime, 460.0f}, {kDelayPingPong, 1.0f}, {kDelayFeedback, 0.60f}, {kDelayMix, 0.35f}
+        });
+        addPreset("COMBO: Break Kit", {
+            {kScvActive, 1.0f}, {kDrive, 4.5f}, {kThreshold, -5.0f}, {kAutoGain, 1.0f}, {kMix, 0.80f},
+            {kFAType, 2.0f}, {kFAMode, 2.0f}, {kFACutoff, 2200.0f}, {kFAReso, 0.40f},
+            {kFilterMix, 0.55f}, {kTgActive, 1.0f}, {kTgPattern, 54.0f}, {kTgDepth, 70.0f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 9.0f}, {kLimCeiling, -0.4f}
+        });
+        addPreset("COMBO: Vaporwave", {
+            {kScvActive, 1.0f}, {kDrive, 2.0f}, {kAutoGain, 1.0f},
+            {kFAType, 0.0f}, {kFAMode, 0.0f}, {kFACutoff, 3200.0f}, {kFAReso, 0.30f},
+            {kNoiseActive, 1.0f}, {kNoiseType, 1.0f}, {kNoiseRoute, 1.0f}, {kNoiseLevel, -32.0f},
+            {kQeActive, 1.0f}, {kQeDepth, 7.5f}, {kQeDownsample, 5.0f}, {kQeMix, 0.55f},
+            {kDelayActive, 1.0f}, {kDelayTime, 310.0f}, {kDelayPingPong, 1.0f}, {kDelayFeedback, 0.48f}, {kDelayMix, 0.38f}
+        });
+        addPreset("COMBO: Electro Pump", {
+            {kScvActive, 1.0f}, {kDrive, 7.0f}, {kExhaustion, 1.0f}, {kThreshold, -7.0f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 5400.0f}, {kFAReso, 0.55f}, {kFAGrit, 0.30f},
+            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 14.0f}, {kScThresh, -30.0f}, {kScAmount, -100.0f},
+            {kScAttack, 1.0f}, {kScRelease, 165.0f}, {kScLpf, 320.0f},
+            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kScTargetReso, 1.0f}
+        });
+        addPreset("COMBO: Hyper Stutter", {
+            {kScvActive, 1.0f}, {kDrive, 5.0f}, {kAutoGain, 1.0f},
+            {kFAType, 1.0f}, {kFAMode, 1.0f}, {kFACutoff, 1600.0f}, {kFAReso, 0.65f},
+            {kQeActive, 1.0f}, {kQeDepth, 8.0f}, {kQeDownsample, 3.0f}, {kQeMix, 0.45f},
+            {kTgActive, 1.0f}, {kTgPattern, 83.0f}, {kTgDepth, 95.0f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.45f}, {kDelayMix, 0.30f}, {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 7.0f}
+        });
+        addPreset("MUSH: Everything On", {
+            {kScvActive, 1.0f}, {kDrive, 4.5f}, {kExhaustion, 1.0f}, {kThreshold, -6.0f}, {kAutoGain, 1.0f},
+            {kRouting, 1.0f}, {kFAType, 1.0f}, {kFAMode, 2.0f}, {kFACutoff, 950.0f}, {kFAReso, 0.65f}, {kFAGrit, 0.25f},
+            {kFBType, 2.0f}, {kFBMode, 0.0f}, {kFBCutoff, 2400.0f}, {kFBReso, 0.55f},
+            {kLfo1Freq, 0.55f}, {kModL1T1, 0.50f}, {kLfo2Freq, 0.85f}, {kModL2T4, -0.45f},
+            {kNoiseActive, 1.0f}, {kNoiseType, 1.0f}, {kNoiseRoute, 1.0f}, {kNoiseLevel, -32.0f}, {kNoiseFmMod, 0.25f},
+            {kQeActive, 1.0f}, {kQeDepth, 7.0f}, {kQeDownsample, 3.0f}, {kQeMix, 0.40f},
+            {kTgActive, 1.0f}, {kTgPattern, 77.0f}, {kTgOffset, 15.0f}, {kTgDepth, 75.0f},
+            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 8.0f}, {kScThresh, -28.0f}, {kScAmount, -80.0f},
+            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.40f}, {kDelayMix, 0.28f},
+            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 0.0f}, {kLimCeiling, -0.5f}
         });
     }
 
