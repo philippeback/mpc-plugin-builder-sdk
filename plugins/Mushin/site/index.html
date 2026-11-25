@@ -17,7 +17,7 @@
     <nav class="nav-links">
       <a href="#macros">Performance Macros</a>
       <a href="#modules">DSP Modules</a>
-      <a href="#presets">Presets</a>
+      <a href="#presets">Presets (96)</a>
       <a href="#install">Install</a>
     </nav>
   </div>
@@ -27,18 +27,20 @@
   <section class="hero">
     <div class="badge-row">
       <span class="badge cyan">Akai MPC Standalone</span>
-      <span class="badge magenta">8 Performance Macros</span>
+      <span class="badge magenta">96 Factory Presets</span>
+      <span class="badge">8 Touch Screens</span>
+      <span class="badge">128 Gate Patterns</span>
       <span class="badge">ARM32 + ARM64 Native</span>
-      <span class="badge">MPC OS 3.10.1+</span>
     </div>
     <h1>MUSHIN</h1>
     <p>
-      A multi-stage saturation, dual-filter LFO matrix, information decay, trance gate,
-      comb/stereo delay, and LMC squash limiter effect—built for hands-on Q-Link performance
-      on Akai MPC standalone hardware.
+      An 8-stage S-Curve saturation, dual-filter LFO matrix with vocal Vowel formants,
+      pixel-visualized Info Decay, 128-pattern touch-editable Trance Gate, multi-target
+      Sidechain Pumper, stereo comb delay, and LMC squash limiter effect—built for
+      hands-on Q-Link performance on Akai MPC standalone hardware.
     </p>
     <div class="cta-row">
-      <a class="btn" href="https://github.com/philippeback/mpc-plugin-builder-sdk/releases/download/v1.0.0/mushin-1.0.0-mpc.zip">Download v1.0.0 (.zip)</a>
+      <a class="btn" href="https://github.com/philippeback/mpc-plugin-builder-sdk/releases/latest">Download Latest (.zip)</a>
       <a class="btn secondary" href="#macros">Explore the 8 Macros</a>
       <a class="btn secondary" href="#install">Hardware Setup</a>
     </div>
@@ -51,19 +53,21 @@
       <p>Every stage is real-time safe, denormal-flushed, and tuned for low ARM CPU overhead on standalone MPC hardware.</p>
     </div>
     <div class="chain">
-      <div class="chain-node">S-Curve<span>Drive &amp; Exhaustion</span></div>
+      <div class="chain-node">S-Curve<span>Bypassable Drive &amp; Exhaustion</span></div>
       <div class="chain-arrow">&rarr;</div>
-      <div class="chain-node">Dual Filter<span>Serial / Parallel + LFOs</span></div>
+      <div class="chain-node">Dual Filter<span>Clean / Vowel / Acid / Digital</span></div>
       <div class="chain-arrow">&rarr;</div>
       <div class="chain-node">Info Decay<span>Bit &amp; Rate Crush</span></div>
       <div class="chain-arrow">&rarr;</div>
-      <div class="chain-node">Noise Osc<span>Pre/Post Injection &amp; FM</span></div>
+      <div class="chain-node">Noise Osc<span>6 Waves + Filter FM</span></div>
       <div class="chain-arrow">&rarr;</div>
-      <div class="chain-node">Trance Gate<span>16-Step Synced Chop</span></div>
+      <div class="chain-node">Trance Gate<span>128 Patterns + Touch Steps + Offset</span></div>
+      <div class="chain-arrow">&rarr;</div>
+      <div class="chain-node">Sidechain Pump<span>Drive / Cut / Gain / A Reso</span></div>
       <div class="chain-arrow">&rarr;</div>
       <div class="chain-node">Stereo Delay<span>Comb to Ping-Pong</span></div>
       <div class="chain-arrow">&rarr;</div>
-      <div class="chain-node">Limiter<span>Clean / LMC Squash</span></div>
+      <div class="chain-node">Limiter<span>Clean / LMC + GR Meter</span></div>
     </div>
   </section>
 
@@ -83,7 +87,7 @@
       <article class="macro-card">
         <div class="orb-frame orb-0"></div>
         <h3>EXHAUSTION</h3>
-        <p>Scales input drive (+12x) and pushes S-Curve saturation toward hard clipping with automatic headroom trim.</p>
+        <p>Engages S-Curve, scales input drive (+12x), and pushes saturation toward hard clipping with automatic headroom trim.</p>
       </article>
       <article class="macro-card">
         <div class="orb-frame orb-1"></div>
@@ -93,7 +97,7 @@
       <article class="macro-card">
         <div class="orb-frame orb-2"></div>
         <h3>INFO DECAY</h3>
-        <p>Drops bit depth toward 2-bit and ramps sample-rate downsampling up to 12x for crisp digital grit.</p>
+        <p>Drops bit depth toward 2-bit and ramps sample-rate downsampling up to 12x while illuminating the pixelated S-CURVE decay bay.</p>
       </article>
       <article class="macro-card">
         <div class="orb-frame orb-3"></div>
@@ -117,7 +121,7 @@
       <article class="macro-card mag">
         <div class="orb-frame orb-6"></div>
         <h3>GATE CARVE</h3>
-        <p>Morphs the tempo-synced Trance Gate from subtle pulsing into razor-sharp 1/16th rhythmic chops.</p>
+        <p>Morphs the tempo-synced Trance Gate from subtle pulsing into razor-sharp 1/16th rhythmic chops with synced Floor depth.</p>
       </article>
       <article class="macro-card mag">
         <div class="orb-frame orb-7"></div>
@@ -130,68 +134,68 @@
   <section class="section" id="modules">
     <div class="section-head">
       <div class="eyebrow">Deep Editing</div>
-      <h2>7 Dedicated Touch Tabs</h2>
-      <p>Every section lives in its own rounded, Q-Link-aligned panel with DRY labels and zero clutter.</p>
+      <h2>8 Dedicated Touch Screens Across 6 Function Keys</h2>
+      <p>Every engine features Q-Link-aligned rows, Cyan/Magenta Engine A/B theming, baked vector icon switches, and live hardware telemetry.</p>
     </div>
 
     <div class="modules-grid">
       <div class="module-card">
         <div class="mod-tag">Tab 2 &middot; S-CURVE</div>
-        <h3>S-Curve &amp; Info Decay</h3>
-        <p>Smooth tanh saturation or hard-clipping Exhaustion with peak-tracking Auto Gain, paired with continuous 2&ndash;16 bit quantization and 1&ndash;32x downsampling.</p>
+        <h3>S-Curve &amp; Pixelated Info Decay</h3>
+        <p>Bypassable waveshaper with smooth tanh saturation or hard Exhaustion clipping, post-stage Gain, and continuous 2&ndash;16 bit / 1&ndash;32x Info Decay—visually backed by a progressive #FF4D8D pixelated row filmstrip.</p>
         <div class="param-pills">
-          <span class="pill">Drive</span><span class="pill">Threshold</span><span class="pill">Exhaustion</span>
-          <span class="pill">Bit Depth</span><span class="pill">Downsample</span><span class="pill">Exh Link</span>
+          <span class="pill">Active</span><span class="pill">Drive</span><span class="pill">Exhaustion</span>
+          <span class="pill">Gain</span><span class="pill">Bit Depth</span><span class="pill">Downsample</span>
         </div>
       </div>
 
       <div class="module-card">
         <div class="mod-tag">Tab 3 &middot; FILTER</div>
-        <h3>Dual Filter &amp; Routing</h3>
-        <p>Two independent stereo filters with Clean, Vintage, Acid, and Digital characters, LP/HP/BP/Notch modes, pre-drive, post-grit, and an isolated Serial/Parallel routing switch.</p>
+        <h3>Dual Filter (Vowel Formant) &amp; XY Pads</h3>
+        <p>Two stereo filters (Cyan A / Magenta B) with Clean, 3-band morphing Vocal Vowel, Acid 303, and Digital modes, LP/HP/BP/Notch shapes, Filt Mix, Serial/Parallel routing, and dual live A &amp; B Freq&times;Res XY pads.</p>
         <div class="param-pills">
-          <span class="pill">A/B Cutoff</span><span class="pill">A/B Reso</span><span class="pill">CLN/VINT/ACID/DIGI</span>
-          <span class="pill">LP/HP/BP/NOTCH</span><span class="pill">SERIAL/PARAL</span>
+          <span class="pill">CLN/VOWL/ACID/DIGI</span><span class="pill">A/B XY Pads</span>
+          <span class="pill">Filt Mix</span><span class="pill">SERIAL/PARAL</span>
         </div>
       </div>
 
       <div class="module-card">
         <div class="mod-tag">Tab 4 &middot; LFO (SubTabs 1 &amp; 2)</div>
-        <h3>LFOs, Mod Matrix &amp; Noise Osc</h3>
-        <p>Dual multi-wave LFOs with direct-pressable waveform icon buttons above a 6-mode Noise/Tone Oscillator (also with waveform icons and Filter FM), plus a 2&times;6 bipolar modulation matrix on SubTab 2 targeting Filter A &amp; B Cutoff, Reso, and Grit.</p>
+        <h3>LFOs, Live XY, Mod Matrix &amp; Noise FM</h3>
+        <p>Dual multi-wave LFOs with a live LFO 1 X &times; LFO 2 Y XY pad above a 6-mode Noise/Tone Oscillator with Filter FM, plus a 2&times;6 bipolar modulation matrix on SubTab 2.</p>
         <div class="param-pills">
-          <span class="pill">LFO 1 &amp; 2</span><span class="pill">12 Mod Targets</span>
-          <span class="pill">White/Pink/Osc</span><span class="pill">Filter FM</span>
+          <span class="pill">LFO 1/2 + XY</span><span class="pill">12 Mod Targets</span>
+          <span class="pill">6 Noise/Osc Shapes</span><span class="pill">Filter FM</span>
         </div>
       </div>
 
       <div class="module-card">
-        <div class="mod-tag">Tab 5 &middot; GATE</div>
-        <h3>16-Step Trance Gate &amp; Envelope</h3>
-        <p>Tempo-synced 16-step gate with 8 preset rhythm patterns, live 16-step pattern display, and a graphical Start/Hold/End trapezoid envelope.</p>
+        <div class="mod-tag">Tab 5 &middot; GATE (SubTab 1)</div>
+        <h3>128-Pattern Gate, Touch Steps &amp; Offset</h3>
+        <p>128 rhythmic patterns (House, Techno, DnB, Trap, Euclidean, Afro-Latin, Glitch), 16 touch-editable Step buttons on screen, a bipolar Gate Offset (&minus;100%..+100%) to let kicks breathe, and a Start/Hold/End/Floor AHDS envelope.</p>
         <div class="param-pills">
-          <span class="pill">8 Patterns</span><span class="pill">1/16 1/8 1/4</span>
-          <span class="pill">16-Step Display</span><span class="pill">Gate Env Graph</span>
+          <span class="pill">128 Patterns</span><span class="pill">Touch 16-Steps</span>
+          <span class="pill">Gate Offset</span><span class="pill">AHDS Graph</span>
         </div>
       </div>
 
       <div class="module-card">
-        <div class="mod-tag">Tab 6 &middot; DLY+LIM (Top)</div>
-        <h3>Stereo &amp; Comb Delay</h3>
-        <p>1 ms to 2000 ms delay line with 8 kHz feedback damping, Ping-Pong cross-feedback, and tempo sync (1/16 to 1/2).</p>
+        <div class="mod-tag">Tab 5 &middot; PUMP (SubTab 2)</div>
+        <h3>Multi-Target Sidechain Pumper</h3>
+        <p>Dedicated PEAK/RMS sidechain follower with up to 20:1 Ratio, HPF/LPF key filters, 4x4 Test Pulse source, independent SC Drive/Cut/Gain/A Reso toggles, and vertical cyan IN &amp; magenta DUCK LED meters.</p>
         <div class="param-pills">
-          <span class="pill">Sync</span><span class="pill">Ping-Pong</span>
-          <span class="pill">Time / Tempo</span><span class="pill">Feedback</span><span class="pill">Mix</span>
+          <span class="pill">Ratio 1:1..20:1</span><span class="pill">4 SC Targets</span>
+          <span class="pill">Test Pulse</span><span class="pill">IN / DUCK Meters</span>
         </div>
       </div>
 
       <div class="module-card">
-        <div class="mod-tag">Tab 6 &middot; DLY+LIM (Bottom)</div>
-        <h3>Final Lookahead Limiter</h3>
-        <p>2 ms lookahead brickwall limiter with Clean and aggressive 20:1 LMC squash modes, input drive, ceiling, release, and parallel mix.</p>
+        <div class="mod-tag">Tab 6 &middot; DLY+LIM</div>
+        <h3>Stereo Delay &amp; Limiter GR Meter</h3>
+        <p>1 ms to 2000 ms Ping-Pong/tempo-synced delay feeding a 2 ms lookahead limiter (Clean brickwall or 20:1 LMC squash) with a horizontal cyan-to-magenta LIMITER GR telemetry bar.</p>
         <div class="param-pills">
-          <span class="pill">CLEAN / LMC</span><span class="pill">Drive</span>
-          <span class="pill">Release</span><span class="pill">Ceiling</span><span class="pill">Mix</span>
+          <span class="pill">Sync 1/16..1/2</span><span class="pill">Ping-Pong</span>
+          <span class="pill">CLN / LMC</span><span class="pill">LIMITER GR Meter</span>
         </div>
       </div>
     </div>
@@ -199,16 +203,20 @@
 
   <section class="section" id="presets">
     <div class="section-head">
-      <div class="eyebrow">Factory Bank</div>
-      <h2>6 Built-In Programs</h2>
+      <div class="eyebrow">Factory Bank &mdash; 96 Built-In Programs</div>
+      <h2>Categorized Preset Showcase</h2>
+      <p>Organised with clear prefixes for rapid browsing on the MPC. Every preset automatically syncs all knobs, icon switches, step buttons, and macros on load.</p>
     </div>
     <div class="presets-grid">
-      <div class="preset-card"><h4>Init</h4><p>Transparent starting point with all stages neutral.</p></div>
-      <div class="preset-card"><h4>Warm Tape Sat</h4><p>Gentle S-Curve drive, vintage low-pass warmth, and subtle slap delay.</p></div>
-      <div class="preset-card"><h4>Dual Resonator</h4><p>Parallel resonant Acid/Clean filters swept in opposite directions by LFO 1.</p></div>
-      <div class="preset-card"><h4>Crushed Velvet</h4><p>Exhausted saturation feeding 6-bit / 4x downsampled Info Decay.</p></div>
-      <div class="preset-card"><h4>Rhythmic Gater</h4><p>Four-on-floor trance gate into tempo-synced ping-pong delay.</p></div>
-      <div class="preset-card"><h4>Mushin Pumper</h4><p>Driven saturation into LMC squash limiting for heavy drum-bus glue.</p></div>
+      <div class="preset-card"><h4>Core (0&ndash;5)</h4><p>Init, Warm Tape Sat, Dual Resonator, Crushed Velvet, Rhythmic Gater, Mushin Pumper.</p></div>
+      <div class="preset-card"><h4>SAT (6&ndash;15)</h4><p>Hard Clip, Warm Bus, Velvet Tape, Tube Glow, Sub Crunch, Fuzz Wall, Edge Bite, Burned Coil.</p></div>
+      <div class="preset-card"><h4>FLT (16&ndash;25)</h4><p>Acid Sweep, Parallel Band, Notch Phaser, 303 Squelch, Dual Peak, Sub Focus, Telephone, Split.</p></div>
+      <div class="preset-card"><h4>VOWL (26&ndash;35)</h4><p>Talkbox, Choir Dual, Talking Gate, Oh-Ah Morph, Robot Throat, Acid Choir, Cyber Mouth, Deep Chant.</p></div>
+      <div class="preset-card"><h4>DECY &amp; LFO (36&ndash;55)</h4><p>8-Bit Arcade, Lo-Fi Dust, Exh Shred, 4-Bit Savage, Alien FM, Wobble Bass, Shimmer S&amp;H, Sci-Fi Siren.</p></div>
+      <div class="preset-card"><h4>GATE &amp; PUMP (56&ndash;75)</h4><p>Kick Safe (+35% Offset), Euclid 7, DnB Chop, Son Clave, House Duck, Test Pulse 4x4, French Touch.</p></div>
+      <div class="preset-card"><h4>COMBO: Bass &amp; Rave</h4><p>Sub Slam, Acid Rave, Vowel Bass, Industrial, Future Chop, Electro Pump, Drum Smash.</p></div>
+      <div class="preset-card"><h4>COMBO: Texture &amp; Dub</h4><p>Pump &amp; Shred, Dub Techno, Cyber Gate, Neon Synth, Warehouse, Glitch Talk, Vaporwave, Doom Drone.</p></div>
+      <div class="preset-card"><h4>MUSH Flagships</h4><p>MUSH: Full Chaos and MUSH: Everything On — full 8-stage interactive showcases across every tab.</p></div>
     </div>
   </section>
 
@@ -220,7 +228,7 @@
     </div>
     <div class="install-box">
       <ol>
-        <li>Download <a href="https://github.com/philippeback/mpc-plugin-builder-sdk/releases/download/v1.0.0/mushin-1.0.0-mpc.zip"><strong>mushin-1.0.0-mpc.zip</strong></a> from <a href="https://github.com/philippeback/mpc-plugin-builder-sdk/releases/latest">GitHub Releases</a> and unzip it.</li>
+        <li>Download the latest Mushin release zip from <a href="https://github.com/philippeback/mpc-plugin-builder-sdk/releases/latest">GitHub Releases</a> and unzip it (or build from <code>plugins/Mushin</code> with <code>python tools/build.py plugins/Mushin</code>).</li>
         <li>Ensure your hardware runs <strong>MPC OS 3.10.1 or later</strong>.</li>
         <li>On the MPC, open <strong>Preferences &rarr; Enhancements (Beta)</strong> and turn on <strong>Enable Enhancements</strong> and <strong>External Plugin Support</strong>.</li>
         <li>Copy the folder <code>PhilippeBack - VST - Mushin</code> into the <code>VST2 Plugins</code> folder on your MPC&rsquo;s USB drive or SD card (or deploy over SSH via <code>tools/mpc_remote.py</code>).</li>
