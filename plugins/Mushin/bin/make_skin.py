@@ -44,6 +44,7 @@ DRY_LABELS = {
     "B Grit": "Grit",
     "B Type": "Type",
     "B Mode": "Mode",
+    "Filt Mix": "Mix",
     "Routing": "Path",
     # LFO Matrix
     "L1 A Cut": "A Cut",
@@ -250,23 +251,31 @@ def make_magenta_variant(local_defs, base_key, new_key):
 
 
 def indent_top_left_labels(local_defs):
-    """Reserve top-left space in fader, toggle, and radio cells for the host's yellow Q badge."""
+    """Reserve top-left space in knob, fader, toggle, and radio cells for the host's yellow Q badge."""
     for entry in local_defs:
         key = str(obj_get(entry, "key") or "")
-        if not (key in ("faderUni", "toggle") or key.startswith("radio")):
+        is_knob = key.startswith("knob") and "overlay" not in key
+        if not (is_knob or key in ("faderUni", "toggle") or key.startswith("radio")):
             continue
         val = obj_get(entry, "value")
         if val is None:
             continue
         for c in obj_get(val, "componentsData") or []:
             cd = obj_get(c, "componentData")
-            if obj_get(cd, "type") == "Label" and obj_get(cd, "name") == "name":
-                bounds_obj = obj_get(c, "bounds")
-                parts = str(obj_get(bounds_obj, "bounds") or "").split()
-                if len(parts) == 4 and int(parts[0]) == 15:
-                    x, y, w, h = (int(p) for p in parts)
-                    shift = 19
-                    obj_set(bounds_obj, "bounds", f"{x + shift} {y} {max(40, w - shift)} {h}")
+            ctype = obj_get(cd, "type")
+            cname = obj_get(cd, "name")
+            bounds_obj = obj_get(c, "bounds")
+            parts = str(obj_get(bounds_obj, "bounds") or "").split()
+            if len(parts) != 4:
+                continue
+            x, y, w, h = (int(p) for p in parts)
+            if is_knob:
+                if ctype == "Knob" and x < 30:
+                    obj_set(bounds_obj, "bounds", f"{x + 19} {y} {w} {h}")
+                elif ctype == "Label" and x >= 90:
+                    obj_set(bounds_obj, "bounds", f"{x + 16} {y} {max(40, w - 16)} {h}")
+            elif ctype == "Label" and cname == "name" and x == 15:
+                obj_set(bounds_obj, "bounds", f"{x + 19} {y} {max(40, w - 19)} {h}")
 
 
 def make_filter_xypad(name, x_param, y_param, puck_img, x, y, w, h):
@@ -527,7 +536,7 @@ def make_gate_pattern_strip(idx_pattern):
     })
 
 
-def make_gate_envelope(idx_start, idx_hold, idx_end):
+def make_gate_envelope(idx_start, idx_hold, idx_end, idx_floor):
     return to_obj({
         "version": 2,
         "componentData": {
@@ -561,7 +570,7 @@ def make_gate_envelope(idx_start, idx_hold, idx_end):
                 "attackHandle": f"Parameter {idx_start}",
                 "holdHandle": f"Parameter {idx_hold}",
                 "decayHandle": f"Parameter {idx_end}",
-                "sustainHandle": "Invalid",
+                "sustainHandle": f"Parameter {idx_floor}",
                 "attackShapeHandle": "Invalid",
                 "decayShapeHandle": "Invalid",
                 "forceHideShapeHandles": True,
@@ -784,6 +793,7 @@ def main():
                     params_by_name["Gate Start"],
                     params_by_name["Gate Hold"],
                     params_by_name["Gate End"],
+                    params_by_name["Gate Floor"],
                 )
             )
 

@@ -609,6 +609,9 @@ public:
         // Performance Macros (77..84 - appended at end to preserve parameter IDs)
         kMacroExhaustion, kMacroChoke, kMacroDecay, kMacroCorrupt,
         kMacroKinetic, kMacroResonator, kMacroGate, kMacroSmash,
+        // Appended parameters (85+)
+        kFilterMix,
+        kTgFloor,
 
         kNumParams
     };
@@ -706,7 +709,7 @@ public:
         addParam(floatParam ("tg_start",   "Start",   0.0f, 100.0f, 5.0f, "ms", 1));
         addParam(floatParam ("tg_hold",    "Hold",    10.0f, 100.0f, 50.0f, "%", 0));
         addParam(floatParam ("tg_end",     "End",     0.0f, 200.0f, 10.0f, "ms", 1));
-        addParam(floatParam ("tg_depth",   "Depth",   0.0f, 100.0f, 100.0f, "%", 0));
+        addParam(floatParam ("tg_depth",   "Depth",   0.0f, 100.0f, 50.0f, "%", 0));
 
         // Info Decay
         addParam(boolParam ("qe_active",     "Active",     false));
@@ -741,6 +744,12 @@ public:
         addParam(floatParam ("macro_resonator",  "RESONATOR",   0.0f, 1.0f, 0.0f, "", 2));
         addParam(floatParam ("macro_gate",       "GATE CARVE",  0.0f, 1.0f, 0.0f, "", 2));
         addParam(floatParam ("macro_smash",      "SMASH",       0.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam ("filter_mix",       "Filt Mix",    0.0f, 1.0f, 1.0f, "", 2));
+        {
+            auto p = floatParam("tg_floor", "Gate Floor", 0.0f, 1.0f, 0.5f, "", 2);
+            p.automatable = false;
+            addParam(p);
+        }
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -763,9 +772,19 @@ public:
         if (index >= kMacroExhaustion && index <= kMacroSmash) {
             baseValues_[index] = plainValue;
             applyMacros();
+        } else if (index == kTgFloor) {
+            const float newDepth = mpc::clamp((1.0f - plainValue) * 100.0f, 0.0f, 100.0f);
+            baseValues_[kTgDepth] = newDepth;
+            updatingFromMacro_ = true;
+            setTargetParam(kTgDepth, newDepth);
+            updatingFromMacro_ = false;
         } else {
             updateBaseFromTarget(index, plainValue);
-            if (index == kRouting && get(kMacroChoke) > 0.02f) {
+            if (index == kTgDepth) {
+                updatingFromMacro_ = true;
+                setTargetParam(kTgFloor, mpc::clamp(1.0f - plainValue * 0.01f, 0.0f, 1.0f));
+                updatingFromMacro_ = false;
+            } else if (index == kRouting && get(kMacroChoke) > 0.02f) {
                 applyMacros();
             }
         }
@@ -816,6 +835,7 @@ public:
 
         smoothedGain_.setTime(50.0f, sampleRate);
         smoothedMix_.setTime(50.0f, sampleRate);
+        smoothedFilterMix_.setTime(50.0f, sampleRate);
         smoothedQeDepth_.setTime(50.0f, sampleRate);
         smoothedQeMix_.setTime(50.0f, sampleRate);
         smoothedDelayTime_.setTime(50.0f, sampleRate);
@@ -850,6 +870,7 @@ public:
 
         smoothedGain_.snap(get(kGain));
         smoothedMix_.snap(get(kMix));
+        smoothedFilterMix_.snap(get(kFilterMix));
         smoothedQeDepth_.snap(get(kQeDepth));
         smoothedQeMix_.snap(get(kQeMix));
         smoothedDelayTime_.snap(get(kDelayTime));
@@ -913,6 +934,7 @@ public:
 
         smoothedGain_.setTarget(std::max(0.0f, get(kGain)));
         smoothedMix_.setTarget(get(kMix));
+        smoothedFilterMix_.setTarget(get(kFilterMix));
 
         const bool noiseActive = getBool(kNoiseActive);
         const int noiseRoute = getInt(kNoiseRoute);
@@ -991,6 +1013,7 @@ public:
         // 2. Sample loop
         for (int s = 0; s < n; ++s) {
             const float mixVal = smoothedMix_.process();
+            const float filterMixVal = smoothedFilterMix_.process();
             const float gainVal = smoothedGain_.process();
             const float curQeDepth = smoothedQeDepth_.process();
             const float curQeMix = smoothedQeMix_.process();
@@ -1095,11 +1118,13 @@ public:
                 w = waveshaper_.processSample(w, effDrive, wsThresh);
 
                 if (noiseActive && noiseRoute == 1) w += genSample;
+                const float preFilt = w;
                 if (!parallelRouting) {
                     w = filterB_.processSample(ch, filterA_.processSample(ch, w));
                 } else {
                     w = 0.5f * (filterA_.processSample(ch, w) + filterB_.processSample(ch, w));
                 }
+                w = preFilt + (w - preFilt) * filterMixVal;
 
                 if (qeActive) {
                     w = quantError_.processSample(ch, w, curQeDepth, qeSteps, downsampleFactor, curQeMix);
@@ -1221,6 +1246,7 @@ private:
         setTargetParam(kTgDepth, gateMacroOn
             ? (baseTgOn ? std::max(baseValues_[kTgDepth], 76.0f + 24.0f * mGate) : (76.0f + 24.0f * mGate))
             : baseValues_[kTgDepth]);
+        setTargetParam(kTgFloor, mpc::clamp(1.0f - get(kTgDepth) * 0.01f, 0.0f, 1.0f));
         setTargetParam(kTgMix, gateMacroOn
             ? (baseTgOn ? std::max(baseValues_[kTgMix], 0.64f + 0.36f * mGate) : (0.64f + 0.36f * mGate))
             : baseValues_[kTgMix]);
@@ -1369,7 +1395,7 @@ private:
     DelayProcessor delay_;
     LimiterProcessor limiter_;
 
-    mpc::dsp::Smoother smoothedGain_, smoothedMix_;
+    mpc::dsp::Smoother smoothedGain_, smoothedMix_, smoothedFilterMix_;
     mpc::dsp::Smoother smoothedQeDepth_, smoothedQeMix_;
     mpc::dsp::Smoother smoothedDelayTime_, smoothedDelayFb_, smoothedDelayMix_;
     mpc::dsp::Smoother smoothedLimDrive_, smoothedLimCeil_, smoothedLimRel_, smoothedLimMix_;

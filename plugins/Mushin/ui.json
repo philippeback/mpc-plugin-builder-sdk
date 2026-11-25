@@ -82,7 +82,7 @@
 
         { "param": "B Type", "widget": "switch" },
         { "param": "B Mode", "widget": "switch" },
-        "empty",
+        { "param": "Filt Mix", "widget": "fader" },
         { "param": "Routing", "widget": "switch" }
       ]
     },
