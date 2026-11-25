@@ -172,7 +172,7 @@ def draw_panel(buf, x0, y0, pw, ph, title, title_col=TITLE_COL):
 
 
 def generate_gate_step_strips(assets_dir):
-    # Two 47x112 2-frame FilmStrips (frame 0 = off, frame 1 = on) for 16 step indicators
+    # Four 47x56 PNGs (step_off/on, step_beat_off/on) for 16 tappable step buttons
     sw, sh = 47, 56
     step_off = (0x16, 0x1B, 0x22, 255)
     step_on = (0x00, 0xE5, 0xFF, 255)
@@ -180,13 +180,12 @@ def generate_gate_step_strips(assets_dir):
     beat_pip_off = (0x45, 0x55, 0x6A, 255)
     beat_pip_on = (0xFF, 0xFF, 0xFF, 255)
 
-    for fname, is_beat in [("step_strip.png", False), ("step_beat_strip.png", True)]:
-        buf = bytearray(sw * (sh * 2) * 4)
-        for frame, active in enumerate((False, True)):
-            y_base = frame * sh
+    for prefix, is_beat in [("step", False), ("step_beat", True)]:
+        for state, active in [("off", False), ("on", True)]:
+            buf = bytearray(sw * sh * 4)
             fill = step_on if active else step_off
             for py in range(sh):
-                row_off = (y_base + py) * sw
+                row_off = py * sw
                 for px in range(sw):
                     is_edge = (px == 0 or px == sw - 1 or py == 0 or py == sh - 1)
                     col = step_border if (is_edge and not active) else fill
@@ -194,9 +193,9 @@ def generate_gate_step_strips(assets_dir):
                         col = beat_pip_on if active else beat_pip_off
                     idx = (row_off + px) * 4
                     buf[idx : idx + 4] = bytes(col)
-        out_path = os.path.join(assets_dir, fname)
-        write_png(out_path, sw, sh * 2, buf)
-        print(f"Wrote {out_path}")
+            out_path = os.path.join(assets_dir, f"{prefix}_{state}.png")
+            write_png(out_path, sw, sh, buf)
+            print(f"Wrote {out_path}")
 
 
 def draw_text_5x7(buf, w, h, x0, y0, text, col, scale=2):

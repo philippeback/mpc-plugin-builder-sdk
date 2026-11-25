@@ -1022,10 +1022,8 @@ public:
         for (int i = 0; i < 16; ++i) {
             const std::string id = "tg_step_" + std::to_string(i);
             const std::string name = "Step " + std::to_string(i + 1);
-            auto p = boolParam(id.c_str(), name.c_str(),
-                               (kGateMasks[0] & (1u << i)) != 0);
-            p.automatable = false;
-            addParam(p);
+            addParam(boolParam(id.c_str(), name.c_str(),
+                               (kGateMasks[0] & (1u << i)) != 0));
         }
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
@@ -1054,6 +1052,17 @@ public:
             baseValues_[kTgDepth] = newDepth;
             updatingFromMacro_ = true;
             setTargetParam(kTgDepth, newDepth);
+            updatingFromMacro_ = false;
+        } else if (index == kTgPattern) {
+            baseValues_[kTgPattern] = plainValue;
+            const int patIdx = mpc::clamp((int)std::lround(plainValue), 0, 127);
+            const uint16_t mask = kGateMasks[patIdx];
+            updatingFromMacro_ = true;
+            for (int i = 0; i < 16; ++i) {
+                const float v = (mask & (1u << i)) ? 1.0f : 0.0f;
+                baseValues_[kTgStep0 + i] = v;
+                setTargetParam(kTgStep0 + i, v);
+            }
             updatingFromMacro_ = false;
         } else {
             updateBaseFromTarget(index, plainValue);
@@ -1164,7 +1173,6 @@ public:
         lastSentDuckMeter_ = -1.0f;
         lastSentLimGrMeter_ = -1.0f;
         lastSentDecayViz_ = -1.0f;
-        lastSentTgPattern_ = -1;
     }
 
     void process(mpc::ProcessContext& ctx) override
@@ -1274,8 +1282,10 @@ public:
 
         const double stepSamples = (60.0 / ((double)bpm * rateFactor)) * sr;
         const double cycleSamples = stepSamples * 16.0;
-        const int tgPatIdx = mpc::clamp(getInt(kTgPattern), 0, 127);
-        const uint16_t patternMask = kGateMasks[tgPatIdx];
+        uint16_t patternMask = 0;
+        for (int i = 0; i < 16; ++i) {
+            if (getBool(kTgStep0 + i)) patternMask |= (uint16_t)(1u << i);
+        }
 
         double startSamples = (get(kTgStart) * 0.001) * sr;
         double endSamples = (get(kTgEnd) * 0.001) * sr;
@@ -1486,12 +1496,7 @@ public:
                     notifyHostParameterChanged(m);
                 }
                 notifyHostParameterChanged(kTgFloor);
-            }
-            if (tgPatIdx != lastSentTgPattern_) {
-                lastSentTgPattern_ = tgPatIdx;
                 for (int i = 0; i < 16; ++i) {
-                    const float stepVal = (patternMask & (1u << i)) ? 1.0f : 0.0f;
-                    set(kTgStep0 + i, stepVal);
                     notifyHostParameterChanged(kTgStep0 + i);
                 }
             }
@@ -1704,6 +1709,12 @@ private:
         for (const auto& kv : overrides) {
             if (kv.first >= 0 && kv.first < numParams()) {
                 vals[(size_t)kv.first] = kv.second;
+                if (kv.first == kTgPattern) {
+                    const uint16_t m = kGateMasks[mpc::clamp((int)std::lround(kv.second), 0, 127)];
+                    for (int i = 0; i < 16; ++i) {
+                        vals[(size_t)(kTgStep0 + i)] = (m & (1u << i)) ? 1.0f : 0.0f;
+                    }
+                }
             }
         }
         addProgram(name, std::move(vals));
@@ -1767,7 +1778,6 @@ private:
     float lastSentDuckMeter_ = -1.0f;
     float lastSentLimGrMeter_ = -1.0f;
     float lastSentDecayViz_ = -1.0f;
-    int lastSentTgPattern_ = -1;
     int lastProgram_ = 0;
 };
 

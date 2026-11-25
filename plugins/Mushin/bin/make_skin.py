@@ -505,7 +505,7 @@ def make_orb_local_def(orb_idx):
 def make_gate_step_leds(params_by_name):
     leds = []
     for step in range(16):
-        img = "step_beat_strip.png" if (step % 4 == 0) else "step_strip.png"
+        prefix = "step_beat" if (step % 4 == 0) else "step"
         x = 23 + 23 + step * (47 + 8)
         y = 196 + 25
         leds.append(to_obj({
@@ -513,14 +513,15 @@ def make_gate_step_leds(params_by_name):
             "componentData": {
                 "version": 1,
                 "name": f"gate_step_{step}",
-                "type": "Image",
+                "type": "Button",
                 "data": {
                     "version": 2,
-                    "imageType": "FilmStrip",
-                    "colour": "0",
-                    "image": img,
-                    "numFrames": 2,
+                    "onImage": f"{prefix}_on.png",
+                    "offImage": f"{prefix}_off.png",
+                    "buttonId": 1,
+                    "numButtonsInGroup": 1,
                     "handleName": "Data",
+                    "gestureBehaviour": "Instant",
                 },
             },
             "handle remapping": {

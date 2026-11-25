@@ -8658,14 +8658,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_0",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_beat_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_beat_on.png",
+                                    "offImage": "step_beat_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -8691,14 +8692,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_1",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -8724,14 +8726,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_2",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -8757,14 +8760,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_3",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -8790,14 +8794,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_4",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_beat_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_beat_on.png",
+                                    "offImage": "step_beat_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -8823,14 +8828,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_5",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -8856,14 +8862,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_6",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -8889,14 +8896,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_7",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -8922,14 +8930,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_8",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_beat_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_beat_on.png",
+                                    "offImage": "step_beat_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -8955,14 +8964,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_9",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -8988,14 +8998,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_10",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -9021,14 +9032,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_11",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -9054,14 +9066,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_12",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_beat_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_beat_on.png",
+                                    "offImage": "step_beat_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -9087,14 +9100,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_13",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -9120,14 +9134,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_14",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
@@ -9153,14 +9168,15 @@
                             "componentData": {
                                 "version": 1,
                                 "name": "gate_step_15",
-                                "type": "Image",
+                                "type": "Button",
                                 "data": {
                                     "version": 2,
-                                    "imageType": "FilmStrip",
-                                    "colour": "0",
-                                    "image": "step_strip.png",
-                                    "numFrames": 2,
-                                    "handleName": "Data"
+                                    "onImage": "step_on.png",
+                                    "offImage": "step_off.png",
+                                    "buttonId": 1,
+                                    "numButtonsInGroup": 1,
+                                    "handleName": "Data",
+                                    "gestureBehaviour": "Instant"
                                 }
                             },
                             "handle remapping": {
