@@ -858,6 +858,19 @@ def main():
                     1166, 384, 40, 190,
                 )
             )
+        elif tname == "DLY+LIM":
+            cdef = obj_get(tab, "componentDefinition")
+            comps = obj_get(cdef, "componentsData")
+            comps.append(
+                make_pump_meter(
+                    "lim_gr_meter",
+                    params_by_name["Lim GR"],
+                    "Right",
+                    "meter_lim_off.png",
+                    "meter_lim_on.png",
+                    363, 540, 558, 40,
+                )
+            )
         elif tname == "GATE":
             cdef = obj_get(tab, "componentDefinition")
             comps = obj_get(cdef, "componentsData")

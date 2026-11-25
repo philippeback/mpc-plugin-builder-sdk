@@ -40,14 +40,14 @@
       "name": "S-CURVE",
       "background": "bg_scurve.png",
       "controls": [
+        { "param": "S-Curve Active", "widget": "switch" },
         { "param": "Drive", "widget": "knob" },
         { "param": "Threshold", "widget": "knob" },
-        { "param": "Gain", "widget": "fader" },
         { "param": "Dry/Wet Mix", "widget": "fader" },
 
         { "param": "Exhaustion", "widget": "switch" },
         { "param": "Auto Gain", "widget": "switch" },
-        "empty",
+        { "param": "Gain", "widget": "fader" },
         "empty",
 
         { "param": "Decay Active", "widget": "switch" },

@@ -512,4 +512,22 @@ foreach ($m in @(
     }
 }
 
-Write-Host "Generated 88 icon/puck/meter PNGs in $SkinsDir"
+# 15. Limiter Horizontal GR Meter (558x40): meter_lim_off.png & meter_lim_on.png
+foreach ($state in @("off", "on")) {
+    $bmp = New-Object System.Drawing.Bitmap(558, 40, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.Clear([System.Drawing.Color]::FromArgb(255, 12, 16, 22))
+    $alpha = if ($state -eq "on") { 245 } else { 40 }
+    for ($x = 2; $x -le 552; $x += 9) {
+        $t = [double]$x / 552.0
+        $r = [int](0 + 255 * $t)
+        $gr = [int](229 + (77 - 229) * $t)
+        $b = [int](255 + (141 - 255) * $t)
+        $segBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb($alpha, $r, $gr, $b))
+        $g.FillRectangle($segBrush, $x, 4, 6, 32)
+        $segBrush.Dispose()
+    }
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "meter_lim_$state.png")
+}
+
+Write-Host "Generated 90 icon/puck/meter PNGs in $SkinsDir"

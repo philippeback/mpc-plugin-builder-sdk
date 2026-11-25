@@ -388,6 +388,16 @@ def main():
             draw_filled_box(buf, W, H, bx + bw - 1, by, 1, bh, border)
             draw_text_5x7(buf, W, H, 1051, 360, "IN", cyan, scale=2)
             draw_text_5x7(buf, W, H, 1159, 360, "DUCK", magenta, scale=2)
+        elif filename == "bg_dly_lim.png":
+            # Horizontal LIMITER GR meter bay in Row 3 Cols 1-2 (343, 497, 598, 107)
+            bx, by, bw, bh = 343, 497, 598, 107
+            draw_filled_box(buf, W, H, bx, by, bw, bh, (0x0C, 0x10, 0x16, 255))
+            border = (0x22, 0x2C, 0x38, 255)
+            draw_filled_box(buf, W, H, bx, by, bw, 1, border)
+            draw_filled_box(buf, W, H, bx, by + bh - 1, bw, 1, border)
+            draw_filled_box(buf, W, H, bx, by, 1, bh, border)
+            draw_filled_box(buf, W, H, bx + bw - 1, by, 1, bh, border)
+            draw_text_5x7(buf, W, H, 358, 506, "LIMITER GR", cyan, scale=2)
         out_path = os.path.join(assets_dir, filename)
         write_png(out_path, W, H, buf)
         print(f"Wrote {out_path}")

@@ -571,6 +571,11 @@ public:
         right = out[1];
     }
 
+    float currentGR() const noexcept
+    {
+        return 1.0f - std::min(smoothedGR_[0], smoothedGR_[1]);
+    }
+
 private:
     double sampleRate_ = 44100.0;
     std::vector<float> bufL_, bufR_;
@@ -626,6 +631,8 @@ public:
         kScTargetCut,
         kScTargetGain,
         kScTargetReso,
+        kLimGrMeter,
+        kScvActive,
 
         kNumParams
     };
@@ -780,6 +787,12 @@ public:
         addParam(boolParam  ("sc_tgt_cut",   "SC Cut",     false));
         addParam(boolParam  ("sc_tgt_gain",  "SC Gain",    true));
         addParam(boolParam  ("sc_tgt_reso",  "SC Reso",    false));
+        {
+            auto p = floatParam("lim_gr_meter", "Lim GR", 0.0f, 1.0f, 0.0f, "", 2);
+            p.automatable = false;
+            addParam(p);
+        }
+        addParam(boolParam  ("scv_active",   "S-Curve Active", false));
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -971,6 +984,7 @@ public:
             get(kScRatio)
         );
 
+        const bool scvActive = getBool(kScvActive);
         smoothedGain_.setTarget(std::max(0.0f, get(kGain)));
         smoothedMix_.setTarget(get(kMix));
         smoothedFilterMix_.setTarget(get(kFilterMix));
@@ -1051,6 +1065,7 @@ public:
         float limDriveGain = 1.0f, limCeilGain = 1.0f, limRelCoef = 0.99f;
         float blockPeakIn = 0.0f;
         float blockPeakDuck = 0.0f;
+        float blockPeakLimGr = 0.0f;
 
         // 2. Sample loop
         for (int s = 0; s < n; ++s) {
@@ -1162,7 +1177,9 @@ public:
                 float w = wet[ch];
 
                 if (noiseActive && noiseRoute == 0) w += genSample;
-                w = waveshaper_.processSample(w, effDrive, wsThresh);
+                if (scvActive) {
+                    w = waveshaper_.processSample(w, effDrive, wsThresh);
+                }
 
                 if (noiseActive && noiseRoute == 1) w += genSample;
                 const float preFilt = w;
@@ -1195,6 +1212,7 @@ public:
             if (limActive) {
                 limiter_.processSample(wet[0], wet[1], limDriveGain, curLimCeil, limCeilGain,
                                        limRelCoef, curLimMix, limMode);
+                blockPeakLimGr = std::max(blockPeakLimGr, limiter_.currentGR());
             }
 
             outL[s] = wet[0];
@@ -1205,13 +1223,15 @@ public:
             tranceGate_.advanceFreeRunningClock(n, cycleSamples);
         }
 
-        // Update read-only Pump meters after initial settle (~30 Hz host notify)
+        // Update read-only Pump & Limiter meters after initial settle (~30 Hz host notify)
         if (++blocksSinceReset_ > 4) {
             const float inDb = 20.0f * std::log10(std::max(blockPeakIn, 1.0e-4f));
             const float inMeter01 = mpc::clamp((inDb + 60.0f) / 60.0f, 0.0f, 1.0f);
             const float duckMeter01 = mpc::clamp(blockPeakDuck, 0.0f, 1.0f);
+            const float limGr01 = mpc::clamp(blockPeakLimGr, 0.0f, 1.0f);
             set(kScInMeter, inMeter01);
             set(kScDuckMeter, duckMeter01);
+            set(kLimGrMeter, limGr01);
             if (++meterNotifyCounter_ >= 12) {
                 meterNotifyCounter_ = 0;
                 if (std::fabs(inMeter01 - lastSentInMeter_) > 0.005f) {
@@ -1221,6 +1241,10 @@ public:
                 if (std::fabs(duckMeter01 - lastSentDuckMeter_) > 0.005f) {
                     lastSentDuckMeter_ = duckMeter01;
                     notifyHostParameterChanged(kScDuckMeter);
+                }
+                if (std::fabs(limGr01 - lastSentLimGrMeter_) > 0.005f) {
+                    lastSentLimGrMeter_ = limGr01;
+                    notifyHostParameterChanged(kLimGrMeter);
                 }
             }
         }
@@ -1249,6 +1273,7 @@ private:
         const float mSmash   = get(kMacroSmash);
 
         // EXHAUSTION
+        setTargetParam(kScvActive, (baseValues_[kScvActive] >= 0.5f || mExh > 0.02f) ? 1.0f : 0.0f);
         setTargetParam(kDrive, mpc::clamp(baseValues_[kDrive] + 12.0f * mExh, 1.0f, 20.0f));
         setTargetParam(kExhaustion, (baseValues_[kExhaustion] >= 0.5f || mExh > 0.65f) ? 1.0f : 0.0f);
         setTargetParam(kGain, std::max(0.0f, baseValues_[kGain] * (1.0f - 0.35f * mExh)));
@@ -1422,31 +1447,31 @@ private:
         addPreset("Init", {});
 
         addPreset("Warm Tape Sat", {
-            {kDrive, 4.5f}, {kThreshold, -6.0f}, {kAutoGain, 1.0f}, {kMix, 0.85f},
+            {kScvActive, 1.0f}, {kDrive, 4.5f}, {kThreshold, -6.0f}, {kAutoGain, 1.0f}, {kMix, 0.85f},
             {kFACutoff, 6500.0f}, {kFAType, 1.0f}, {kDelayActive, 1.0f}, {kDelayTime, 240.0f},
             {kDelayFeedback, 0.25f}, {kDelayMix, 0.2f}
         });
 
         addPreset("Dual Resonator", {
-            {kDrive, 2.5f}, {kFACutoff, 900.0f}, {kFAReso, 0.65f}, {kFAType, 2.0f},
+            {kScvActive, 1.0f}, {kDrive, 2.5f}, {kFACutoff, 900.0f}, {kFAReso, 0.65f}, {kFAType, 2.0f},
             {kFBCutoff, 2400.0f}, {kFBReso, 0.55f}, {kFAMode, 2.0f}, {kFBMode, 0.0f},
             {kRouting, 1.0f}, {kLfo1Freq, 0.4f}, {kModL1T1, 0.35f}, {kModL1T4, -0.3f}
         });
 
         addPreset("Crushed Velvet", {
-            {kDrive, 6.0f}, {kExhaustion, 1.0f}, {kThreshold, -8.0f}, {kAutoGain, 1.0f},
+            {kScvActive, 1.0f}, {kDrive, 6.0f}, {kExhaustion, 1.0f}, {kThreshold, -8.0f}, {kAutoGain, 1.0f},
             {kQeActive, 1.0f}, {kQeDepth, 6.0f}, {kQeDownsample, 4.0f}, {kQeMix, 0.7f},
             {kFACutoff, 4200.0f}, {kFAReso, 0.3f}
         });
 
         addPreset("Rhythmic Gater", {
-            {kDrive, 3.0f}, {kTgActive, 1.0f}, {kTgPattern, 4.0f}, {kTgRate, 0.0f},
+            {kScvActive, 1.0f}, {kDrive, 3.0f}, {kTgActive, 1.0f}, {kTgPattern, 4.0f}, {kTgRate, 0.0f},
             {kTgHold, 65.0f}, {kTgDepth, 90.0f}, {kDelayActive, 1.0f}, {kDelaySync, 1.0f},
             {kDelayTempo, 1.0f}, {kDelayPingPong, 1.0f}, {kDelayMix, 0.35f}
         });
 
         addPreset("Mushin Pumper", {
-            {kDrive, 3.5f}, {kScActive, 1.0f}, {kScSource, 0.0f}, {kScTarget, 2.0f},
+            {kScvActive, 1.0f}, {kDrive, 3.5f}, {kScActive, 1.0f}, {kScSource, 0.0f}, {kScTarget, 2.0f},
             {kScThresh, -18.0f}, {kScAmount, -80.0f}, {kScAttack, 5.0f}, {kScRelease, 160.0f},
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 6.0f}, {kLimCeiling, -0.5f}
         });
@@ -1473,6 +1498,7 @@ private:
     int meterNotifyCounter_ = 0;
     float lastSentInMeter_ = -1.0f;
     float lastSentDuckMeter_ = -1.0f;
+    float lastSentLimGrMeter_ = -1.0f;
 };
 
 MPC_PLUGIN_ENTRY(Mushin)
