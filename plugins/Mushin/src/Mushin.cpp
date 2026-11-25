@@ -625,6 +625,7 @@ public:
         kScTargetDrive,
         kScTargetCut,
         kScTargetGain,
+        kScTargetReso,
 
         kNumParams
     };
@@ -778,6 +779,7 @@ public:
         addParam(boolParam  ("sc_tgt_drive", "SC Drive",   false));
         addParam(boolParam  ("sc_tgt_cut",   "SC Cut",     false));
         addParam(boolParam  ("sc_tgt_gain",  "SC Gain",    true));
+        addParam(boolParam  ("sc_tgt_reso",  "SC Reso",    false));
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -956,8 +958,9 @@ public:
         const bool scDriveTarget = getBool(kScTargetDrive);
         const bool scCutTarget   = getBool(kScTargetCut);
         const bool scGainTarget  = getBool(kScTargetGain);
+        const bool scResoTarget  = getBool(kScTargetReso);
 
-        sidechain_.setActive(getBool(kScActive) && (scDriveTarget || scCutTarget || scGainTarget));
+        sidechain_.setActive(getBool(kScActive) && (scDriveTarget || scCutTarget || scGainTarget || scResoTarget));
         sidechain_.setSource(getInt(kScSource));
         sidechain_.setTarget(getInt(kScTarget));
         sidechain_.setParameters(
@@ -1119,8 +1122,13 @@ public:
                 const bool modB = (std::fabs(mod1[3]) > 1e-4f || std::fabs(mod2[3]) > 1e-4f || fmAmount > 1e-4f ||
                                    (sidechain_.isActive() && scCutTarget));
 
+                float resoA = baseFAReso + off[1];
+                if (sidechain_.isActive() && scResoTarget) {
+                    resoA += scMod * 0.5f;
+                }
+
                 filterA_.setGrit(mpc::clamp(baseFAGrit + off[2], 0.0f, 1.0f));
-                filterA_.setCoefficients(cutA, mpc::clamp(baseFAReso + off[1], 0.0f, 1.0f), !modA);
+                filterA_.setCoefficients(cutA, mpc::clamp(resoA, 0.0f, 0.98f), !modA);
                 filterB_.setGrit(mpc::clamp(baseFBGrit + off[5], 0.0f, 1.0f));
                 filterB_.setCoefficients(cutB, mpc::clamp(baseFBReso + off[4], 0.0f, 1.0f), !modB);
 

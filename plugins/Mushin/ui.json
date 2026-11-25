@@ -177,7 +177,7 @@
 
         { "param": "SC HPF", "widget": "knob" },
         { "param": "SC LPF", "widget": "knob" },
-        "empty",
+        { "param": "SC Reso", "widget": "switch" },
         "empty",
 
         { "param": "SC Drive", "widget": "switch" },

@@ -81,6 +81,7 @@ DRY_LABELS = {
     "SC Drive": "Drive",
     "SC Cut": "Cut",
     "SC Gain": "Gain",
+    "SC Reso": "A Reso",
     # Trance Gate
     "Gate Active": "Active",
     "Gate Pattern": "Pattern",
