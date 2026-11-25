@@ -685,6 +685,9 @@ def main():
         ("radio3", "radioGRate", "btn_grate", 3),
         ("radio4", "radioDTempo", "btn_dtempo", 4),
         ("radio2", "radioLMode", "btn_lmode", 2),
+        ("radio3", "radioScSource", "btn_scsource", 3),
+        ("radio2", "radioScMode", "btn_scmode", 2),
+        ("radio3", "radioScTarget", "btn_sctarget", 3),
     ]
     for base_k, new_k, prefix, cnt in icon_radio_specs:
         local_defs.append(make_icon_radio_def(local_defs, base_k, new_k, prefix, cnt))
@@ -717,6 +720,9 @@ def main():
         "LFO 1 Wave": "radioLfoWave",
         "LFO 2 Wave": "radioLfoWaveMag",
         "Noise Type": "radioNoiseType",
+        "SC Source": "radioScSource",
+        "SC Mode": "radioScMode",
+        "SC Target": "radioScTarget",
     }
     magenta_knob_names = {
         "B Cutoff", "B Reso", "B Drive", "B Grit",
@@ -811,7 +817,7 @@ def main():
                     bounds_obj = obj_get(c, "bounds")
                     obj_set(bounds_obj, "showWhenDataModelInvalid", "Show")
 
-    # Assign 6 function-key tabs with LFO MTX as LFO SubTab 2 (fnKeyIndex 3, fnKeySubIndex 1)
+    # Assign 6 function-key tabs with LFO MTX as LFO SubTab 2 and PUMP as GATE SubTab 2
     fn_key_map = {
         "MAIN": (0, 0),
         "S-CURVE": (1, 0),
@@ -819,6 +825,7 @@ def main():
         "LFO": (3, 0),
         "LFO MTX": (3, 1),
         "GATE": (4, 0),
+        "PUMP": (4, 1),
         "DLY+LIM": (5, 0),
     }
     for tab in tabs:
@@ -877,6 +884,9 @@ def main():
             entry["Tab"] = 5
             entry["SubTab"] = 1
         elif t == 7:
+            entry["Tab"] = 5
+            entry["SubTab"] = 2
+        elif t == 8:
             entry["Tab"] = 6
             entry["SubTab"] = 1
     with open(qlinks_path, "w", encoding="utf-8") as f:

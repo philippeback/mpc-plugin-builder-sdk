@@ -424,4 +424,55 @@ foreach ($puck in @(
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir $puck.Name)
 }
 
-Write-Host "Generated 68 icon/puck PNGs in $SkinsDir"
+# 11. Sidechain Source (seg3: 80x40): 0=INT, 1=EXT, 2=TEST
+$scSrcLabels = @("INT", "EXT", "TEST")
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg3_$state.png"
+    $col = Get-StrokeColor $isOn
+    for ($idx = 0; $idx -lt 3; $idx++) {
+        $bmp, $g = New-ButtonCanvas $base
+        Draw-CenteredText $g $scSrcLabels[$idx] 40 20 14 $col
+        Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_scsource_${idx}_$state.png")
+    }
+}
+
+# 12. Sidechain Mode (seg2: 122x40): 0=PEAK, 1=RMS
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg2_$state.png"
+    $col = Get-StrokeColor $isOn
+    $pen = New-Object System.Drawing.Pen($col, 2.0)
+    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+
+    # 0: PEAK (sharp transient spike)
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Polyline $g $pen @(22, 27, 30, 27, 36, 11, 42, 27, 52, 27)
+    Draw-CenteredText $g "PEAK" 82 20 13 $col
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_scmode_0_$state.png")
+
+    # 1: RMS (smooth envelope)
+    $bmp, $g = New-ButtonCanvas $base
+    Draw-Curve $g $pen @(22, 27, 30, 17, 38, 15, 46, 18, 54, 27)
+    Draw-CenteredText $g "RMS" 82 20 13 $col
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_scmode_1_$state.png")
+
+    $pen.Dispose()
+}
+
+# 13. Sidechain Target (seg3: 80x40): 0=DRIVE, 1=CUT, 2=GAIN
+$scTgtLabels = @("DRIVE", "CUT", "GAIN")
+foreach ($state in @("on", "off")) {
+    $isOn = ($state -eq "on")
+    $base = Join-Path $SkinsDir "seg3_$state.png"
+    $col = Get-StrokeColor $isOn
+    for ($idx = 0; $idx -lt 3; $idx++) {
+        $bmp, $g = New-ButtonCanvas $base
+        Draw-CenteredText $g $scTgtLabels[$idx] 40 20 13 $col
+        Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_sctarget_${idx}_$state.png")
+    }
+}
+
+Write-Host "Generated 84 icon/puck PNGs in $SkinsDir"
