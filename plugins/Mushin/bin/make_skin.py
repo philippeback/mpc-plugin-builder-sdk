@@ -502,77 +502,43 @@ def make_orb_local_def(orb_idx):
     })
 
 
-def make_gate_pat_local_def():
-    return to_obj({
-        "key": "gatePatStrip",
-        "value": {
+def make_gate_step_leds(params_by_name):
+    leds = []
+    for step in range(16):
+        img = "step_beat_strip.png" if (step % 4 == 0) else "step_strip.png"
+        x = 23 + 23 + step * (47 + 8)
+        y = 196 + 25
+        leds.append(to_obj({
             "version": 2,
-            "actions": [],
-            "backgroundData": {
+            "componentData": {
                 "version": 1,
-                "focussed": {"version": 1, "colour": "00000000", "image": ""},
-                "unfocussed": {"version": 1, "colour": "00000000", "image": ""},
-            },
-            "ignoreMousePresses": True,
-            "disableCoarseDataWheel": True,
-            "componentsData": [
-                {
+                "name": f"gate_step_{step}",
+                "type": "Image",
+                "data": {
                     "version": 2,
-                    "componentData": {
-                        "version": 1,
-                        "name": "knob",
-                        "type": "Knob",
-                        "data": {
-                            "version": 2,
-                            "knobType": "FilmStrip",
-                            "filmStrip": "gate_pat_strip.png",
-                            "numFrames": 8,
-                            "invert": False,
-                            "handleName": "Data",
-                        },
-                    },
-                    "handle remapping": {"version": 1, "map": []},
-                    "bounds": {
-                        "version": 1,
-                        "acceptsHWFocus": "No",
-                        "showWhenDataModelInvalid": "Show",
-                        "whenVisible": "Always",
-                        "boundsType": "Absolute",
-                        "bounds": "0 0 918 107",
-                    },
-                }
-            ],
-        },
-    })
-
-
-def make_gate_pattern_strip(idx_pattern):
-    return to_obj({
-        "version": 2,
-        "componentData": {
-            "version": 1,
-            "name": "gate_pat_strip",
-            "type": "gatePatStrip",
-            "data": {
-                "version": 1,
-                "handleName": "Data",
+                    "imageType": "FilmStrip",
+                    "colour": "0",
+                    "image": img,
+                    "numFrames": 2,
+                    "handleName": "Data",
+                },
             },
-        },
-        "handle remapping": {
-            "version": 1,
-            "map": [
-                {"key": "Data", "value": f"Parameter {idx_pattern}"},
-            ],
-        },
-        "bounds": {
-            "version": 1,
-            "acceptsHWFocus": "No",
-            "showWhenDataModelInvalid": "Show",
-            "whenVisible": "Always",
-            "boundsType": "Absolute",
-            "bounds": "23 196 918 107",
-        },
-    })
+            "handle remapping": {
+                "version": 1,
+                "map": [
+                    {"key": "Data", "value": f"Parameter {params_by_name[f'Step {step + 1}']}"},
+                ],
+            },
+            "bounds": {
+                "version": 1,
+                "acceptsHWFocus": "No",
+                "showWhenDataModelInvalid": "Show",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": f"{x} {y} 47 56",
+            },
+        }))
+    return leds
 
 
 def make_gate_envelope(idx_start, idx_hold, idx_end, idx_floor):
@@ -713,11 +679,9 @@ def main():
 
     for i in range(8):
         local_defs.append(make_orb_local_def(i))
-    local_defs.append(make_gate_pat_local_def())
 
     # Bake crisp shapes/icons into segmented switch buttons
     icon_radio_specs = [
-        ("radio4", "radioFType", "btn_ftype", 4),
         ("radio4", "radioFMode", "btn_fmode", 4),
         ("radio2", "radioRoute", "btn_route", 2),
         ("radio3", "radioNRoute", "btn_nroute", 3),
@@ -728,6 +692,7 @@ def main():
     ]
     for base_k, new_k, prefix, cnt in icon_radio_specs:
         local_defs.append(make_icon_radio_def(local_defs, base_k, new_k, prefix, cnt))
+    local_defs.append(make_multi_icon_radio_def(local_defs, "radioFType", "btn_ftype", [16, 66, 116, 166, 216], 46))
     local_defs.append(make_multi_icon_radio_def(local_defs, "radioLfoWave", "btn_lfowave", [16, 66, 116, 166, 216], 46))
     local_defs.append(make_multi_icon_radio_def(local_defs, "radioNoiseType", "btn_noisetype", [17, 58, 99, 140, 181, 222], 38))
 
@@ -907,9 +872,7 @@ def main():
         elif tname == "GATE":
             cdef = obj_get(tab, "componentDefinition")
             comps = obj_get(cdef, "componentsData")
-            comps.append(
-                make_gate_pattern_strip(params_by_name["Gate Pattern"])
-            )
+            comps.extend(make_gate_step_leds(params_by_name))
             comps.append(
                 make_gate_envelope(
                     params_by_name["Gate Start"],

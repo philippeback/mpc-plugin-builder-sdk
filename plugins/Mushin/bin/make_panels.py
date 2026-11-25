@@ -171,59 +171,31 @@ def draw_panel(buf, x0, y0, pw, ph, title, title_col=TITLE_COL):
                                     buf[idx : idx + 4] = bytes(title_col)
 
 
-GATE_PATTERNS = [
-    ("gate_pat_0.png", 0xAAAA),
-    ("gate_pat_1.png", 0x5555),
-    ("gate_pat_2.png", 0xEEEE),
-    ("gate_pat_3.png", 0x9999),
-    ("gate_pat_4.png", 0xF0F0),
-    ("gate_pat_5.png", 0xD7D7),
-    ("gate_pat_6.png", 0x8888),
-    ("gate_pat_7.png", 0x8912),
-]
-
-
-def generate_gate_patterns(assets_dir):
-    gw, gh = 918, 107
-    card_bg = (0x10, 0x14, 0x1A, 255)
+def generate_gate_step_strips(assets_dir):
+    # Two 47x112 2-frame FilmStrips (frame 0 = off, frame 1 = on) for 16 step indicators
+    sw, sh = 47, 56
     step_off = (0x16, 0x1B, 0x22, 255)
     step_on = (0x00, 0xE5, 0xFF, 255)
     step_border = (0x26, 0x2E, 0x3A, 255)
+    beat_pip_off = (0x45, 0x55, 0x6A, 255)
+    beat_pip_on = (0xFF, 0xFF, 0xFF, 255)
 
-    pad_x = 16
-    gap = 8
-    step_w = (gw - pad_x * 2 - gap * 15) // 16
-    step_h = 56
-    sy0 = (gh - step_h) // 2
-    sy1 = sy0 + step_h
-
-    for fname, mask in GATE_PATTERNS:
-        buf = bytearray(bytes(card_bg) * (gw * gh))
-        # Outer subtle card border
-        for x in range(gw):
-            for y in (0, gh - 1):
-                idx = (y * gw + x) * 4
-                buf[idx : idx + 4] = bytes(step_border)
-        for y in range(gh):
-            for x in (0, gw - 1):
-                idx = (y * gw + x) * 4
-                buf[idx : idx + 4] = bytes(step_border)
-
-        for step in range(16):
-            active = (mask & (1 << step)) != 0
+    for fname, is_beat in [("step_strip.png", False), ("step_beat_strip.png", True)]:
+        buf = bytearray(sw * (sh * 2) * 4)
+        for frame, active in enumerate((False, True)):
+            y_base = frame * sh
             fill = step_on if active else step_off
-            sx0 = pad_x + step * (step_w + gap)
-            sx1 = sx0 + step_w
-            for y in range(sy0, sy1):
-                row_off = y * gw
-                for x in range(sx0, sx1):
-                    is_edge = (x == sx0 or x == sx1 - 1 or y == sy0 or y == sy1 - 1)
+            for py in range(sh):
+                row_off = (y_base + py) * sw
+                for px in range(sw):
+                    is_edge = (px == 0 or px == sw - 1 or py == 0 or py == sh - 1)
                     col = step_border if (is_edge and not active) else fill
-                    idx = (row_off + x) * 4
+                    if is_beat and 2 <= py <= 5 and 15 <= px <= 31:
+                        col = beat_pip_on if active else beat_pip_off
+                    idx = (row_off + px) * 4
                     buf[idx : idx + 4] = bytes(col)
-
         out_path = os.path.join(assets_dir, fname)
-        write_png(out_path, gw, gh, buf)
+        write_png(out_path, sw, sh * 2, buf)
         print(f"Wrote {out_path}")
 
 
@@ -329,29 +301,31 @@ def generate_decay_viz_strip(assets_dir):
     total_h = fh * num_frames
     buf = bytearray(fw * total_h * 4)  # starts 100% transparent
 
+    # Reuse zone-segregating magenta/purple (#FF4D8D) and darker tonal variants at low alpha
+    base_rgb = (0x9E, 0x28, 0x56)
     palette = [
-        (168, 85, 247),
-        (192, 132, 252),
-        (126, 34, 206),
-        (217, 70, 239),
-        (109, 40, 217),
+        (0xFF, 0x4D, 0x8D),
+        (0xD4, 0x3A, 0x73),
+        (0xA6, 0x2B, 0x59),
+        (0x7A, 0x1D, 0x40),
+        (0xE8, 0x44, 0x80),
     ]
 
     for frame in range(1, num_frames):
         t = frame / float(num_frames - 1)
         y_base = frame * fh
-        bg_alpha = int(105 * (t ** 0.85))
-        bg_col = bytes((130, 35, 220, bg_alpha))
+        bg_alpha = int(38 * (t ** 0.9))
+        bg_col = bytes((base_rgb[0], base_rgb[1], base_rgb[2], bg_alpha))
 
-        # Fill base purple wash for this frame
+        # Fill base wash for this frame
         for py in range(fh):
             row_start = ((y_base + py) * fw) * 4
             buf[row_start : row_start + fw * 4] = bg_col * fw
 
         # Pixelated squares: bigger and denser as t increases
         sq = max(2, int(2 + 14 * (t ** 1.15)))
-        prob = 0.08 + 0.58 * t
-        sq_alpha = int(65 + 135 * t)
+        prob = 0.08 + 0.54 * t
+        sq_alpha = int(28 + 56 * t)
 
         cols = (fw + sq - 1) // sq
         rows = (fh + sq - 1) // sq
@@ -366,9 +340,9 @@ def generate_decay_viz_strip(assets_dir):
                 ba = bg_alpha / 255.0
                 oa = sa + ba * (1.0 - sa)
                 if oa > 1e-5:
-                    rr = int((pr * sa + 130 * ba * (1.0 - sa)) / oa)
-                    rg = int((pg * sa + 35 * ba * (1.0 - sa)) / oa)
-                    rb = int((pb * sa + 220 * ba * (1.0 - sa)) / oa)
+                    rr = int((pr * sa + base_rgb[0] * ba * (1.0 - sa)) / oa)
+                    rg = int((pg * sa + base_rgb[1] * ba * (1.0 - sa)) / oa)
+                    rb = int((pb * sa + base_rgb[2] * ba * (1.0 - sa)) / oa)
                     ra = int(min(255, oa * 255))
                     px_bytes = bytes((rr, rg, rb, ra))
                 else:
@@ -393,7 +367,7 @@ def main():
     assets_dir = os.path.join(os.path.dirname(script_dir), "assets")
     os.makedirs(assets_dir, exist_ok=True)
     generate_main_bg(assets_dir)
-    generate_gate_patterns(assets_dir)
+    generate_gate_step_strips(assets_dir)
     generate_decay_viz_strip(assets_dir)
 
     cyan = (0x00, 0xE5, 0xFF, 255)
@@ -455,6 +429,9 @@ def main():
             draw_filled_box(buf, W, H, bx + bw - 1, by, 1, bh, border)
             draw_text_5x7(buf, W, H, 1051, 360, "IN", cyan, scale=2)
             draw_text_5x7(buf, W, H, 1159, 360, "DUCK", magenta, scale=2)
+        elif filename == "bg_gate.png":
+            # 16-step Gate Pattern card background in Row 2 Cols 1-3 (23, 196, 918, 107)
+            draw_filled_box(buf, W, H, 23, 196, 918, 107, (0x10, 0x14, 0x1A, 255), (0x26, 0x2E, 0x3A, 255))
         elif filename == "bg_dly_lim.png":
             # Horizontal LIMITER GR meter bay in Row 3 Cols 1-2 (343, 497, 598, 107)
             bx, by, bw, bh = 343, 497, 598, 107

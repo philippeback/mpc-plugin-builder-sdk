@@ -100,18 +100,22 @@ private:
 };
 
 // ---------------------------------------------------------------------------
-// Stereo Filter (Clean / Vintage / Acid / Digital + LP / HP / BP / Notch)
+// Stereo Filter (Clean / Vintage / Acid / Digital / Vowel + LP / HP / BP / Notch)
 // ---------------------------------------------------------------------------
 class MushinFilter
 {
 public:
-    enum class Type { Clean = 0, Vintage, Acid, Digital };
+    enum class Type { Clean = 0, Vintage, Acid, Digital, Vowel };
     enum class Mode { Lowpass = 0, Highpass, Bandpass, Notch };
 
     void prepare(double sampleRate)
     {
         svfL_.setSampleRate(sampleRate);
         svfR_.setSampleRate(sampleRate);
+        for (int i = 0; i < 3; ++i) {
+            fL_[i].setSampleRate(sampleRate);
+            fR_[i].setSampleRate(sampleRate);
+        }
         reset();
     }
 
@@ -119,9 +123,13 @@ public:
     {
         svfL_.reset();
         svfR_.reset();
+        for (int i = 0; i < 3; ++i) {
+            fL_[i].reset();
+            fR_[i].reset();
+        }
     }
 
-    void setType(int t) { type_ = (Type)clamp(t, 0, 3); }
+    void setType(int t) { type_ = (Type)clamp(t, 0, 4); }
     void setMode(int m) { mode_ = (Mode)clamp(m, 0, 3); }
     void setDrive(float d) { drive_ = d; }
     void setGrit(float g) { grit_ = g; }
@@ -136,6 +144,26 @@ public:
         bypass_ = (allowBypass && type_ == Type::Clean && mode_ == Mode::Lowpass && c >= 19950.0f && drive_ <= 1.001f && grit_ <= 0.001f);
         svfL_.set(c, r);
         svfR_.set(c, r);
+
+        if (type_ == Type::Vowel) {
+            // Morph across 5 vocal formants A -> E -> I -> O -> U via log cutoff
+            static constexpr float kFormants[5][3] = {
+                { 730.0f, 1090.0f, 2440.0f }, // A
+                { 530.0f, 1840.0f, 2480.0f }, // E
+                { 270.0f, 2290.0f, 3010.0f }, // I
+                { 570.0f,  840.0f, 2410.0f }, // O
+                { 300.0f,  870.0f, 2240.0f }, // U
+            };
+            const float norm = clamp(std::log2(c / 20.0f) / 9.965784f, 0.0f, 1.0f) * 4.0f;
+            const int i0 = clamp((int)norm, 0, 3);
+            const float frac = norm - (float)i0;
+            const float fRes = clamp(0.55f + r * 0.42f, 0.55f, 0.97f);
+            for (int k = 0; k < 3; ++k) {
+                const float fk = kFormants[i0][k] + (kFormants[i0 + 1][k] - kFormants[i0][k]) * frac;
+                fL_[k].set(fk, fRes);
+                fR_[k].set(fk, fRes);
+            }
+        }
     }
 
     float processSample(int ch, float sample) noexcept
@@ -150,15 +178,41 @@ public:
         const float driven = sample * preDrive;
         const float x = driven + (fastTanh(driven) - driven) * preMix;
 
-        SVF::Mode svfMode = SVF::Mode::Lowpass;
-        switch (mode_) {
-            case Mode::Lowpass:  svfMode = SVF::Mode::Lowpass; break;
-            case Mode::Highpass: svfMode = SVF::Mode::Highpass; break;
-            case Mode::Bandpass: svfMode = SVF::Mode::Bandpass; break;
-            case Mode::Notch:    svfMode = SVF::Mode::Notch; break;
+        float filtered = 0.0f;
+        if (type_ == Type::Vowel) {
+            SVF* fb = (ch == 0) ? fL_ : fR_;
+            const float formants = 1.0f * fb[0].process(x, SVF::Mode::Bandpass)
+                                 + 0.7f * fb[1].process(x, SVF::Mode::Bandpass)
+                                 + 0.4f * fb[2].process(x, SVF::Mode::Bandpass);
+            switch (mode_) {
+                case Mode::Lowpass: {
+                    const float lp = (ch == 0) ? svfL_.process(x, SVF::Mode::Lowpass) : svfR_.process(x, SVF::Mode::Lowpass);
+                    filtered = 0.70f * formants + 0.35f * lp;
+                    break;
+                }
+                case Mode::Highpass: {
+                    const float hp = (ch == 0) ? svfL_.process(x, SVF::Mode::Highpass) : svfR_.process(x, SVF::Mode::Highpass);
+                    filtered = 0.70f * formants + 0.35f * hp;
+                    break;
+                }
+                case Mode::Bandpass:
+                    filtered = 0.85f * formants;
+                    break;
+                case Mode::Notch:
+                    filtered = x - 0.65f * formants;
+                    break;
+            }
+        } else {
+            SVF::Mode svfMode = SVF::Mode::Lowpass;
+            switch (mode_) {
+                case Mode::Lowpass:  svfMode = SVF::Mode::Lowpass; break;
+                case Mode::Highpass: svfMode = SVF::Mode::Highpass; break;
+                case Mode::Bandpass: svfMode = SVF::Mode::Bandpass; break;
+                case Mode::Notch:    svfMode = SVF::Mode::Notch; break;
+            }
+            filtered = (ch == 0) ? svfL_.process(x, svfMode) : svfR_.process(x, svfMode);
         }
 
-        float filtered = (ch == 0) ? svfL_.process(x, svfMode) : svfR_.process(x, svfMode);
         float out = filtered * (1.0f + grit_);
         const float postMix = clamp(std::max(preMix, grit_ * 10.0f), 0.0f, 1.0f);
         return out + (fastTanh(out) - out) * postMix;
@@ -171,6 +225,7 @@ private:
     float grit_ = 0.0f;
     bool bypass_ = false;
     SVF svfL_, svfR_;
+    SVF fL_[3], fR_[3];
 };
 
 // ---------------------------------------------------------------------------
@@ -324,15 +379,144 @@ private:
 // ---------------------------------------------------------------------------
 // Trance Gate
 // ---------------------------------------------------------------------------
-static constexpr uint16_t kGateMasks[8] = {
-    0xAAAA, // Straight 16th
-    0x5555, // Offbeat 16th
-    0xEEEE, // Classic 1
-    0x9999, // Classic 2
-    0xF0F0, // Four-On-Floor
-    0xD7D7, // Galop
-    0x8888, // Space Gate
-    0x8912  // Euclidean 5
+static constexpr uint16_t kGateMasks[128] = {
+    // 00-07: Core (preserved)
+    0xAAAA, // 01 Straight 16
+    0x5555, // 02 Offbeat 16
+    0xEEEE, // 03 Classic 1
+    0x9999, // 04 Classic 2
+    0xF0F0, // 05 4-On-Floor
+    0xD7D7, // 06 Galop
+    0x8888, // 07 Space Gate
+    0x8912, // 08 Euclidean 5
+    // 08-23: House / Trance / 4x4
+    0x1111, // 09 Quarter Pulse
+    0x4444, // 10 Upbeat 8th
+    0xCCCC, // 11 Pumping 8th
+    0xBDBD, // 12 Trance Arp A
+    0xDBDB, // 13 Trance Arp B
+    0x7777, // 14 Triplet Feel
+    0xEEFE, // 15 Sidechain Dip
+    0x3333, // 16 Stutter 4x4
+    0x6666, // 17 Synco 4x4
+    0x7575, // 18 Rolling Trance
+    0xB5B5, // 19 Gate Push
+    0x2222, // 20 2nd 16th
+    0xA0A0, // 21 Half Offbeat
+    0x00FF, // 22 Half Bar On
+    0xFF00, // 23 Half Bar Off
+    0xFFFF, // 24 All Open
+    // 24-39: Techno & Driving
+    0x9595, // 25 Techno Drive
+    0xB7B7, // 26 Rolling 16th A
+    0x7B7B, // 27 Rolling 16th B
+    0x9249, // 28 Hypno 3-Step
+    0x2492, // 29 Hypno 3-Rot
+    0x1451, // 30 Berlin Dub
+    0xA9A9, // 31 Acid Gate A
+    0x5959, // 32 Acid Gate B
+    0xF333, // 33 Industrial
+    0x3F3F, // 34 Heavy Chug
+    0x8421, // 35 Polyrhythm 5
+    0xD555, // 36 Synco Drive
+    0x1FFF, // 37 Stomp & Run
+    0xFF11, // 38 Beat Drop
+    0xA5A5, // 39 Warehouse
+    0x5A5A, // 40 Dark Pulse
+    // 40-55: Breakbeat / DnB / Jungle
+    0x1449, // 41 Two-Step A
+    0x4449, // 42 Two-Step B
+    0x54D5, // 43 Amen Accent
+    0x4D4D, // 44 Think Break
+    0xA98D, // 45 Jungle Chop
+    0x6525, // 46 DnB Roller
+    0x4491, // 47 Halftime DnB
+    0x2929, // 48 Broken 16th
+    0x9313, // 49 Ghost Shuffle
+    0x94C5, // 50 Break Synco
+    0x6967, // 51 Neuro Gate
+    0xD595, // 52 Liquid Flow
+    0xF511, // 53 Snare Roll
+    0x1513, // 54 Double Kick
+    0x5A59, // 55 Skippy Beat
+    0x3355, // 56 Stepper
+    // 56-71: Trap / Hip-Hop / Halftime
+    0x1191, // 57 Boom Bap A
+    0x1419, // 58 Boom Bap B
+    0x5757, // 59 Trap Hats A
+    0xD5F5, // 60 Trap Hats B
+    0xF111, // 61 Trap Roll End
+    0x4A49, // 62 808 Bounce
+    0x1501, // 63 Halftime Dip
+    0x0441, // 64 Sparse 808
+    0x1249, // 65 Triplet Hop
+    0xA949, // 66 Drill Slide
+    0x31C7, // 67 Stutter 3+3+2
+    0x4489, // 68 Late Bounce
+    0x0303, // 69 Sub Drop
+    0x1919, // 70 Lazy Swing
+    0x11F1, // 71 Mid Roll
+    0xF101, // 72 End Burst
+    // 72-87: Euclidean Rhythms
+    0x0821, // 73 Euclid 3
+    0x2084, // 74 Euclid 3 Rot
+    0x2249, // 75 Euclid 5 Rot
+    0x4949, // 76 Euclid 6
+    0x9292, // 77 Euclid 6 Rot
+    0x52A5, // 78 Euclid 7
+    0xA54A, // 79 Euclid 7 Rot
+    0x9529, // 80 Euclid 7 R2
+    0x5B5B, // 81 Euclid 9
+    0xB6B6, // 82 Euclid 9 Rot
+    0xADAD, // 83 Euclid 10 R2
+    0x6DB7, // 84 Euclid 11
+    0xB6DB, // 85 Euclid 11 Rot
+    0xEF7B, // 86 Euclid 13
+    0xFF77, // 87 Euclid 14
+    0xFFFE, // 88 Euclid 15
+    // 88-103: Funk / Clave / Afro-Latin
+    0x2449, // 89 Son Clave 3-2
+    0x4914, // 90 Son Clave 2-3
+    0x1489, // 91 Rumba 3-2
+    0x8914, // 92 Rumba 2-3
+    0x8449, // 93 Bossa Nova
+    0x8949, // 94 Tresillo
+    0x6D6D, // 95 Cinquillo
+    0x4D2D, // 96 Funk Chop A
+    0x52D3, // 97 Funk Chop B
+    0x9A69, // 98 Clavinet
+    0x5D5D, // 99 Samba Gate
+    0xAAA5, // 100 Afrobeat A
+    0x9525, // 101 Afrobeat B
+    0x9959, // 102 Reggaeton
+    0x1949, // 103 Dancehall
+    0x5554, // 104 Disco Octave
+    // 104-119: Stutter / Glitch / Build-ups
+    0x7511, // 105 Accel Build
+    0x112F, // 106 Decel Fade
+    0xFC41, // 107 Ramp Up
+    0x113F, // 108 Ramp Down
+    0x0F0F, // 109 Burst 1
+    0x1717, // 110 Burst 2
+    0x49A3, // 111 Glitch A
+    0xA646, // 112 Glitch B
+    0x140F, // 113 Call & Resp A
+    0x0F05, // 114 Call & Resp B
+    0x54FF, // 115 Tail Chop
+    0xA6DB, // 116 Gate Flutter
+    0xFFFB, // 117 16th Gap 1
+    0xEFFF, // 118 16th Gap 2
+    0xEEE0, // 119 16th Gap 4
+    0x94A5, // 120 Micro Chop
+    // 120-127: Odd / Sparse / Breathers
+    0x0001, // 121 Beat 1 Only
+    0x0101, // 122 Beat 1 & 3
+    0x1010, // 123 Beat 2 & 4
+    0x0100, // 124 Beat 3 Only
+    0x2211, // 125 Sparse 4/16
+    0x0421, // 126 Sparse 5/16
+    0x4A95, // 127 Odd 7/16
+    0x7FFF  // 128 Sustain 15
 };
 
 class TranceGateProcessor
@@ -634,6 +818,10 @@ public:
         kLimGrMeter,
         kScvActive,
         kDecayViz,
+        kTgStep0, kTgStep1, kTgStep2,  kTgStep3,
+        kTgStep4, kTgStep5, kTgStep6,  kTgStep7,
+        kTgStep8, kTgStep9, kTgStep10, kTgStep11,
+        kTgStep12, kTgStep13, kTgStep14, kTgStep15,
 
         kNumParams
     };
@@ -669,7 +857,7 @@ public:
         addParam(floatParam ("filter_a_resonance", "Reso",     0.0f, 1.0f, 0.1f, "", 2));
         addParam(floatParam ("filter_a_drive",     "Drive",    1.0f, 10.0f, 1.0f, "x", 1));
         addParam(floatParam ("filter_a_grit",      "Grit",     0.0f, 1.0f, 0.0f, "", 2));
-        addParam(choiceParam("filter_a_type",      "Type",     {"CLN", "VINT", "ACID", "DIGI"}, 0));
+        addParam(choiceParam("filter_a_type",      "Type",     {"CLN", "VINT", "ACID", "DIGI", "VOWL"}, 0));
         addParam(choiceParam("filter_a_mode",      "Mode",     {"LP", "HP", "BP", "NOTCH"}, 0));
 
         // Filter B & Routing
@@ -677,7 +865,7 @@ public:
         addParam(floatParam ("filter_b_resonance", "Reso",     0.0f, 1.0f, 0.1f, "", 2));
         addParam(floatParam ("filter_b_drive",     "Drive",    1.0f, 10.0f, 1.0f, "x", 1));
         addParam(floatParam ("filter_b_grit",      "Grit",     0.0f, 1.0f, 0.0f, "", 2));
-        addParam(choiceParam("filter_b_type",      "Type",     {"CLN", "VINT", "ACID", "DIGI"}, 0));
+        addParam(choiceParam("filter_b_type",      "Type",     {"CLN", "VINT", "ACID", "DIGI", "VOWL"}, 0));
         addParam(choiceParam("filter_b_mode",      "Mode",     {"LP", "HP", "BP", "NOTCH"}, 0));
         addParam(choiceParam("routing",            "Path",     {"SERIAL", "PARAL"}, 0));
 
@@ -725,8 +913,40 @@ public:
         // Trance Gate
         addParam(boolParam  ("tg_active",  "Active",  false));
         addParam(floatParam ("tg_mix",     "Mix",     0.0f, 1.0f, 1.0f, "", 2));
-        addParam(choiceParam("tg_pattern", "Pattern",
-            {"Straight 16", "Offbeat 16", "Classic 1", "Classic 2", "4-On-Floor", "Galop", "Space Gate", "Euclidean 5"}, 0));
+        addParam(choiceParam("tg_pattern", "Pattern", {
+            "01 Straight 16", "02 Offbeat 16", "03 Classic 1", "04 Classic 2",
+            "05 4-On-Floor", "06 Galop", "07 Space Gate", "08 Euclidean 5",
+            "09 Quarter Pulse", "10 Upbeat 8th", "11 Pumping 8th", "12 Trance Arp A",
+            "13 Trance Arp B", "14 Triplet Feel", "15 Sidechain Dip", "16 Stutter 4x4",
+            "17 Synco 4x4", "18 Rolling Trance", "19 Gate Push", "20 2nd 16th",
+            "21 Half Offbeat", "22 Half Bar On", "23 Half Bar Off", "24 All Open",
+            "25 Techno Drive", "26 Rolling 16th A", "27 Rolling 16th B", "28 Hypno 3-Step",
+            "29 Hypno 3-Rot", "30 Berlin Dub", "31 Acid Gate A", "32 Acid Gate B",
+            "33 Industrial", "34 Heavy Chug", "35 Polyrhythm 5", "36 Synco Drive",
+            "37 Stomp & Run", "38 Beat Drop", "39 Warehouse", "40 Dark Pulse",
+            "41 Two-Step A", "42 Two-Step B", "43 Amen Accent", "44 Think Break",
+            "45 Jungle Chop", "46 DnB Roller", "47 Halftime DnB", "48 Broken 16th",
+            "49 Ghost Shuffle", "50 Break Synco", "51 Neuro Gate", "52 Liquid Flow",
+            "53 Snare Roll", "54 Double Kick", "55 Skippy Beat", "56 Stepper",
+            "57 Boom Bap A", "58 Boom Bap B", "59 Trap Hats A", "60 Trap Hats B",
+            "61 Trap Roll End", "62 808 Bounce", "63 Halftime Dip", "64 Sparse 808",
+            "65 Triplet Hop", "66 Drill Slide", "67 Stutter 3+3+2", "68 Late Bounce",
+            "69 Sub Drop", "70 Lazy Swing", "71 Mid Roll", "72 End Burst",
+            "73 Euclid 3", "74 Euclid 3 Rot", "75 Euclid 5 Rot", "76 Euclid 6",
+            "77 Euclid 6 Rot", "78 Euclid 7", "79 Euclid 7 Rot", "80 Euclid 7 R2",
+            "81 Euclid 9", "82 Euclid 9 Rot", "83 Euclid 10 R2", "84 Euclid 11",
+            "85 Euclid 11 Rot", "86 Euclid 13", "87 Euclid 14", "88 Euclid 15",
+            "89 Son Clave 3-2", "90 Son Clave 2-3", "91 Rumba 3-2", "92 Rumba 2-3",
+            "93 Bossa Nova", "94 Tresillo", "95 Cinquillo", "96 Funk Chop A",
+            "97 Funk Chop B", "98 Clavinet", "99 Samba Gate", "100 Afrobeat A",
+            "101 Afrobeat B", "102 Reggaeton", "103 Dancehall", "104 Disco Octave",
+            "105 Accel Build", "106 Decel Fade", "107 Ramp Up", "108 Ramp Down",
+            "109 Burst 1", "110 Burst 2", "111 Glitch A", "112 Glitch B",
+            "113 Call & Resp A", "114 Call & Resp B", "115 Tail Chop", "116 Gate Flutter",
+            "117 16th Gap 1", "118 16th Gap 2", "119 16th Gap 4", "120 Micro Chop",
+            "121 Beat 1 Only", "122 Beat 1 & 3", "123 Beat 2 & 4", "124 Beat 3 Only",
+            "125 Sparse 4/16", "126 Sparse 5/16", "127 Odd 7/16", "128 Sustain 15"
+        }, 0));
         addParam(choiceParam("tg_rate",    "Rate",    {"1/16", "1/8", "1/4"}, 0));
         addParam(floatParam ("tg_start",   "Start",   0.0f, 100.0f, 5.0f, "ms", 1));
         addParam(floatParam ("tg_hold",    "Hold",    10.0f, 100.0f, 50.0f, "%", 0));
@@ -796,6 +1016,14 @@ public:
         addParam(boolParam  ("scv_active",   "S-Curve Active", false));
         {
             auto p = floatParam("decay_viz", "Decay Viz", 0.0f, 1.0f, 0.0f, "", 2);
+            p.automatable = false;
+            addParam(p);
+        }
+        for (int i = 0; i < 16; ++i) {
+            const std::string id = "tg_step_" + std::to_string(i);
+            const std::string name = "Step " + std::to_string(i + 1);
+            auto p = boolParam(id.c_str(), name.c_str(),
+                               (kGateMasks[0] & (1u << i)) != 0);
             p.automatable = false;
             addParam(p);
         }
@@ -932,6 +1160,11 @@ public:
         smoothedLimRel_.snap(get(kLimRelease));
         smoothedLimMix_.snap(get(kLimMix));
         blocksSinceReset_ = 0;
+        lastSentInMeter_ = -1.0f;
+        lastSentDuckMeter_ = -1.0f;
+        lastSentLimGrMeter_ = -1.0f;
+        lastSentDecayViz_ = -1.0f;
+        lastSentTgPattern_ = -1;
     }
 
     void process(mpc::ProcessContext& ctx) override
@@ -1041,7 +1274,8 @@ public:
 
         const double stepSamples = (60.0 / ((double)bpm * rateFactor)) * sr;
         const double cycleSamples = stepSamples * 16.0;
-        const uint16_t patternMask = kGateMasks[mpc::clamp(getInt(kTgPattern), 0, 7)];
+        const int tgPatIdx = mpc::clamp(getInt(kTgPattern), 0, 127);
+        const uint16_t patternMask = kGateMasks[tgPatIdx];
 
         double startSamples = (get(kTgStart) * 0.001) * sr;
         double endSamples = (get(kTgEnd) * 0.001) * sr;
@@ -1246,6 +1480,21 @@ public:
             set(kScDuckMeter, duckMeter01);
             set(kLimGrMeter, limGr01);
             set(kDecayViz, decayViz01);
+            if (currentProgram() != lastProgram_) {
+                lastProgram_ = currentProgram();
+                for (int m = kMacroExhaustion; m <= kMacroSmash; ++m) {
+                    notifyHostParameterChanged(m);
+                }
+                notifyHostParameterChanged(kTgFloor);
+            }
+            if (tgPatIdx != lastSentTgPattern_) {
+                lastSentTgPattern_ = tgPatIdx;
+                for (int i = 0; i < 16; ++i) {
+                    const float stepVal = (patternMask & (1u << i)) ? 1.0f : 0.0f;
+                    set(kTgStep0 + i, stepVal);
+                    notifyHostParameterChanged(kTgStep0 + i);
+                }
+            }
             if (++meterNotifyCounter_ >= 12) {
                 meterNotifyCounter_ = 0;
                 if (std::fabs(inMeter01 - lastSentInMeter_) > 0.005f) {
@@ -1484,7 +1733,7 @@ private:
 
         addPreset("Rhythmic Gater", {
             {kScvActive, 1.0f}, {kDrive, 3.0f}, {kTgActive, 1.0f}, {kTgPattern, 4.0f}, {kTgRate, 0.0f},
-            {kTgHold, 65.0f}, {kTgDepth, 90.0f}, {kDelayActive, 1.0f}, {kDelaySync, 1.0f},
+            {kTgHold, 65.0f}, {kTgDepth, 90.0f}, {kTgFloor, 0.1f}, {kDelayActive, 1.0f}, {kDelaySync, 1.0f},
             {kDelayTempo, 1.0f}, {kDelayPingPong, 1.0f}, {kDelayMix, 0.35f}
         });
 
@@ -1518,6 +1767,8 @@ private:
     float lastSentDuckMeter_ = -1.0f;
     float lastSentLimGrMeter_ = -1.0f;
     float lastSentDecayViz_ = -1.0f;
+    int lastSentTgPattern_ = -1;
+    int lastProgram_ = 0;
 };
 
 MPC_PLUGIN_ENTRY(Mushin)

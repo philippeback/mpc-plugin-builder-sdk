@@ -70,7 +70,7 @@
         { "param": "A Drive", "widget": "knob" },
         { "param": "A Grit", "widget": "knob" },
 
-        { "param": "A Type", "widget": "switch" },
+        { "param": "A Type", "widget": "knob", "overlay": "menu" },
         { "param": "A Mode", "widget": "switch" },
         "empty",
         "empty",
@@ -80,7 +80,7 @@
         { "param": "B Drive", "widget": "knob" },
         { "param": "B Grit", "widget": "knob" },
 
-        { "param": "B Type", "widget": "switch" },
+        { "param": "B Type", "widget": "knob", "overlay": "menu" },
         { "param": "B Mode", "widget": "switch" },
         { "param": "Filt Mix", "widget": "fader" },
         { "param": "Routing", "widget": "switch" }
