@@ -167,7 +167,7 @@
       "controls": [
         { "param": "SC Active", "widget": "switch" },
         { "param": "SC Mode", "widget": "switch" },
-        { "param": "SC Target", "widget": "switch" },
+        { "param": "SC Ratio", "widget": "knob" },
         { "param": "SC Mix", "widget": "fader" },
 
         { "param": "SC Thresh", "widget": "knob" },
@@ -177,12 +177,12 @@
 
         { "param": "SC HPF", "widget": "knob" },
         { "param": "SC LPF", "widget": "knob" },
-        { "param": "SC Ratio", "widget": "knob" },
+        "empty",
         "empty",
 
-        "empty",
-        "empty",
-        "empty",
+        { "param": "SC Drive", "widget": "switch" },
+        { "param": "SC Cut", "widget": "switch" },
+        { "param": "SC Gain", "widget": "switch" },
         "empty"
       ]
     },

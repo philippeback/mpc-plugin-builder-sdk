@@ -78,6 +78,9 @@ DRY_LABELS = {
     "SC LPF": "LPF",
     "SC Mix": "Mix",
     "SC Ratio": "Ratio",
+    "SC Drive": "Drive",
+    "SC Cut": "Cut",
+    "SC Gain": "Gain",
     # Trance Gate
     "Gate Active": "Active",
     "Gate Pattern": "Pattern",
@@ -721,7 +724,6 @@ def main():
         ("radio4", "radioDTempo", "btn_dtempo", 4),
         ("radio2", "radioLMode", "btn_lmode", 2),
         ("radio2", "radioScMode", "btn_scmode", 2),
-        ("radio3", "radioScTarget", "btn_sctarget", 3),
     ]
     for base_k, new_k, prefix, cnt in icon_radio_specs:
         local_defs.append(make_icon_radio_def(local_defs, base_k, new_k, prefix, cnt))
@@ -755,7 +757,6 @@ def main():
         "LFO 2 Wave": "radioLfoWaveMag",
         "Noise Type": "radioNoiseType",
         "SC Mode": "radioScMode",
-        "SC Target": "radioScTarget",
     }
     magenta_knob_names = {
         "B Cutoff", "B Reso", "B Drive", "B Grit",

@@ -622,6 +622,9 @@ public:
         kScInMeter,
         kScDuckMeter,
         kScRatio,
+        kScTargetDrive,
+        kScTargetCut,
+        kScTargetGain,
 
         kNumParams
     };
@@ -772,6 +775,9 @@ public:
             addParam(p);
         }
         addParam(floatParam ("sc_ratio",     "SC Ratio",   1.0f, 20.0f, 4.0f, ":1", 1));
+        addParam(boolParam  ("sc_tgt_drive", "SC Drive",   false));
+        addParam(boolParam  ("sc_tgt_cut",   "SC Cut",     false));
+        addParam(boolParam  ("sc_tgt_gain",  "SC Gain",    true));
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -947,7 +953,11 @@ public:
             mod2[t] = get(kModL2T1 + t);
         }
 
-        sidechain_.setActive(getBool(kScActive));
+        const bool scDriveTarget = getBool(kScTargetDrive);
+        const bool scCutTarget   = getBool(kScTargetCut);
+        const bool scGainTarget  = getBool(kScTargetGain);
+
+        sidechain_.setActive(getBool(kScActive) && (scDriveTarget || scCutTarget || scGainTarget));
         sidechain_.setSource(getInt(kScSource));
         sidechain_.setTarget(getInt(kScTarget));
         sidechain_.setParameters(
@@ -1098,16 +1108,16 @@ public:
 
                 float cutA = baseFACutoff * std::pow(2.0f, off[0] * 5.0f);
                 float cutB = baseFBCutoff * std::pow(2.0f, off[3] * 5.0f);
-                if (sidechain_.isActive() && sidechain_.getTarget() == SidechainProcessor::Target::Cutoff) {
+                if (sidechain_.isActive() && scCutTarget) {
                     const float scCut = std::pow(2.0f, scMod * 6.0f);
                     cutA *= scCut;
                     cutB *= scCut;
                 }
 
                 const bool modA = (std::fabs(mod1[0]) > 1e-4f || std::fabs(mod2[0]) > 1e-4f || fmAmount > 1e-4f ||
-                                   (sidechain_.isActive() && sidechain_.getTarget() == SidechainProcessor::Target::Cutoff));
+                                   (sidechain_.isActive() && scCutTarget));
                 const bool modB = (std::fabs(mod1[3]) > 1e-4f || std::fabs(mod2[3]) > 1e-4f || fmAmount > 1e-4f ||
-                                   (sidechain_.isActive() && sidechain_.getTarget() == SidechainProcessor::Target::Cutoff));
+                                   (sidechain_.isActive() && scCutTarget));
 
                 filterA_.setGrit(mpc::clamp(baseFAGrit + off[2], 0.0f, 1.0f));
                 filterA_.setCoefficients(cutA, mpc::clamp(baseFAReso + off[1], 0.0f, 1.0f), !modA);
@@ -1127,12 +1137,12 @@ public:
             }
 
             float effDrive = wsDrive;
-            if (sidechain_.isActive() && sidechain_.getTarget() == SidechainProcessor::Target::Drive) {
-                effDrive = mpc::clamp(effDrive + scMod * 20.0f, 1.0f, 50.0f);
+            if (sidechain_.isActive() && scDriveTarget) {
+                effDrive = mpc::clamp(effDrive * std::pow(2.0f, scMod * 2.5f), 1.0f, 32.0f);
             }
 
             float curGain = gainVal;
-            if (sidechain_.isActive() && sidechain_.getTarget() == SidechainProcessor::Target::Gain) {
+            if (sidechain_.isActive() && scGainTarget) {
                 curGain *= std::max(0.0f, 1.0f + scMod);
             }
             curGain = std::max(0.0f, curGain);
