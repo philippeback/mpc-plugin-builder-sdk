@@ -961,7 +961,7 @@ public:
         const int noiseRoute = getInt(kNoiseRoute);
         const float noiseGain = mpc::dsp::dbToGain(get(kNoiseLevel));
         const float fmAmount = get(kNoiseFmMod);
-        const bool needNoise = noiseActive || (sidechain_.isActive() && sidechain_.getSource() == SidechainProcessor::Source::TestSignal);
+        const bool needNoise = noiseActive;
         if (needNoise) {
             noiseOsc_.setType(getInt(kNoiseType));
             noiseOsc_.setFrequency(get(kNoiseFreq));
@@ -1064,10 +1064,7 @@ public:
 
             float scMod = 0.0f;
             if (sidechain_.isActive()) {
-                const float scIn = (sidechain_.getSource() == SidechainProcessor::Source::TestSignal)
-                                   ? genSample
-                                   : 0.5f * (dryL + dryR);
-                scMod = sidechain_.processSample(scIn) * scMixVal;
+                scMod = sidechain_.processSample(0.5f * (dryL + dryR)) * scMixVal;
                 blockPeakDuck = std::max(blockPeakDuck, std::fabs(scMod));
             }
 
@@ -1184,12 +1181,24 @@ public:
             tranceGate_.advanceFreeRunningClock(n, cycleSamples);
         }
 
-        // Update read-only Pump meters after initial settle (preserves state round-trip across 2-block resets)
+        // Update read-only Pump meters after initial settle (~30 Hz host notify)
         if (++blocksSinceReset_ > 4) {
             const float inDb = 20.0f * std::log10(std::max(blockPeakIn, 1.0e-4f));
             const float inMeter01 = mpc::clamp((inDb + 60.0f) / 60.0f, 0.0f, 1.0f);
+            const float duckMeter01 = mpc::clamp(blockPeakDuck, 0.0f, 1.0f);
             set(kScInMeter, inMeter01);
-            set(kScDuckMeter, mpc::clamp(blockPeakDuck, 0.0f, 1.0f));
+            set(kScDuckMeter, duckMeter01);
+            if (++meterNotifyCounter_ >= 12) {
+                meterNotifyCounter_ = 0;
+                if (std::fabs(inMeter01 - lastSentInMeter_) > 0.005f) {
+                    lastSentInMeter_ = inMeter01;
+                    notifyHostParameterChanged(kScInMeter);
+                }
+                if (std::fabs(duckMeter01 - lastSentDuckMeter_) > 0.005f) {
+                    lastSentDuckMeter_ = duckMeter01;
+                    notifyHostParameterChanged(kScDuckMeter);
+                }
+            }
         }
     }
 
@@ -1437,6 +1446,9 @@ private:
     float baseValues_[kNumParams] = {};
     bool updatingFromMacro_ = false;
     int blocksSinceReset_ = 0;
+    int meterNotifyCounter_ = 0;
+    float lastSentInMeter_ = -1.0f;
+    float lastSentDuckMeter_ = -1.0f;
 };
 
 MPC_PLUGIN_ENTRY(Mushin)

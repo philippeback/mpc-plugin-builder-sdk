@@ -166,9 +166,9 @@
       "background": "bg_pump.png",
       "controls": [
         { "param": "SC Active", "widget": "switch" },
-        { "param": "SC Source", "widget": "switch" },
         { "param": "SC Mode", "widget": "switch" },
         { "param": "SC Target", "widget": "switch" },
+        { "param": "SC Mix", "widget": "fader" },
 
         { "param": "SC Thresh", "widget": "knob" },
         { "param": "SC Amount", "widget": "knob", "polarity": "bipolar" },
@@ -177,7 +177,7 @@
 
         { "param": "SC HPF", "widget": "knob" },
         { "param": "SC LPF", "widget": "knob" },
-        { "param": "SC Mix", "widget": "fader" },
+        "empty",
         "empty",
 
         "empty",

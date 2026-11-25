@@ -295,7 +295,7 @@ def make_pump_meter(name, param_idx, direction, off_img, on_img, x, y, w, h):
                 "rmsImage": on_img,
                 "peakHandle": f"Parameter {param_idx}",
                 "rmsHandle": f"Parameter {param_idx}",
-                "peakHoldHandle": "Invalid",
+                "peakHoldHandle": f"Hold/Parameter {param_idx}",
                 "peakHoldSize": 4,
                 "peakHoldColour": "ffffffff",
             },
@@ -719,7 +719,6 @@ def main():
         ("radio3", "radioGRate", "btn_grate", 3),
         ("radio4", "radioDTempo", "btn_dtempo", 4),
         ("radio2", "radioLMode", "btn_lmode", 2),
-        ("radio2", "radioScSource", "btn_scsource", 2),
         ("radio2", "radioScMode", "btn_scmode", 2),
         ("radio3", "radioScTarget", "btn_sctarget", 3),
     ]
@@ -754,7 +753,6 @@ def main():
         "LFO 1 Wave": "radioLfoWave",
         "LFO 2 Wave": "radioLfoWaveMag",
         "Noise Type": "radioNoiseType",
-        "SC Source": "radioScSource",
         "SC Mode": "radioScMode",
         "SC Target": "radioScTarget",
     }
