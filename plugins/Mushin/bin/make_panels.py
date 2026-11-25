@@ -361,6 +361,33 @@ def main():
         elif filename == "bg_lfo.png":
             draw_filled_box(buf, W, H, 16, 44, 606, 3, cyan)
             draw_filled_box(buf, W, H, 656, 44, 606, 3, magenta)
+            # LFO 1 (X) x LFO 2 (Y) XY telemetry bay in Row 1 (23, 196, 1238, 107)
+            bx, by, bw, bh = 23, 196, 1238, 107
+            draw_filled_box(buf, W, H, bx, by, bw, bh, (0x0C, 0x10, 0x16, 255))
+            border = (0x22, 0x2C, 0x38, 255)
+            draw_filled_box(buf, W, H, bx, by, bw, 1, border)
+            draw_filled_box(buf, W, H, bx, by + bh - 1, bw, 1, border)
+            draw_filled_box(buf, W, H, bx, by, 1, bh, border)
+            draw_filled_box(buf, W, H, bx + bw - 1, by, 1, bh, border)
+            for frac in (0.25, 0.5, 0.75):
+                gx = bx + int(bw * frac)
+                draw_filled_box(buf, W, H, gx, by + 1, 1, bh - 2, (0x18, 0x20, 0x2A, 255))
+            for frac in (0.33, 0.66):
+                gy = by + int(bh * frac)
+                draw_filled_box(buf, W, H, bx + 1, gy, bw - 2, 1, (0x18, 0x20, 0x2A, 255))
+            draw_text_5x7(buf, W, H, bx + 10, by + 6, "LFO 1 X", cyan, scale=1)
+            draw_text_5x7(buf, W, H, bx + 68, by + 6, "X  LFO 2 Y", magenta, scale=1)
+        elif filename == "bg_pump.png":
+            # IN & DUCK vertical meter bay in Row 2-3 Col 3 (983, 346, 278, 258)
+            bx, by, bw, bh = 983, 346, 278, 258
+            draw_filled_box(buf, W, H, bx, by, bw, bh, (0x0C, 0x10, 0x16, 255))
+            border = (0x22, 0x2C, 0x38, 255)
+            draw_filled_box(buf, W, H, bx, by, bw, 1, border)
+            draw_filled_box(buf, W, H, bx, by + bh - 1, bw, 1, border)
+            draw_filled_box(buf, W, H, bx, by, 1, bh, border)
+            draw_filled_box(buf, W, H, bx + bw - 1, by, 1, bh, border)
+            draw_text_5x7(buf, W, H, 1051, 360, "IN", cyan, scale=2)
+            draw_text_5x7(buf, W, H, 1159, 360, "DUCK", magenta, scale=2)
         out_path = os.path.join(assets_dir, filename)
         write_png(out_path, W, H, buf)
         print(f"Wrote {out_path}")

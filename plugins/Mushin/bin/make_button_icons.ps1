@@ -424,15 +424,33 @@ foreach ($puck in @(
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir $puck.Name)
 }
 
-# 11. Sidechain Source (seg3: 80x40): 0=INT, 1=EXT, 2=TEST
-$scSrcLabels = @("INT", "EXT", "TEST")
+# 10b. LFO XYPad puck (22x22): dual cyan (LFO 1 X) + magenta (LFO 2 Y)
+$bmp = New-Object System.Drawing.Bitmap(22, 22, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+$g = [System.Drawing.Graphics]::FromImage($bmp)
+$g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+$g.Clear([System.Drawing.Color]::Transparent)
+$glowC = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(75, 0, 229, 255))
+$glowM = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(75, 255, 77, 141))
+$fillC = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 0, 229, 255))
+$fillM = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 255, 77, 141))
+$ring  = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(255, 240, 244, 248), 2.0)
+$g.FillPie($glowC, 1, 1, 20, 20, 90, 180)
+$g.FillPie($glowM, 1, 1, 20, 20, 270, 180)
+$g.FillPie($fillC, 4, 4, 14, 14, 90, 180)
+$g.FillPie($fillM, 4, 4, 14, 14, 270, 180)
+$g.DrawEllipse($ring, 4, 4, 14, 14)
+$ring.Dispose(); $fillM.Dispose(); $fillC.Dispose(); $glowM.Dispose(); $glowC.Dispose()
+Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "puck_lfo.png")
+
+# 11. Sidechain Source (seg2: 122x40): 0=INT, 1=TEST
+$scSrcLabels = @("INT", "TEST")
 foreach ($state in @("on", "off")) {
     $isOn = ($state -eq "on")
-    $base = Join-Path $SkinsDir "seg3_$state.png"
+    $base = Join-Path $SkinsDir "seg2_$state.png"
     $col = Get-StrokeColor $isOn
-    for ($idx = 0; $idx -lt 3; $idx++) {
+    for ($idx = 0; $idx -lt 2; $idx++) {
         $bmp, $g = New-ButtonCanvas $base
-        Draw-CenteredText $g $scSrcLabels[$idx] 40 20 14 $col
+        Draw-CenteredText $g $scSrcLabels[$idx] 61 20 14 $col
         Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_scsource_${idx}_$state.png")
     }
 }
@@ -475,4 +493,23 @@ foreach ($state in @("on", "off")) {
     }
 }
 
-Write-Host "Generated 84 icon/puck PNGs in $SkinsDir"
+# 14. Pump Meters (40x190): meter_in (cyan) & meter_duck (magenta)
+foreach ($m in @(
+    @{ Prefix = "meter_in";   R = 0;   G = 229; B = 255 },
+    @{ Prefix = "meter_duck"; R = 255; G = 77;  B = 141 }
+)) {
+    foreach ($state in @("off", "on")) {
+        $bmp = New-Object System.Drawing.Bitmap(40, 190, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        $g = [System.Drawing.Graphics]::FromImage($bmp)
+        $g.Clear([System.Drawing.Color]::FromArgb(255, 12, 16, 22))
+        $alpha = if ($state -eq "on") { 245 } else { 40 }
+        $segBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb($alpha, $m.R, $m.G, $m.B))
+        for ($y = 4; $y -le 182; $y += 6) {
+            $g.FillRectangle($segBrush, 4, $y, 32, 4)
+        }
+        $segBrush.Dispose()
+        Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir ($m.Prefix + "_$state.png"))
+    }
+}
+
+Write-Host "Generated 88 icon/puck/meter PNGs in $SkinsDir"

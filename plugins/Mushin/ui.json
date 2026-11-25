@@ -177,7 +177,7 @@
 
         { "param": "SC HPF", "widget": "knob" },
         { "param": "SC LPF", "widget": "knob" },
-        "empty",
+        { "param": "SC Mix", "widget": "fader" },
         "empty",
 
         "empty",

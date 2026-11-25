@@ -230,7 +230,7 @@ private:
 class SidechainProcessor
 {
 public:
-    enum class Source { Internal = 0, External, TestSignal };
+    enum class Source { Internal = 0, TestSignal };
     enum class Target { Drive = 0, Cutoff, Gain };
 
     void prepare(double sampleRate)
@@ -273,14 +273,16 @@ public:
 
     void setActive(bool a) { active_ = a; }
     bool isActive() const { return active_; }
-    void setSource(int s) { source_ = (Source)clamp(s, 0, 2); }
+    void setSource(int s) { source_ = (Source)clamp(s, 0, 1); }
     Source getSource() const { return source_; }
     void setTarget(int t) { target_ = (Target)clamp(t, 0, 2); }
     Target getTarget() const { return target_; }
 
+    float lastEnv() const { return lastEnv_; }
+
     float processSample(float sidechainSample) noexcept
     {
-        if (!active_) return 0.0f;
+        if (!active_) { lastEnv_ = 0.0f; return 0.0f; }
 
         float filtered = hpFilter_.process(sidechainSample, SVF::Mode::Highpass);
         filtered = lpFilter_.process(filtered, SVF::Mode::Lowpass);
@@ -294,16 +296,17 @@ public:
             envelope_ = release_ * (envelope_ - x) + x;
 
         const float env = clamp(rmsMode_ ? std::sqrt(std::max(0.0f, envelope_)) : envelope_, 0.0f, 1.0f);
+        lastEnv_ = env;
         float modulation = 0.0f;
-        if (env > threshold_) {
-            modulation = (env - threshold_) / (1.0f - threshold_ + 1.0e-4f);
+        if (env > threshold_ && env > 1.0e-5f) {
+            modulation = clamp((env - threshold_) / (env + threshold_ * 0.5f), 0.0f, 1.0f);
         }
         return modulation * amount_;
     }
 
 private:
     double sampleRate_ = 44100.0;
-    float attack_ = 0.0f, release_ = 0.0f, envelope_ = 0.0f;
+    float attack_ = 0.0f, release_ = 0.0f, envelope_ = 0.0f, lastEnv_ = 0.0f;
     bool rmsMode_ = false;
     bool active_ = false;
     Source source_ = Source::Internal;
@@ -612,6 +615,9 @@ public:
         // Appended parameters (85+)
         kFilterMix,
         kTgFloor,
+        kScMix,
+        kScInMeter,
+        kScDuckMeter,
 
         kNumParams
     };
@@ -682,12 +688,12 @@ public:
 
         // Sidechain
         addParam(boolParam  ("sc_active",    "Active",  false));
-        addParam(choiceParam("sc_source",    "Source",  {"INT", "EXT", "TEST"}, 0));
+        addParam(choiceParam("sc_source",    "Source",  {"INT", "TEST"}, 0));
         addParam(floatParam ("sc_threshold", "Thresh",  -60.0f, 0.0f, -24.0f, "dB", 1));
         addParam(floatParam ("sc_attack",    "Attack",  0.1f, 500.0f, 10.0f, "ms", 1));
         addParam(floatParam ("sc_release",   "Release", 1.0f, 2000.0f, 100.0f, "ms", 0));
         addParam(choiceParam("sc_mode",      "Mode",    {"PEAK", "RMS"}, 0));
-        addParam(floatParam ("sc_amount",    "Amount",  -100.0f, 100.0f, 0.0f, "%", 0));
+        addParam(floatParam ("sc_amount",    "Amount",  -100.0f, 100.0f, -60.0f, "%", 0));
         addParam(choiceParam("sc_target",    "Target",  {"DRIVE", "CUT", "GAIN"}, 2));
         addParam(logParam   ("sc_hp_freq",   "HPF",     20.0f, 2000.0f, 20.0f, "Hz", 0));
         addParam(logParam   ("sc_lp_freq",   "LPF",     500.0f, 20000.0f, 20000.0f, "Hz", 0));
@@ -747,6 +753,17 @@ public:
         addParam(floatParam ("filter_mix",       "Filt Mix",    0.0f, 1.0f, 1.0f, "", 2));
         {
             auto p = floatParam("tg_floor", "Gate Floor", 0.0f, 1.0f, 0.5f, "", 2);
+            p.automatable = false;
+            addParam(p);
+        }
+        addParam(floatParam ("sc_mix",       "SC Mix",     0.0f, 1.0f, 1.0f, "", 2));
+        {
+            auto p = floatParam("sc_in_meter", "SC In", 0.0f, 1.0f, 0.0f, "", 2);
+            p.automatable = false;
+            addParam(p);
+        }
+        {
+            auto p = floatParam("sc_duck_meter", "SC Duck", 0.0f, 1.0f, 0.0f, "", 2);
             p.automatable = false;
             addParam(p);
         }
@@ -836,6 +853,7 @@ public:
         smoothedGain_.setTime(50.0f, sampleRate);
         smoothedMix_.setTime(50.0f, sampleRate);
         smoothedFilterMix_.setTime(50.0f, sampleRate);
+        smoothedScMix_.setTime(50.0f, sampleRate);
         smoothedQeDepth_.setTime(50.0f, sampleRate);
         smoothedQeMix_.setTime(50.0f, sampleRate);
         smoothedDelayTime_.setTime(50.0f, sampleRate);
@@ -871,6 +889,7 @@ public:
         smoothedGain_.snap(get(kGain));
         smoothedMix_.snap(get(kMix));
         smoothedFilterMix_.snap(get(kFilterMix));
+        smoothedScMix_.snap(get(kScMix));
         smoothedQeDepth_.snap(get(kQeDepth));
         smoothedQeMix_.snap(get(kQeMix));
         smoothedDelayTime_.snap(get(kDelayTime));
@@ -880,6 +899,7 @@ public:
         smoothedLimCeil_.snap(get(kLimCeiling));
         smoothedLimRel_.snap(get(kLimRelease));
         smoothedLimMix_.snap(get(kLimMix));
+        blocksSinceReset_ = 0;
     }
 
     void process(mpc::ProcessContext& ctx) override
@@ -935,6 +955,7 @@ public:
         smoothedGain_.setTarget(std::max(0.0f, get(kGain)));
         smoothedMix_.setTarget(get(kMix));
         smoothedFilterMix_.setTarget(get(kFilterMix));
+        smoothedScMix_.setTarget(get(kScMix));
 
         const bool noiseActive = getBool(kNoiseActive);
         const int noiseRoute = getInt(kNoiseRoute);
@@ -1009,11 +1030,14 @@ public:
         float qeSteps = 1.0f;
         float lastQeDepth = -1.0f;
         float limDriveGain = 1.0f, limCeilGain = 1.0f, limRelCoef = 0.99f;
+        float blockPeakIn = 0.0f;
+        float blockPeakDuck = 0.0f;
 
         // 2. Sample loop
         for (int s = 0; s < n; ++s) {
             const float mixVal = smoothedMix_.process();
             const float filterMixVal = smoothedFilterMix_.process();
+            const float scMixVal = smoothedScMix_.process();
             const float gainVal = smoothedGain_.process();
             const float curQeDepth = smoothedQeDepth_.process();
             const float curQeMix = smoothedQeMix_.process();
@@ -1030,6 +1054,7 @@ public:
 
             const float dryL = inL[s];
             const float dryR = inR[s];
+            blockPeakIn = std::max(blockPeakIn, std::max(std::fabs(dryL), std::fabs(dryR)));
 
             float genSample = 0.0f;
             if (needNoise) {
@@ -1042,7 +1067,8 @@ public:
                 const float scIn = (sidechain_.getSource() == SidechainProcessor::Source::TestSignal)
                                    ? genSample
                                    : 0.5f * (dryL + dryR);
-                scMod = sidechain_.processSample(scIn);
+                scMod = sidechain_.processSample(scIn) * scMixVal;
+                blockPeakDuck = std::max(blockPeakDuck, std::fabs(scMod));
             }
 
             float tgGain = 1.0f;
@@ -1104,7 +1130,7 @@ public:
 
             float curGain = gainVal;
             if (sidechain_.isActive() && sidechain_.getTarget() == SidechainProcessor::Target::Gain) {
-                curGain += scMod;
+                curGain *= std::max(0.0f, 1.0f + scMod);
             }
             curGain = std::max(0.0f, curGain);
 
@@ -1156,6 +1182,14 @@ public:
 
         if (!ctx.transport.playing && tgActive) {
             tranceGate_.advanceFreeRunningClock(n, cycleSamples);
+        }
+
+        // Update read-only Pump meters after initial settle (preserves state round-trip across 2-block resets)
+        if (++blocksSinceReset_ > 4) {
+            const float inDb = 20.0f * std::log10(std::max(blockPeakIn, 1.0e-4f));
+            const float inMeter01 = mpc::clamp((inDb + 60.0f) / 60.0f, 0.0f, 1.0f);
+            set(kScInMeter, inMeter01);
+            set(kScDuckMeter, mpc::clamp(blockPeakDuck, 0.0f, 1.0f));
         }
     }
 
@@ -1395,13 +1429,14 @@ private:
     DelayProcessor delay_;
     LimiterProcessor limiter_;
 
-    mpc::dsp::Smoother smoothedGain_, smoothedMix_, smoothedFilterMix_;
+    mpc::dsp::Smoother smoothedGain_, smoothedMix_, smoothedFilterMix_, smoothedScMix_;
     mpc::dsp::Smoother smoothedQeDepth_, smoothedQeMix_;
     mpc::dsp::Smoother smoothedDelayTime_, smoothedDelayFb_, smoothedDelayMix_;
     mpc::dsp::Smoother smoothedLimDrive_, smoothedLimCeil_, smoothedLimRel_, smoothedLimMix_;
 
     float baseValues_[kNumParams] = {};
     bool updatingFromMacro_ = false;
+    int blocksSinceReset_ = 0;
 };
 
 MPC_PLUGIN_ENTRY(Mushin)

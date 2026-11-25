@@ -4647,7 +4647,7 @@
                                         "onImage": "btn_scsource_0_on.png",
                                         "offImage": "btn_scsource_0_off.png",
                                         "buttonId": 0,
-                                        "numButtonsInGroup": 3,
+                                        "numButtonsInGroup": 2,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -4662,7 +4662,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "15 54 80 40"
+                                    "bounds": "15 54 122 40"
                                 }
                             },
                             {
@@ -4676,7 +4676,7 @@
                                         "onImage": "btn_scsource_1_on.png",
                                         "offImage": "btn_scsource_1_off.png",
                                         "buttonId": 1,
-                                        "numButtonsInGroup": 3,
+                                        "numButtonsInGroup": 2,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -4691,36 +4691,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "99 54 80 40"
-                                }
-                            },
-                            {
-                                "version": 2,
-                                "componentData": {
-                                    "version": 1,
-                                    "name": "seg 2",
-                                    "type": "Button",
-                                    "data": {
-                                        "version": 2,
-                                        "onImage": "btn_scsource_2_on.png",
-                                        "offImage": "btn_scsource_2_off.png",
-                                        "buttonId": 2,
-                                        "numButtonsInGroup": 3,
-                                        "handleName": "Data",
-                                        "gestureBehaviour": "Instant"
-                                    }
-                                },
-                                "handle remapping": {
-                                    "version": 1,
-                                    "map": []
-                                },
-                                "bounds": {
-                                    "version": 1,
-                                    "acceptsHWFocus": "No",
-                                    "showWhenDataModelInvalid": "Show",
-                                    "whenVisible": "Always",
-                                    "boundsType": "Absolute",
-                                    "bounds": "183 54 80 40"
+                                    "bounds": "141 54 122 40"
                                 }
                             }
                         ]
@@ -6729,7 +6700,6 @@
                 "key": "Parameter 36",
                 "value": [
                     "INT",
-                    "EXT",
                     "TEST"
                 ]
             },
@@ -8285,6 +8255,32 @@
                                 "boundsType": "Absolute",
                                 "bounds": "343 497 278 107"
                             }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "lfo_freq_xy",
+                                "type": "XYPad",
+                                "data": {
+                                    "version": 1,
+                                    "xPositionHandle": "Parameter 19",
+                                    "yPositionHandle": "Parameter 21",
+                                    "image": "puck_lfo.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "23 196 1238 107"
+                            }
                         }
                     ]
                 },
@@ -9335,13 +9331,108 @@
                                 "boundsType": "Absolute",
                                 "bounds": "343 346 278 107"
                             }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "SC Mix",
+                                "type": "faderUni",
+                                "data": {
+                                    "version": 1,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 87"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "Yes",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "663 346 278 107"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "sc_in_meter",
+                                "type": "Meter",
+                                "data": {
+                                    "version": 3,
+                                    "direction": "Up",
+                                    "invert": false,
+                                    "inactiveImage": "meter_in_off.png",
+                                    "peakImage": "meter_in_on.png",
+                                    "rmsImage": "meter_in_on.png",
+                                    "peakHandle": "Parameter 88",
+                                    "rmsHandle": "Parameter 88",
+                                    "peakHoldHandle": "Invalid",
+                                    "peakHoldSize": 4,
+                                    "peakHoldColour": "ffffffff"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "1038 384 40 190"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "sc_duck_meter",
+                                "type": "Meter",
+                                "data": {
+                                    "version": 3,
+                                    "direction": "Down",
+                                    "invert": false,
+                                    "inactiveImage": "meter_duck_off.png",
+                                    "peakImage": "meter_duck_on.png",
+                                    "rmsImage": "meter_duck_on.png",
+                                    "peakHandle": "Parameter 89",
+                                    "rmsHandle": "Parameter 89",
+                                    "peakHoldHandle": "Invalid",
+                                    "peakHoldSize": 4,
+                                    "peakHoldColour": "ffffffff"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "1166 384 40 190"
+                            }
                         }
                     ]
                 },
                 "qlinkBoundsData": [
                     "13 35 1258 127",
                     "13 186 1258 127",
-                    "13 336 618 127"
+                    "13 336 938 127"
                 ]
             },
             {

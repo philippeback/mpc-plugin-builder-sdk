@@ -76,6 +76,7 @@ DRY_LABELS = {
     "SC Release": "Release",
     "SC HPF": "HPF",
     "SC LPF": "LPF",
+    "SC Mix": "Mix",
     # Trance Gate
     "Gate Active": "Active",
     "Gate Pattern": "Pattern",
@@ -276,6 +277,39 @@ def indent_top_left_labels(local_defs):
                     obj_set(bounds_obj, "bounds", f"{x + 16} {y} {max(40, w - 16)} {h}")
             elif ctype == "Label" and cname == "name" and x == 15:
                 obj_set(bounds_obj, "bounds", f"{x + 19} {y} {max(40, w - 19)} {h}")
+
+
+def make_pump_meter(name, param_idx, direction, off_img, on_img, x, y, w, h):
+    return to_obj({
+        "version": 2,
+        "componentData": {
+            "version": 1,
+            "name": name,
+            "type": "Meter",
+            "data": {
+                "version": 3,
+                "direction": direction,
+                "invert": False,
+                "inactiveImage": off_img,
+                "peakImage": on_img,
+                "rmsImage": on_img,
+                "peakHandle": f"Parameter {param_idx}",
+                "rmsHandle": f"Parameter {param_idx}",
+                "peakHoldHandle": "Invalid",
+                "peakHoldSize": 4,
+                "peakHoldColour": "ffffffff",
+            },
+        },
+        "handle remapping": {"version": 1, "map": []},
+        "bounds": {
+            "version": 1,
+            "acceptsHWFocus": "No",
+            "showWhenDataModelInvalid": "Show",
+            "whenVisible": "Always",
+            "boundsType": "Absolute",
+            "bounds": f"{x} {y} {w} {h}",
+        },
+    })
 
 
 def make_filter_xypad(name, x_param, y_param, puck_img, x, y, w, h):
@@ -685,7 +719,7 @@ def main():
         ("radio3", "radioGRate", "btn_grate", 3),
         ("radio4", "radioDTempo", "btn_dtempo", 4),
         ("radio2", "radioLMode", "btn_lmode", 2),
-        ("radio3", "radioScSource", "btn_scsource", 3),
+        ("radio2", "radioScSource", "btn_scsource", 2),
         ("radio2", "radioScMode", "btn_scmode", 2),
         ("radio3", "radioScTarget", "btn_sctarget", 3),
     ]
@@ -786,6 +820,41 @@ def main():
                     params_by_name["B Reso"],
                     "puck_magenta.png",
                     962, 180, 292, 107,
+                )
+            )
+        elif tname == "LFO":
+            cdef = obj_get(tab, "componentDefinition")
+            comps = obj_get(cdef, "componentsData")
+            comps.append(
+                make_filter_xypad(
+                    "lfo_freq_xy",
+                    params_by_name["LFO 1 Freq"],
+                    params_by_name["LFO 2 Freq"],
+                    "puck_lfo.png",
+                    23, 196, 1238, 107,
+                )
+            )
+        elif tname == "PUMP":
+            cdef = obj_get(tab, "componentDefinition")
+            comps = obj_get(cdef, "componentsData")
+            comps.append(
+                make_pump_meter(
+                    "sc_in_meter",
+                    params_by_name["SC In"],
+                    "Up",
+                    "meter_in_off.png",
+                    "meter_in_on.png",
+                    1038, 384, 40, 190,
+                )
+            )
+            comps.append(
+                make_pump_meter(
+                    "sc_duck_meter",
+                    params_by_name["SC Duck"],
+                    "Down",
+                    "meter_duck_off.png",
+                    "meter_duck_on.png",
+                    1166, 384, 40, 190,
                 )
             )
         elif tname == "GATE":
