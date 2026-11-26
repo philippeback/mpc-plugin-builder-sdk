@@ -48,7 +48,7 @@
         { "param": "Exhaustion", "widget": "switch" },
         { "param": "Auto Gain", "widget": "switch" },
         { "param": "Gain", "widget": "fader" },
-        "empty",
+        { "param": "Flt->Sat", "widget": "switch" },
 
         { "param": "Decay Active", "widget": "switch" },
         { "param": "Bit Depth", "widget": "knob" },
@@ -107,8 +107,8 @@
 
         { "param": "Noise Route", "widget": "switch" },
         { "param": "Filter FM", "widget": "knob" },
-        "empty",
-        "empty"
+        { "param": "Env Cut", "widget": "knob", "polarity": "bipolar" },
+        { "param": "Env Drive", "widget": "knob", "polarity": "bipolar" }
       ]
     },
     {

@@ -2,12 +2,12 @@
 //
 // Signal path:
 //   in -> Input Gain Stager (Auto-Level + Trim) -> [Pre-Dist Noise]
-//      -> S-Curve Waveshaper -> [Pre-Filter Noise]
-//      -> Dual Filter & LFO Matrix (Serial/Parallel) -> Info Decay (Bit/Downsample)
-//      -> [Post-Filter Noise] -> Dry/Wet Mix -> Trance Gate -> Final Gain
-//      -> Stereo Delay -> Final Limiter -> out
+//      -> S-Curve Waveshaper <-> Dual Filter (Serial/Parallel/Stereo/M-S, Flt->Sat reversible)
+//      -> [Pre-Filter / Post-Filter Noise] -> Info Decay (Bit/Downsample)
+//      -> Dry/Wet Mix -> Trance Gate -> Final Gain -> Stereo Delay -> Final Limiter -> out
 //
-// Sidechain envelope follower modulates Drive, Filter Cutoff, or Final Gain.
+// Envelope Follower modulates Filter Cutoff & Drive from input dynamics.
+// Sidechain envelope follower (External or Internal 4x4) modulates Drive, Filter Cutoff, or Final Gain.
 
 #include "mpc_plugin.h"
 #include "dsp/delay_line.h"
@@ -99,6 +99,36 @@ private:
     float desiredAutoGain_ = 1.0f;
     float currentAutoGain_ = 1.0f;
     Smoother trimSmoother_;
+};
+
+// ---------------------------------------------------------------------------
+// Audio Envelope Follower (Dynamic Cutoff & Drive Modulation)
+// ---------------------------------------------------------------------------
+class EnvelopeFollower
+{
+public:
+    void prepare(double sampleRate)
+    {
+        attackCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.005f));  // 5 ms snappy attack
+        releaseCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.090f)); // 90 ms musical release
+        reset();
+    }
+
+    void reset() { env_ = 0.0f; }
+
+    float processSample(float peak) noexcept
+    {
+        if (peak > env_)
+            env_ = attackCoef_ * (env_ - peak) + peak;
+        else
+            env_ = releaseCoef_ * (env_ - peak) + peak;
+        return clamp(env_ * 2.5f, 0.0f, 1.0f);
+    }
+
+private:
+    float attackCoef_ = 0.995f;
+    float releaseCoef_ = 0.9997f;
+    float env_ = 0.0f;
 };
 
 // ---------------------------------------------------------------------------
@@ -909,6 +939,9 @@ public:
         kAutoIn,
         kInTarget,
         kInTrim,
+        kEnvCut,
+        kEnvDrive,
+        kFiltPreSat,
 
         kNumParams
     };
@@ -954,7 +987,7 @@ public:
         addParam(floatParam ("filter_b_grit",      "Grit",     0.0f, 1.0f, 0.0f, "", 2));
         addParam(choiceParam("filter_b_type",      "Type",     {"CLN", "VOWL", "ACID", "DIGI"}, 0));
         addParam(choiceParam("filter_b_mode",      "Mode",     {"LP", "HP", "BP", "NOTCH"}, 0));
-        addParam(choiceParam("routing",            "Path",     {"SERIAL", "PARAL", "STEREO"}, 0));
+        addParam(choiceParam("routing",            "Path",     {"SERIAL", "PARAL", "STEREO", "M/S"}, 0));
 
         // LFOs
         addParam(logParam   ("lfo1_freq", "LFO 1 Freq", 0.1f, 20.0f, 1.0f, "Hz", 2));
@@ -1115,7 +1148,10 @@ public:
         addParam(floatParam("tg_offset", "Gate Offset", -100.0f, 100.0f, 0.0f, "%", 0));
         addParam(boolParam ("in_auto",   "Auto In",     true));
         addParam(floatParam("in_target", "In Target",   -24.0f, 0.0f, -9.0f, "dB", 1));
-        addParam(floatParam("in_trim",   "In Trim",     -18.0f, 24.0f, 0.0f, "dB", 1));
+        addParam(floatParam("in_trim",     "In Trim",   -18.0f, 24.0f, 0.0f, "dB", 1));
+        addParam(floatParam("env_cut",     "Env Cut",   -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("env_drive",   "Env Drive", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(boolParam ("filt_pre_sat","Flt->Sat",  false));
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -1201,6 +1237,7 @@ public:
     void prepare(double sampleRate, int /*maxBlockSize*/) override
     {
         inputStager_.prepare(sampleRate);
+        envFollower_.prepare(sampleRate);
         waveshaper_.prepare(sampleRate);
         filterA_.prepare(sampleRate);
         filterB_.prepare(sampleRate);
@@ -1234,6 +1271,7 @@ public:
         inputStager_.setTrimDb(get(kInTrim));
         inputStager_.reset();
         inputStager_.snapTrim(get(kInTrim));
+        envFollower_.reset();
         waveshaper_.setDrive(mpc::clamp(get(kDrive), 1.0f, 32.0f));
         waveshaper_.setExhaustion(getBool(kExhaustion));
         waveshaper_.setThreshold(mpc::dsp::dbToGain(get(kThreshold)));
@@ -1288,21 +1326,29 @@ public:
 
         const float baseFACutoff = mpc::clamp(get(kFACutoff), 20.0f, 20000.0f);
         const float baseFAReso = mpc::clamp(get(kFAReso), 0.0f, 0.98f);
+        const float baseFADrive = mpc::clamp(get(kFADrive), 1.0f, 10.0f);
         const float baseFAGrit = mpc::clamp(get(kFAGrit), 0.0f, 1.0f);
-        filterA_.setDrive(get(kFADrive));
+        filterA_.setDrive(baseFADrive);
         filterA_.setGrit(baseFAGrit);
         filterA_.setType(getInt(kFAType));
         filterA_.setMode(getInt(kFAMode));
 
         const float baseFBCutoff = mpc::clamp(get(kFBCutoff), 20.0f, 20000.0f);
         const float baseFBReso = mpc::clamp(get(kFBReso), 0.0f, 0.98f);
+        const float baseFBDrive = mpc::clamp(get(kFBDrive), 1.0f, 10.0f);
         const float baseFBGrit = mpc::clamp(get(kFBGrit), 0.0f, 1.0f);
-        filterB_.setDrive(get(kFBDrive));
+        filterB_.setDrive(baseFBDrive);
         filterB_.setGrit(baseFBGrit);
         filterB_.setType(getInt(kFBType));
         filterB_.setMode(getInt(kFBMode));
 
         const int filterRouting = getInt(kRouting);
+        const bool filtPreSat = getBool(kFiltPreSat);
+        const float envCutAmt = get(kEnvCut);
+        const float envDriveAmt = get(kEnvDrive);
+        const bool envCutActive = (std::fabs(envCutAmt) > 1.0e-4f);
+        const bool envDriveActive = (std::fabs(envDriveAmt) > 1.0e-4f);
+        const bool envActive = envCutActive || envDriveActive;
 
         lfo1_.setFrequency(mpc::clamp(get(kLfo1Freq), 0.1f, 25.0f));
         lfo1_.setShape(getInt(kLfo1Wave));
@@ -1447,7 +1493,9 @@ public:
             float dryL = inL[s];
             float dryR = inR[s];
             inputStager_.processSample(dryL, dryR, autoInActive);
-            blockPeakIn = std::max(blockPeakIn, std::max(std::fabs(dryL), std::fabs(dryR)));
+            const float stagedPeak = std::max(std::fabs(dryL), std::fabs(dryR));
+            blockPeakIn = std::max(blockPeakIn, stagedPeak);
+            const float envVal = envActive ? envFollower_.processSample(stagedPeak) : 0.0f;
 
             float rawGen = 0.0f;
             if (needNoise) {
@@ -1487,8 +1535,8 @@ public:
                 for (int t = 0; t < 6; ++t) {
                     off[t] = lfo1Val * mod1[t] + lfo2Val * mod2[t];
                 }
-                off[0] += fmMod;
-                off[3] += fmMod;
+                off[0] += fmMod + envCutAmt * envVal;
+                off[3] += fmMod + envCutAmt * envVal;
 
                 float cutA = baseFACutoff * std::pow(2.0f, off[0] * 5.0f);
                 float cutB = baseFBCutoff * std::pow(2.0f, off[3] * 5.0f);
@@ -1499,15 +1547,20 @@ public:
                 }
 
                 const bool modA = (std::fabs(mod1[0]) > 1e-4f || std::fabs(mod2[0]) > 1e-4f || fmAmount > 1e-4f ||
-                                   (sidechain_.isActive() && scCutTarget));
+                                   envCutActive || (sidechain_.isActive() && scCutTarget));
                 const bool modB = (std::fabs(mod1[3]) > 1e-4f || std::fabs(mod2[3]) > 1e-4f || fmAmount > 1e-4f ||
-                                   (sidechain_.isActive() && scCutTarget));
+                                   envCutActive || (sidechain_.isActive() && scCutTarget));
 
                 float resoA = baseFAReso + off[1];
                 if (sidechain_.isActive() && scResoTarget) {
                     resoA += scMod * 0.5f;
                 }
 
+                if (envDriveActive) {
+                    const float envDrvMul = std::pow(2.0f, envDriveAmt * envVal * 1.5f);
+                    filterA_.setDrive(mpc::clamp(baseFADrive * envDrvMul, 1.0f, 10.0f));
+                    filterB_.setDrive(mpc::clamp(baseFBDrive * envDrvMul, 1.0f, 10.0f));
+                }
                 filterA_.setGrit(mpc::clamp(baseFAGrit + off[2], 0.0f, 1.0f));
                 filterA_.setCoefficients(cutA, mpc::clamp(resoA, 0.0f, 0.98f), !modA);
                 filterB_.setGrit(mpc::clamp(baseFBGrit + off[5], 0.0f, 1.0f));
@@ -1526,6 +1579,9 @@ public:
             }
 
             float effDrive = wsDrive;
+            if (envDriveActive) {
+                effDrive = mpc::clamp(effDrive * std::pow(2.0f, envDriveAmt * envVal * 2.2f), 1.0f, 32.0f);
+            }
             if (sidechain_.isActive() && scDriveTarget) {
                 effDrive = mpc::clamp(effDrive * std::pow(2.0f, scMod * 2.5f), 1.0f, 32.0f);
             }
@@ -1539,30 +1595,58 @@ public:
             float wet[2] = { dryL, dryR };
             const float dry[2] = { dryL, dryR };
 
+            auto runSatStage = [&]() noexcept {
+                if (noiseActive && noiseRoute == 0) {
+                    wet[0] += genSample;
+                    wet[1] += genSample;
+                }
+                if (scvActive) {
+                    wet[0] = waveshaper_.processSample(wet[0], effDrive, wsThresh);
+                    wet[1] = waveshaper_.processSample(wet[1], effDrive, wsThresh);
+                }
+            };
+
+            auto runFilterStage = [&]() noexcept {
+                if (noiseActive && noiseRoute == 1) {
+                    wet[0] += genSample;
+                    wet[1] += genSample;
+                }
+                const float preL = wet[0];
+                const float preR = wet[1];
+                if (filterRouting == 0) {
+                    wet[0] = filterB_.processSample(0, filterA_.processSample(0, preL));
+                    wet[1] = filterB_.processSample(1, filterA_.processSample(1, preR));
+                } else if (filterRouting == 1) {
+                    wet[0] = 0.5f * (filterA_.processSample(0, preL) + filterB_.processSample(0, preL));
+                    wet[1] = 0.5f * (filterA_.processSample(1, preR) + filterB_.processSample(1, preR));
+                } else if (filterRouting == 2) {
+                    // STEREO routing: Left -> Filter A, Right -> Filter B
+                    wet[0] = filterA_.processSample(0, preL);
+                    wet[1] = filterB_.processSample(1, preR);
+                } else {
+                    // M/S routing: Mid -> Filter A, Side -> Filter B
+                    const float mid = filterA_.processSample(0, 0.5f * (preL + preR));
+                    const float side = filterB_.processSample(1, 0.5f * (preL - preR));
+                    wet[0] = mid + side;
+                    wet[1] = mid - side;
+                }
+                wet[0] = preL + (wet[0] - preL) * filterMixVal;
+                wet[1] = preR + (wet[1] - preR) * filterMixVal;
+            };
+
+            if (filtPreSat) {
+                runFilterStage();
+                runSatStage();
+            } else {
+                runSatStage();
+                runFilterStage();
+            }
+
             for (int ch = 0; ch < 2; ++ch) {
                 float w = wet[ch];
-
-                if (noiseActive && noiseRoute == 0) w += genSample;
-                if (scvActive) {
-                    w = waveshaper_.processSample(w, effDrive, wsThresh);
-                }
-
-                if (noiseActive && noiseRoute == 1) w += genSample;
-                const float preFilt = w;
-                if (filterRouting == 0) {
-                    w = filterB_.processSample(ch, filterA_.processSample(ch, w));
-                } else if (filterRouting == 1) {
-                    w = 0.5f * (filterA_.processSample(ch, w) + filterB_.processSample(ch, w));
-                } else {
-                    // STEREO routing: Left channel -> Filter A, Right channel -> Filter B
-                    w = (ch == 0) ? filterA_.processSample(0, w) : filterB_.processSample(1, w);
-                }
-                w = preFilt + (w - preFilt) * filterMixVal;
-
                 if (qeActive) {
                     w = quantError_.processSample(ch, w, curQeDepth, qeSteps, downsampleFactor, curQeMix);
                 }
-
                 if (noiseActive && noiseRoute == 2) w += genSample;
 
                 float mixed = dry[ch] * (1.0f - mixVal) + w * mixVal;
@@ -1907,6 +1991,7 @@ private:
             {kFBType, 2.0f}, {kFBMode, 0.0f}, {kFBCutoff, 2900.0f}, {kFBReso, 0.52f}, {kFBDrive, 1.5f},
             {kLfo1Freq, 6.2f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.54f},
             {kLfo2Freq, 0.45f}, {kLfo2Wave, 0.0f}, {kModL2T4, -0.45f}, {kModL2T2, 0.20f},
+            {kEnvCut, 0.22f}, {kEnvDrive, 0.15f},
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
             {kDelayFeedback, 0.45f}, {kDelayMix, 0.28f},
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.5f}, {kLimCeiling, -0.3f}
@@ -2132,7 +2217,7 @@ private:
             {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 0.0f}, {kLimCeiling, -0.3f}
         });
         addPreset("VOWL: Nasal Scream", {
-            {kScvActive, 1.0f}, {kDrive, 3.8f}, {kExhaustion, 1.0f}, {kAutoGain, 1.0f},
+            {kScvActive, 1.0f}, {kDrive, 3.8f}, {kExhaustion, 1.0f}, {kAutoGain, 1.0f}, {kFiltPreSat, 1.0f},
             {kFAType, 1.0f}, {kFAMode, 1.0f}, {kFACutoff, 1900.0f}, {kFAReso, 0.85f}, {kFADrive, 2.0f},
             {kLfo1Freq, 1.40f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.40f},
             {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 0.0f}, {kLimCeiling, -0.3f}
@@ -2216,7 +2301,7 @@ private:
             {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 0.0f}, {kLimCeiling, -0.3f}
         });
         addPreset("LFO: Crossfade Mod", {
-            {kRouting, 1.0f}, {kFACutoff, 650.0f}, {kFAReso, 0.65f}, {kFBCutoff, 2400.0f}, {kFBReso, 0.65f},
+            {kRouting, 3.0f}, {kFACutoff, 650.0f}, {kFAReso, 0.65f}, {kFBCutoff, 2400.0f}, {kFBReso, 0.65f},
             {kLfo1Freq, 0.45f}, {kModL1T1, 0.70f}, {kModL1T4, -0.70f},
             {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 0.0f}, {kLimCeiling, -0.3f}
         });
@@ -2381,9 +2466,9 @@ private:
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 5.5f}, {kLimCeiling, -0.4f}
         });
         addPreset("COMBO: Acid Rave", {
-            {kScvActive, 1.0f}, {kDrive, 4.0f}, {kThreshold, -4.5f}, {kAutoGain, 1.0f},
+            {kScvActive, 1.0f}, {kDrive, 4.0f}, {kThreshold, -4.5f}, {kAutoGain, 1.0f}, {kFiltPreSat, 1.0f},
             {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 550.0f}, {kFAReso, 0.80f}, {kFADrive, 2.2f},
-            {kLfo1Freq, 0.50f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.65f},
+            {kLfo1Freq, 0.50f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.65f}, {kEnvCut, 0.28f},
             {kTgActive, 1.0f}, {kTgPattern, 4.0f}, {kTgDepth, 75.0f}, {kTgHold, 60.0f},
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
             {kDelayFeedback, 0.35f}, {kDelayMix, 0.25f},
@@ -2496,6 +2581,7 @@ private:
     }
 
     InputGainStager inputStager_;
+    EnvelopeFollower envFollower_;
     Waveshaper waveshaper_;
     MushinFilter filterA_, filterB_;
     mpc::dsp::LFO lfo1_, lfo2_;

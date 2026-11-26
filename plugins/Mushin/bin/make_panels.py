@@ -397,6 +397,7 @@ def main():
         elif filename == "bg_scurve.png":
             draw_panel(buf, 335, 478, 934, 136, "INPUT STAGE", magenta)
         elif filename == "bg_lfo.png":
+            draw_panel(buf, 655, 478, 614, 136, "ENV FOLLOWER", magenta)
             draw_filled_box(buf, W, H, 16, 44, 606, 3, cyan)
             draw_filled_box(buf, W, H, 656, 44, 606, 3, magenta)
             # LFO 1 (X) x LFO 2 (Y) XY telemetry bay in Row 1 (23, 196, 1238, 107)

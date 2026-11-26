@@ -3671,7 +3671,7 @@
                                         "onImage": "btn_route_0_on.png",
                                         "offImage": "btn_route_0_off.png",
                                         "buttonId": 0,
-                                        "numButtonsInGroup": 3,
+                                        "numButtonsInGroup": 4,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -3686,7 +3686,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "15 54 80 40"
+                                    "bounds": "15 54 58 40"
                                 }
                             },
                             {
@@ -3700,7 +3700,7 @@
                                         "onImage": "btn_route_1_on.png",
                                         "offImage": "btn_route_1_off.png",
                                         "buttonId": 1,
-                                        "numButtonsInGroup": 3,
+                                        "numButtonsInGroup": 4,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -3715,7 +3715,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "99 54 80 40"
+                                    "bounds": "77 54 58 40"
                                 }
                             },
                             {
@@ -3729,7 +3729,7 @@
                                         "onImage": "btn_route_2_on.png",
                                         "offImage": "btn_route_2_off.png",
                                         "buttonId": 2,
-                                        "numButtonsInGroup": 3,
+                                        "numButtonsInGroup": 4,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -3744,7 +3744,36 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "183 54 80 40"
+                                    "bounds": "139 54 58 40"
+                                }
+                            },
+                            {
+                                "version": 2,
+                                "componentData": {
+                                    "version": 1,
+                                    "name": "seg 3",
+                                    "type": "Button",
+                                    "data": {
+                                        "version": 2,
+                                        "onImage": "btn_route_3_on.png",
+                                        "offImage": "btn_route_3_off.png",
+                                        "buttonId": 3,
+                                        "numButtonsInGroup": 4,
+                                        "handleName": "Data",
+                                        "gestureBehaviour": "Instant"
+                                    }
+                                },
+                                "handle remapping": {
+                                    "version": 1,
+                                    "map": []
+                                },
+                                "bounds": {
+                                    "version": 1,
+                                    "acceptsHWFocus": "No",
+                                    "showWhenDataModelInvalid": "Show",
+                                    "whenVisible": "Always",
+                                    "boundsType": "Absolute",
+                                    "bounds": "201 54 58 40"
                                 }
                             }
                         ]
@@ -7263,7 +7292,8 @@
                 "value": [
                     "SERIAL",
                     "PARAL",
-                    "STEREO"
+                    "STEREO",
+                    "M/S"
                 ]
             },
             {
@@ -7436,6 +7466,13 @@
             },
             {
                 "key": "Parameter 115",
+                "value": [
+                    "Off",
+                    "On"
+                ]
+            },
+            {
+                "key": "Parameter 120",
                 "value": [
                     "Off",
                     "On"
@@ -8201,12 +8238,41 @@
                                 "boundsType": "Absolute",
                                 "bounds": "983 497 278 107"
                             }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "Flt->Sat",
+                                "type": "toggle",
+                                "data": {
+                                    "version": 1,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 120"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "Yes",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "983 196 278 107"
+                            }
                         }
                     ]
                 },
                 "qlinkBoundsData": [
                     "13 35 1258 127",
-                    "13 186 938 127",
+                    "13 186 1258 127",
                     "13 336 1258 127",
                     "13 487 1258 127"
                 ]
@@ -9041,13 +9107,71 @@
                                 "boundsType": "Absolute",
                                 "bounds": "23 196 1238 107"
                             }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "Env Cut",
+                                "type": "knobBiMag",
+                                "data": {
+                                    "version": 1,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 118"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "Yes",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "663 497 278 107"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "Env Drive",
+                                "type": "knobBiMag",
+                                "data": {
+                                    "version": 1,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 119"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "Yes",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "983 497 278 107"
+                            }
                         }
                     ]
                 },
                 "qlinkBoundsData": [
                     "13 35 1258 127",
                     "13 336 1258 127",
-                    "13 487 618 127"
+                    "13 487 1258 127"
                 ]
             },
             {

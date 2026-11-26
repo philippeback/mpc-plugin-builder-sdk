@@ -19,7 +19,7 @@ Input ─▶ [Pre-Dist Noise] ─▶ S-Curve Waveshaper (bypassable) ─▶ [Pre
 
 - **MAIN (`F1`)**: 8 Performance Macro Orbs (`EXHAUSTION`, `CHOKE`, `INFO DECAY`, `CORRUPT MIX`, `KINETIC MOD`, `RESONATOR`, `GATE CARVE`, `SMASH`) mapped to Q-Link Banks 1–2 (`Q-Link 13..16`, `9..12`).
 - **S-CURVE (`F2`)**: `S-Curve` (`Active`, `Drive`, `Threshold`, `Dry/Wet Mix`, `Exhaustion`, `Auto Gain`, `Gain`) / `Info Decay` (`Active`, `Bit Depth`, `Downsample`, `Mix`, `Exh Link`) with a live `#FF4D8D` pixelated background strip scaling with crunch intensity.
-- **FILTER (`F3`)**: `Filter A` (Cyan) & `Filter B` (Magenta) (`Cutoff`, `Reso`, `Drive`, `Grit`, icon-baked `CLN`/`VOWL`/`ACID`/`DIGI` Type & `LP`/`HP`/`BP`/`NOTCH` Mode switches), `Filt Mix`, `Routing` (`SERIAL`/`PARAL`/`STEREO` L→A / R→B), and dual live `A FREQ X RES` / `B FREQ X RES` XY pads.
+- **FILTER (`F3`)**: `Filter A` (Cyan) & `Filter B` (Magenta) (`Cutoff`, `Reso`, `Drive`, `Grit`, icon-baked `CLN`/`VOWL`/`ACID`/`DIGI` Type & `LP`/`HP`/`BP`/`NOTCH` Mode switches), `Filt Mix`, `Routing` (`SERIAL`/`PARAL`/`STEREO` L→A / R→B / `M/S` Mid→A / Side→B), and dual live `A FREQ X RES` / `B FREQ X RES` XY pads.
 - **LFO (`F4` SubTab 1)**: `LFO 1 & 2` (`Freq` + 5-way icon `Wave` buttons), live `LFO 1 X × LFO 2 Y` XY pad, and `Noise Osc` (`Active`, 6-way icon `Type`, `Freq`, `Level`, icon-baked `Route`, `Filter FM`).
 - **LFO MTX (`F4` SubTab 2)**: 2×6 bipolar modulation matrix targeting Filter A/B `Cutoff`, `Reso`, and `Grit`.
 - **GATE (`F5` SubTab 1)**: `Trance Gate` (`Active`, 128-pattern `Pattern` menu, `Rate` `1/16`/`1/8`/`1/4`, `Depth`, `Mix`), 16 tappable `Step 1..16` toggle buttons, and `Gate Env` (`Start`, `Hold`, `End`, `Offset` `-100%..+100%` + live `AHDS` `Envelope` graph synced with `Depth`/`Floor`).

@@ -686,7 +686,7 @@ def main():
     icon_radio_specs = [
         ("radio4", "radioFType", "btn_ftype", 4),
         ("radio4", "radioFMode", "btn_fmode", 4),
-        ("radio3", "radioRoute", "btn_route", 3),
+        ("radio4", "radioRoute", "btn_route", 4),
         ("radio3", "radioNRoute", "btn_nroute", 3),
         ("radio3", "radioGRate", "btn_grate", 3),
         ("radio4", "radioDTempo", "btn_dtempo", 4),
