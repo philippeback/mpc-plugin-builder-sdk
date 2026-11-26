@@ -8,6 +8,9 @@
   --cyan: #00e5ff;
   --magenta: #ff4d8d;
   --gold: #ffd60a;
+  --solar: #ff942a;
+  --cyber: #00ff80;
+  --void: #b066ff;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -104,6 +107,9 @@ header {
 
 .badge.cyan { border-color: rgba(0, 229, 255, 0.45); color: var(--cyan); }
 .badge.magenta { border-color: rgba(255, 77, 141, 0.45); color: var(--magenta); }
+.badge.solar { border-color: rgba(255, 148, 42, 0.45); color: var(--solar); }
+.badge.cyber { border-color: rgba(0, 255, 128, 0.45); color: var(--cyber); }
+.badge.void { border-color: rgba(176, 102, 255, 0.45); color: var(--void); }
 
 .hero h1 {
   font-size: clamp(44px, 7vw, 76px);
@@ -358,12 +364,108 @@ header {
 /* Presets & Install */
 .presets-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 }
 
-@media (max-width: 780px) {
+@media (max-width: 960px) {
+  .presets-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
   .presets-grid { grid-template-columns: 1fr; }
+}
+
+/* SCOPE Themes Grid */
+.scope-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 960px) {
+  .scope-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .scope-grid { grid-template-columns: 1fr; }
+}
+
+.scope-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.scope-card.neon { border-top: 3px solid var(--cyan); }
+.scope-card.solar { border-top: 3px solid var(--solar); }
+.scope-card.cyber { border-top: 3px solid var(--cyber); }
+.scope-card.void { border-top: 3px solid var(--void); }
+
+.scope-thumb {
+  width: 156px;
+  height: 156px;
+  border-radius: 10px;
+  background: radial-gradient(circle at center, #141926 0%, #05070c 85%);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.scope-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.scope-card h3 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.scope-card.neon h3 { color: var(--cyan); }
+.scope-card.solar h3 { color: var(--solar); }
+.scope-card.cyber h3 { color: var(--cyber); }
+.scope-card.void h3 { color: var(--void); }
+
+.scope-card p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.specs-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+}
+
+@media (max-width: 780px) {
+  .specs-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+.spec-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.spec-box strong {
+  display: block;
+  font-size: 20px;
+  color: var(--cyan);
+}
+
+.spec-box span {
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .preset-card {
