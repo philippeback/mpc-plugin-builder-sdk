@@ -373,11 +373,21 @@ def main():
     magenta = (0xFF, 0x4D, 0x8D, 255)
     for filename, top_title, bot_title in PAGES:
         buf = bytearray(bytes(BG) * (W * H))
-        draw_panel(buf, 8, 12, 1264, 300, top_title, TITLE_COL)
-        if bot_title is not None:
-            draw_panel(buf, 8, 320, 1264, 302, bot_title, magenta)
-        draw_filled_box(buf, W, H, 8, 26, 4, 272, cyan)
-        draw_filled_box(buf, W, H, 8, 334, 4, 274, magenta)
+        if filename == "bg_matrix.png":
+            draw_panel(buf, 8, 12, 950, 300, top_title, TITLE_COL)
+            draw_panel(buf, 966, 12, 306, 300, "ENV > FLT", TITLE_COL)
+            draw_panel(buf, 8, 320, 950, 302, bot_title, magenta)
+            draw_panel(buf, 966, 320, 306, 302, "ENV > LFO", magenta)
+            draw_filled_box(buf, W, H, 8, 26, 4, 272, cyan)
+            draw_filled_box(buf, W, H, 966, 26, 4, 272, cyan)
+            draw_filled_box(buf, W, H, 8, 334, 4, 274, magenta)
+            draw_filled_box(buf, W, H, 966, 334, 4, 274, magenta)
+        else:
+            draw_panel(buf, 8, 12, 1264, 300, top_title, TITLE_COL)
+            if bot_title is not None:
+                draw_panel(buf, 8, 320, 1264, 302, bot_title, magenta)
+            draw_filled_box(buf, W, H, 8, 26, 4, 272, cyan)
+            draw_filled_box(buf, W, H, 8, 334, 4, 274, magenta)
         if filename == "bg_filter.png":
             draw_panel(buf, 975, 478, 294, 136, "ROUTING", TITLE_COL)
             # Filter A & B Freq x Res XY telemetry bays (Row 1, cols 2-3: 656..1254, y=180..287)

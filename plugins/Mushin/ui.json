@@ -118,22 +118,22 @@
         { "param": "L1 A Cut", "widget": "knob", "polarity": "bipolar" },
         { "param": "L1 A Res", "widget": "knob", "polarity": "bipolar" },
         { "param": "L1 A Grit", "widget": "knob", "polarity": "bipolar" },
-        "empty",
+        { "param": "Env A Res", "widget": "knob", "polarity": "bipolar" },
 
         { "param": "L1 B Cut", "widget": "knob", "polarity": "bipolar" },
         { "param": "L1 B Res", "widget": "knob", "polarity": "bipolar" },
         { "param": "L1 B Grit", "widget": "knob", "polarity": "bipolar" },
-        "empty",
+        { "param": "Env B Cut", "widget": "knob", "polarity": "bipolar" },
 
         { "param": "L2 A Cut", "widget": "knob", "polarity": "bipolar" },
         { "param": "L2 A Res", "widget": "knob", "polarity": "bipolar" },
         { "param": "L2 A Grit", "widget": "knob", "polarity": "bipolar" },
-        "empty",
+        { "param": "Env L1 Spd", "widget": "knob", "polarity": "bipolar" },
 
         { "param": "L2 B Cut", "widget": "knob", "polarity": "bipolar" },
         { "param": "L2 B Res", "widget": "knob", "polarity": "bipolar" },
         { "param": "L2 B Grit", "widget": "knob", "polarity": "bipolar" },
-        "empty"
+        { "param": "Env LFO Amt", "widget": "knob", "polarity": "bipolar" }
       ]
     },
     {

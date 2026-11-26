@@ -942,6 +942,10 @@ public:
         kEnvCut,
         kEnvDrive,
         kFiltPreSat,
+        kEnvARes,
+        kEnvBCut,
+        kEnvL1Rate,
+        kEnvLfoAmt,
 
         kNumParams
     };
@@ -1152,6 +1156,10 @@ public:
         addParam(floatParam("env_cut",     "Env Cut",   -1.0f, 1.0f, 0.0f, "", 2));
         addParam(floatParam("env_drive",   "Env Drive", -1.0f, 1.0f, 0.0f, "", 2));
         addParam(boolParam ("filt_pre_sat","Flt->Sat",  false));
+        addParam(floatParam("env_a_res",   "Env A Res", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("env_b_cut",   "Env B Cut", -1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("env_l1_rate", "Env L1 Spd",-1.0f, 1.0f, 0.0f, "", 2));
+        addParam(floatParam("env_lfo_amt", "Env LFO Amt",-1.0f, 1.0f, 0.0f, "", 2));
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -1346,11 +1354,20 @@ public:
         const bool filtPreSat = getBool(kFiltPreSat);
         const float envCutAmt = get(kEnvCut);
         const float envDriveAmt = get(kEnvDrive);
+        const float envAResAmt = get(kEnvARes);
+        const float envBCutAmt = get(kEnvBCut);
+        const float envL1RateAmt = get(kEnvL1Rate);
+        const float envLfoAmt = get(kEnvLfoAmt);
         const bool envCutActive = (std::fabs(envCutAmt) > 1.0e-4f);
         const bool envDriveActive = (std::fabs(envDriveAmt) > 1.0e-4f);
-        const bool envActive = envCutActive || envDriveActive;
+        const bool envAResActive = (std::fabs(envAResAmt) > 1.0e-4f);
+        const bool envBCutActive = (std::fabs(envBCutAmt) > 1.0e-4f);
+        const bool envL1RateActive = (std::fabs(envL1RateAmt) > 1.0e-4f);
+        const bool envLfoActive = (std::fabs(envLfoAmt) > 1.0e-4f);
+        const bool envActive = envCutActive || envDriveActive || envAResActive || envBCutActive || envL1RateActive || envLfoActive;
 
-        lfo1_.setFrequency(mpc::clamp(get(kLfo1Freq), 0.1f, 25.0f));
+        const float baseLfo1Freq = mpc::clamp(get(kLfo1Freq), 0.1f, 25.0f);
+        lfo1_.setFrequency(baseLfo1Freq);
         lfo1_.setShape(getInt(kLfo1Wave));
         lfo2_.setFrequency(mpc::clamp(get(kLfo2Freq), 0.1f, 25.0f));
         lfo2_.setShape(getInt(kLfo2Wave));
@@ -1531,12 +1548,16 @@ public:
             const float lfo2Val = lfo2_.process();
 
             if ((s & 15) == 0) {
+                if (envL1RateActive) {
+                    lfo1_.setFrequency(mpc::clamp(baseLfo1Freq * std::pow(2.0f, envL1RateAmt * envVal * 3.0f), 0.1f, 35.0f));
+                }
+                const float lfoScale = envLfoActive ? std::pow(2.0f, envLfoAmt * envVal * 2.0f) : 1.0f;
                 float off[6];
                 for (int t = 0; t < 6; ++t) {
-                    off[t] = lfo1Val * mod1[t] + lfo2Val * mod2[t];
+                    off[t] = (lfo1Val * mod1[t] + lfo2Val * mod2[t]) * lfoScale;
                 }
                 off[0] += fmMod + envCutAmt * envVal;
-                off[3] += fmMod + envCutAmt * envVal;
+                off[3] += fmMod + (envCutAmt + envBCutAmt) * envVal;
 
                 float cutA = baseFACutoff * std::pow(2.0f, off[0] * 5.0f);
                 float cutB = baseFBCutoff * std::pow(2.0f, off[3] * 5.0f);
@@ -1547,11 +1568,11 @@ public:
                 }
 
                 const bool modA = (std::fabs(mod1[0]) > 1e-4f || std::fabs(mod2[0]) > 1e-4f || fmAmount > 1e-4f ||
-                                   envCutActive || (sidechain_.isActive() && scCutTarget));
+                                   envCutActive || envAResActive || (sidechain_.isActive() && scCutTarget));
                 const bool modB = (std::fabs(mod1[3]) > 1e-4f || std::fabs(mod2[3]) > 1e-4f || fmAmount > 1e-4f ||
-                                   envCutActive || (sidechain_.isActive() && scCutTarget));
+                                   envCutActive || envBCutActive || (sidechain_.isActive() && scCutTarget));
 
-                float resoA = baseFAReso + off[1];
+                float resoA = baseFAReso + off[1] + envAResAmt * envVal * 0.90f;
                 if (sidechain_.isActive() && scResoTarget) {
                     resoA += scMod * 0.5f;
                 }
@@ -2045,6 +2066,7 @@ private:
             {kFBType, 2.0f}, {kFBMode, 2.0f}, {kFBCutoff, 2200.0f}, {kFBReso, 0.68f}, {kFBDrive, 1.5f},
             {kLfo1Freq, 4.2f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.62f},
             {kLfo2Freq, 0.85f}, {kLfo2Wave, 2.0f}, {kModL2T4, -0.55f},
+            {kEnvBCut, -0.35f}, {kEnvL1Rate, 0.30f},
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
             {kDelayFeedback, 0.42f}, {kDelayMix, 0.26f},
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.4f}, {kLimCeiling, -0.3f}
@@ -2468,7 +2490,7 @@ private:
         addPreset("COMBO: Acid Rave", {
             {kScvActive, 1.0f}, {kDrive, 4.0f}, {kThreshold, -4.5f}, {kAutoGain, 1.0f}, {kFiltPreSat, 1.0f},
             {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 550.0f}, {kFAReso, 0.80f}, {kFADrive, 2.2f},
-            {kLfo1Freq, 0.50f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.65f}, {kEnvCut, 0.28f},
+            {kLfo1Freq, 0.50f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.65f}, {kEnvCut, 0.28f}, {kEnvARes, 0.25f},
             {kTgActive, 1.0f}, {kTgPattern, 4.0f}, {kTgDepth, 75.0f}, {kTgHold, 60.0f},
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
             {kDelayFeedback, 0.35f}, {kDelayMix, 0.25f},
