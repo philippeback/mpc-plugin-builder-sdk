@@ -2124,7 +2124,7 @@ private:
             {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}
         });
 
-        // PSY: Psytrance & Darkpsy Chains (06-12)
+        // PSY: Psytrance & Darkpsy Chains (15 programs)
         addPreset("PSY: Init", {
             {kAutoIn, 1.0f}, {kInTarget, -8.5f},
             {kScvActive, 1.0f}, {kDrive, 2.2f}, {kThreshold, -2.5f}, {kAutoGain, 1.0f},
@@ -2213,6 +2213,124 @@ private:
             {kLfo1Freq, 0.25f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.60f}, {kModL1T4, -0.45f},
             {kDelayActive, 1.0f}, {kDelayTime, 18.0f}, {kDelayFeedback, 0.72f}, {kDelayMix, 0.30f},
             {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.8f}, {kLimCeiling, -0.3f}
+        });
+
+        addPreset("PSY: Magic Acid Gate", {
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 3.0f}, {kFiltPreSat, 1.0f}, {kFilterMix, 0.90f},
+            {kScvActive, 1.0f}, {kDrive, 2.6f}, {kThreshold, -3.8f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 540.0f}, {kFAReso, 0.80f}, {kFADrive, 2.0f},
+            {kFBType, 1.0f}, {kFBMode, 2.0f}, {kFBCutoff, 1950.0f}, {kFBReso, 0.68f}, {kFBDrive, 1.5f},
+            {kLfo1Freq, 0.38f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.65f},
+            {kLfo2Freq, 1.40f}, {kLfo2Wave, 1.0f}, {kModL2T4, -0.52f}, {kEnvCut, 0.34f}, {kEnvARes, 0.18f},
+            {kTgActive, 1.0f}, {kTgPattern, 30.0f}, {kTgRate, 0.0f}, {kTgDepth, 84.0f},
+            {kTgStart, 2.0f}, {kTgHold, 44.0f}, {kTgEnd, 14.0f}, {kTgMix, 0.92f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.44f}, {kDelayMix, 0.30f}, {kDelayColor, 0.55f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.0f}, {kLimCeiling, -0.3f}
+        });
+
+        addPreset("PSY: Acid Squelch Zap", {
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 0.0f}, {kFiltPreSat, 1.0f}, {kFilterMix, 0.92f},
+            {kScvActive, 1.0f}, {kDrive, 2.9f}, {kThreshold, -4.2f}, {kAutoGain, 1.0f},
+            {kNoiseType, 3.0f}, {kNoiseFreq, 52.0f}, {kNoiseFmMod, 0.24f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 460.0f}, {kFAReso, 0.86f}, {kFADrive, 2.3f}, {kFAGrit, 0.16f},
+            {kFBType, 2.0f}, {kFBMode, 2.0f}, {kFBCutoff, 2400.0f}, {kFBReso, 0.62f}, {kFBDrive, 1.5f},
+            {kLfo1Freq, 4.80f}, {kLfo1Wave, 2.0f}, {kModL1T1, -0.68f},
+            {kLfo2Freq, 0.45f}, {kLfo2Wave, 0.0f}, {kModL2T4, 0.48f}, {kEnvCut, 0.40f}, {kEnvLfoAmt, 0.28f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.42f}, {kDelayMix, 0.28f}, {kDelayColor, 0.40f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.2f}, {kLimCeiling, -0.3f}
+        });
+
+        addPreset("PSY: Euclid 7/16 Magic", {
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 2.0f}, {kFilterMix, 0.88f},
+            {kScvActive, 1.0f}, {kDrive, 2.3f}, {kThreshold, -3.2f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 2.0f}, {kFACutoff, 1150.0f}, {kFAReso, 0.68f}, {kFADrive, 1.7f},
+            {kFBType, 1.0f}, {kFBMode, 0.0f}, {kFBCutoff, 2600.0f}, {kFBReso, 0.60f}, {kFBDrive, 1.5f},
+            {kLfo1Freq, 0.62f}, {kLfo1Wave, 1.0f}, {kModL1T1, 0.45f}, {kModL1T4, -0.45f}, {kEnvCut, 0.26f},
+            {kTgActive, 1.0f}, {kTgPattern, 77.0f}, {kTgRate, 0.0f}, {kTgDepth, 88.0f},
+            {kTgStart, 2.0f}, {kTgHold, 42.0f}, {kTgEnd, 10.0f}, {kTgMix, 0.90f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 1.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.48f}, {kDelayMix, 0.34f}, {kDelayColor, 0.45f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.0f}, {kLimCeiling, -0.3f}
+        });
+
+        addPreset("PSY: Hypno 3-Step Arp", {
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 3.0f}, {kFilterMix, 0.88f},
+            {kScvActive, 1.0f}, {kDrive, 2.4f}, {kThreshold, -3.4f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 920.0f}, {kFAReso, 0.70f}, {kFADrive, 1.8f},
+            {kFBType, 2.0f}, {kFBMode, 2.0f}, {kFBCutoff, 2800.0f}, {kFBReso, 0.58f}, {kFBDrive, 1.5f},
+            {kLfo1Freq, 0.33f}, {kLfo1Wave, 1.0f}, {kModL1T1, 0.50f},
+            {kLfo2Freq, 2.10f}, {kLfo2Wave, 2.0f}, {kModL2T4, -0.48f},
+            {kTgActive, 1.0f}, {kTgPattern, 27.0f}, {kTgRate, 0.0f}, {kTgDepth, 82.0f},
+            {kTgStart, 3.0f}, {kTgHold, 46.0f}, {kTgEnd, 12.0f}, {kTgMix, 0.88f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.46f}, {kDelayMix, 0.32f}, {kDelayColor, -0.30f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.0f}, {kLimCeiling, -0.3f}
+        });
+
+        addPreset("PSY: Magic Trance Gate", {
+            {kAutoIn, 1.0f}, {kInTarget, -8.5f},
+            {kRouting, 3.0f}, {kFilterMix, 0.86f},
+            {kScvActive, 1.0f}, {kDrive, 2.1f}, {kThreshold, -3.0f}, {kAutoGain, 1.0f},
+            {kFAType, 0.0f}, {kFAMode, 0.0f}, {kFACutoff, 1650.0f}, {kFAReso, 0.48f}, {kFADrive, 1.4f},
+            {kFBType, 1.0f}, {kFBMode, 2.0f}, {kFBCutoff, 2100.0f}, {kFBReso, 0.62f}, {kFBDrive, 1.5f},
+            {kLfo1Freq, 0.25f}, {kLfo1Wave, 0.0f}, {kModL1T1, 0.48f}, {kModL1T4, 0.36f}, {kEnvCut, 0.28f},
+            {kTgActive, 1.0f}, {kTgPattern, 17.0f}, {kTgRate, 0.0f}, {kTgDepth, 80.0f},
+            {kTgStart, 4.0f}, {kTgHold, 54.0f}, {kTgEnd, 16.0f}, {kTgMix, 0.88f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 1.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.50f}, {kDelayMix, 0.36f}, {kDelayColor, 0.68f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 1.8f}, {kLimCeiling, -0.3f}
+        });
+
+        addPreset("PSY: Goa 303 Squelcher", {
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 1.0f}, {kFiltPreSat, 1.0f}, {kFilterMix, 0.90f},
+            {kScvActive, 1.0f}, {kDrive, 3.1f}, {kThreshold, -4.4f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 720.0f}, {kFAReso, 0.85f}, {kFADrive, 2.2f},
+            {kFBType, 2.0f}, {kFBMode, 3.0f}, {kFBCutoff, 1450.0f}, {kFBReso, 0.76f}, {kFBDrive, 1.8f},
+            {kLfo1Freq, 0.55f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.66f},
+            {kLfo2Freq, 0.34f}, {kLfo2Wave, 1.0f}, {kModL2T4, -0.60f}, {kEnvCut, 0.35f}, {kEnvARes, 0.16f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.44f}, {kDelayMix, 0.30f}, {kDelayColor, -0.45f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.2f}, {kLimCeiling, -0.3f}
+        });
+
+        addPreset("PSY: Twilight Polyrhythm", {
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 3.0f}, {kFilterMix, 0.90f},
+            {kScvActive, 1.0f}, {kDrive, 3.0f}, {kThreshold, -4.5f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 2.0f}, {kFACutoff, 840.0f}, {kFAReso, 0.72f}, {kFADrive, 2.0f}, {kFAGrit, 0.22f},
+            {kFBType, 3.0f}, {kFBMode, 3.0f}, {kFBCutoff, 2100.0f}, {kFBReso, 0.65f}, {kFBGrit, 0.14f},
+            {kLfo1Freq, 3.40f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.56f},
+            {kLfo2Freq, 0.48f}, {kLfo2Wave, 2.0f}, {kModL2T4, -0.50f}, {kEnvL1Rate, 0.32f},
+            {kTgActive, 1.0f}, {kTgPattern, 34.0f}, {kTgRate, 0.0f}, {kTgDepth, 85.0f},
+            {kTgStart, 2.0f}, {kTgHold, 48.0f}, {kTgEnd, 10.0f}, {kTgMix, 0.90f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.42f}, {kDelayMix, 0.28f}, {kDelayColor, -0.35f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.4f}, {kLimCeiling, -0.3f}
+        });
+
+        addPreset("PSY: Magic Neuro Chop", {
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 2.0f}, {kFilterMix, 0.88f},
+            {kScvActive, 1.0f}, {kDrive, 2.7f}, {kThreshold, -3.8f}, {kAutoGain, 1.0f},
+            {kFAType, 1.0f}, {kFAMode, 0.0f}, {kFACutoff, 1250.0f}, {kFAReso, 0.70f}, {kFADrive, 1.8f},
+            {kFBType, 2.0f}, {kFBMode, 0.0f}, {kFBCutoff, 2350.0f}, {kFBReso, 0.66f}, {kFBDrive, 1.7f},
+            {kLfo1Freq, 1.15f}, {kLfo1Wave, 1.0f}, {kModL1T1, 0.44f}, {kModL1T4, -0.44f}, {kEnvCut, 0.25f},
+            {kQeActive, 1.0f}, {kQeDepth, 11.0f}, {kQeDownsample, 1.0f}, {kQeMix, 0.22f},
+            {kTgActive, 1.0f}, {kTgPattern, 50.0f}, {kTgRate, 0.0f}, {kTgDepth, 86.0f},
+            {kTgStart, 2.0f}, {kTgHold, 45.0f}, {kTgEnd, 10.0f}, {kTgMix, 0.90f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 8.0f}, {kScThresh, -17.0f},
+            {kScAmount, -65.0f}, {kScAttack, 2.0f}, {kScRelease, 110.0f}, {kScMix, 0.65f},
+            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.38f}, {kDelayMix, 0.26f}, {kDelayColor, 0.55f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.2f}, {kLimCeiling, -0.3f}
         });
 
         // SAT: S-Curve & Exhaustion (13-22)
