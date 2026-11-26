@@ -1855,7 +1855,7 @@ public:
             if (currentProgram() != lastProgram_) {
                 lastProgram_ = currentProgram();
                 requestDisplayUpdate();
-                for (int i = 0; i < kNumParams; ++i) {
+                for (int i = 0; i < kVizTheme; ++i) {
                     if (param(i).automatable) {
                         notifyHostParameterChanged(i);
                     }
@@ -2062,12 +2062,13 @@ private:
 
     void addPreset(const char* name, std::initializer_list<std::pair<int, float>> overrides)
     {
-        std::vector<float> vals((size_t)numParams(), 0.0f);
-        for (int i = 0; i < numParams(); ++i) {
+        // Stop at kVizTheme (134) so built-in presets leave the user's SCOPE visual theme untouched.
+        std::vector<float> vals((size_t)kVizTheme, 0.0f);
+        for (int i = 0; i < kVizTheme; ++i) {
             vals[(size_t)i] = get(i);
         }
         for (const auto& kv : overrides) {
-            if (kv.first >= 0 && kv.first < numParams()) {
+            if (kv.first >= 0 && kv.first < kVizTheme) {
                 vals[(size_t)kv.first] = kv.second;
                 if (kv.first == kTgPattern) {
                     const uint16_t m = kGateMasks[mpc::clamp((int)std::lround(kv.second), 0, 127)];

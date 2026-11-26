@@ -404,7 +404,7 @@ The **SCOPE** tab renders a multi-layer SNES-sprite / Milkdrop-style real-time a
 
 | Control / Telemetry Parameter | Type | Range |
 |---|---|---|
-| **Theme** (`134`, `viz_theme`) | `[Automatable]` Top-right corner live visual switcher | `NEON`, `SOLAR`, `CYBER`, `VOID` |
+| **Theme** (`134`, `viz_theme`) | `[Automatable]` Top-right corner live visual switcher (persists across factory preset switches) | `NEON`, `SOLAR`, `CYBER`, `VOID` |
 | **Viz Phase** (`126`) / **Viz Pulse** (`127`) | `[Read-Only Visualizer]` Tunnel & Center Core animation drivers | `0.00 – 1.00` |
 | **Viz X1 / Y1** (`128–129`), **Viz X2 / Y2** (`130–131`) | `[Read-Only Visualizer]` Dual Lissajous orb sprite XY coordinates | `0.00 – 1.00` |
 | **Viz Left** (`132`) / **Viz Right** (`133`) | `[Read-Only Visualizer]` Mirrored L/R stereo output energy wings | `0.00 – 1.00` |
