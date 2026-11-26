@@ -464,8 +464,8 @@ $g.DrawEllipse($ring, 4, 4, 14, 14)
 $ring.Dispose(); $fillM.Dispose(); $fillC.Dispose(); $glowM.Dispose(); $glowC.Dispose()
 Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "puck_lfo.png")
 
-# 11. Sidechain Source (seg2: 122x40): 0=INT, 1=TEST
-$scSrcLabels = @("INT", "TEST")
+# 11. Sidechain Source (seg2: 122x40): 0=INT, 1=4x4
+$scSrcLabels = @("INT", "4x4")
 foreach ($state in @("on", "off")) {
     $isOn = ($state -eq "on")
     $base = Join-Path $SkinsDir "seg2_$state.png"

@@ -7643,7 +7643,7 @@
                 "key": "Parameter 36",
                 "value": [
                     "INT",
-                    "TEST"
+                    "4x4"
                 ]
             }
         ],
@@ -11703,15 +11703,256 @@
                                 "boundsType": "Absolute",
                                 "bounds": "363 540 558 40"
                             }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "Delay Color",
+                                "type": "knobBi",
+                                "data": {
+                                    "version": 1,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 125"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "Yes",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "983 45 278 107"
+                            }
                         }
                     ]
                 },
                 "qlinkBoundsData": [
-                    "13 35 938 127",
+                    "13 35 1258 127",
                     "13 186 1258 127",
                     "13 336 1258 127",
                     "13 487 1258 127"
                 ]
+            },
+            {
+                "version": 1,
+                "tabName": "SCOPE",
+                "fnKeyIndex": 5,
+                "fnKeySubIndex": 1,
+                "componentDefinition": {
+                    "version": 2,
+                    "actions": [],
+                    "backgroundData": {
+                        "version": 1,
+                        "focussed": {
+                            "version": 1,
+                            "colour": "ff06080d",
+                            "image": "bg_scope.png"
+                        },
+                        "unfocussed": {
+                            "version": 1,
+                            "colour": "ff06080d",
+                            "image": "bg_scope.png"
+                        }
+                    },
+                    "ignoreMousePresses": false,
+                    "disableCoarseDataWheel": false,
+                    "componentsData": [
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "scope_tunnel",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "FilmStrip",
+                                    "colour": "0",
+                                    "image": "scope_tunnel_strip.png",
+                                    "numFrames": 24,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 126"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "0 0 1280 628"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "scope_mandala",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "FilmStrip",
+                                    "colour": "0",
+                                    "image": "scope_mandala_strip.png",
+                                    "numFrames": 20,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 127"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "380 54 520 520"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "scope_orb_a",
+                                "type": "XYPad",
+                                "data": {
+                                    "version": 1,
+                                    "xPositionHandle": "Parameter 128",
+                                    "yPositionHandle": "Parameter 129",
+                                    "image": "scope_orb_cyan.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "40 24 1200 580"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "scope_orb_b",
+                                "type": "XYPad",
+                                "data": {
+                                    "version": 1,
+                                    "xPositionHandle": "Parameter 130",
+                                    "yPositionHandle": "Parameter 131",
+                                    "image": "scope_orb_mag.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "40 24 1200 580"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "scope_wing_l",
+                                "type": "Meter",
+                                "data": {
+                                    "version": 3,
+                                    "direction": "Left",
+                                    "invert": false,
+                                    "inactiveImage": "meter_wing_l_off.png",
+                                    "peakImage": "meter_wing_l_on.png",
+                                    "rmsImage": "meter_wing_l_on.png",
+                                    "peakHandle": "Parameter 132",
+                                    "rmsHandle": "Parameter 132",
+                                    "peakHoldHandle": "Hold/Parameter 132",
+                                    "peakHoldSize": 4,
+                                    "peakHoldColour": "ffffffff"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "20 584 610 24"
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "scope_wing_r",
+                                "type": "Meter",
+                                "data": {
+                                    "version": 3,
+                                    "direction": "Right",
+                                    "invert": false,
+                                    "inactiveImage": "meter_wing_r_off.png",
+                                    "peakImage": "meter_wing_r_on.png",
+                                    "rmsImage": "meter_wing_r_on.png",
+                                    "peakHandle": "Parameter 133",
+                                    "rmsHandle": "Parameter 133",
+                                    "peakHoldHandle": "Hold/Parameter 133",
+                                    "peakHoldSize": 4,
+                                    "peakHoldColour": "ffffffff"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Show",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "650 584 610 24"
+                            }
+                        }
+                    ]
+                },
+                "qlinkBoundsData": []
             }
         ]
     }

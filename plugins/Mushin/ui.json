@@ -193,7 +193,7 @@
         { "param": "Delay Active", "widget": "switch" },
         { "param": "Delay Sync", "widget": "switch" },
         { "param": "Ping-Pong", "widget": "switch" },
-        "empty",
+        { "param": "Delay Color", "widget": "knob", "polarity": "bipolar" },
 
         { "param": "Delay FB", "widget": "knob" },
         { "param": "Delay Time", "widget": "knob", "visibleWhen": { "param": "Delay Sync", "choice": "Off" } },
