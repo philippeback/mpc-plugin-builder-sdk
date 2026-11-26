@@ -1012,6 +1012,7 @@ public:
         kVizY2,
         kVizLeft,
         kVizRight,
+        kVizTheme,
 
         kNumParams
     };
@@ -1238,6 +1239,7 @@ public:
             p.automatable = false;
             addParam(p);
         }
+        addParam(choiceParam("viz_theme", "Theme", {"NEON", "SOLAR", "CYBER", "VOID"}, 0));
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 

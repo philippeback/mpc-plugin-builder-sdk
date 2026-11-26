@@ -153,8 +153,8 @@ def gen_bg_scope(assets_dir):
     draw_rect(buf, W, H, W - 62, H - 16, 48, 2, m_line)
     draw_rect(buf, W, H, W - 16, H - 46, 2, 32, m_line)
 
-    draw_text(buf, W, H, 26, 40, "MUSHIN // SCOPE", (120, 220, 240, 255), scale=1)
-    draw_text(buf, W, H, W - 186, 40, "F6: DLY+LIM <> SCOPE", (215, 110, 155, 255), scale=1)
+    draw_text(buf, W, H, 26, 26, "MUSHIN // NEON", (120, 220, 240, 255), scale=1)
+    draw_text(buf, W, H, 26, 42, "F6: DLY+LIM <> SCOPE", (165, 90, 128, 255), scale=1)
 
     out = os.path.join(assets_dir, "bg_scope.png")
     write_png(out, W, H, buf)

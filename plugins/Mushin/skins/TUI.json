@@ -7394,6 +7394,188 @@
                             }
                         ]
                     }
+                },
+                {
+                    "key": "radioVTheme",
+                    "value": {
+                        "version": 2,
+                        "actions": [
+                            {
+                                "version": 1,
+                                "onAction": "Mouse Down",
+                                "handler": "Q-Link",
+                                "handleName": "Data",
+                                "additionalData": ""
+                            },
+                            {
+                                "version": 1,
+                                "onAction": "Enter Pressed",
+                                "handler": "Show Overlay",
+                                "handleName": "Data",
+                                "additionalData": "knob overlay"
+                            }
+                        ],
+                        "backgroundData": {
+                            "version": 1,
+                            "focussed": {
+                                "version": 1,
+                                "colour": "00000000",
+                                "image": ""
+                            },
+                            "unfocussed": {
+                                "version": 1,
+                                "colour": "00000000",
+                                "image": ""
+                            }
+                        },
+                        "ignoreMousePresses": false,
+                        "disableCoarseDataWheel": false,
+                        "componentsData": [
+                            {
+                                "version": 2,
+                                "componentData": {
+                                    "version": 1,
+                                    "name": "focus",
+                                    "type": "Focus",
+                                    "data": {
+                                        "version": 1,
+                                        "backgroundColour": "19ffffff",
+                                        "outlineColour": "ff00e5ff",
+                                        "backgroundInset": 2.0,
+                                        "outlineThickness": 1.0
+                                    }
+                                },
+                                "handle remapping": {
+                                    "version": 1,
+                                    "map": []
+                                },
+                                "bounds": {
+                                    "version": 1,
+                                    "acceptsHWFocus": "No",
+                                    "showWhenDataModelInvalid": "Show",
+                                    "whenVisible": "WhenFocussed",
+                                    "boundsType": "Absolute",
+                                    "bounds": "0 0 276 32"
+                                }
+                            },
+                            {
+                                "version": 2,
+                                "componentData": {
+                                    "version": 1,
+                                    "name": "seg 0",
+                                    "type": "Button",
+                                    "data": {
+                                        "version": 2,
+                                        "onImage": "btn_vtheme_0_on.png",
+                                        "offImage": "btn_vtheme_0_off.png",
+                                        "buttonId": 0,
+                                        "numButtonsInGroup": 4,
+                                        "handleName": "Data",
+                                        "gestureBehaviour": "Instant"
+                                    }
+                                },
+                                "handle remapping": {
+                                    "version": 1,
+                                    "map": []
+                                },
+                                "bounds": {
+                                    "version": 1,
+                                    "acceptsHWFocus": "No",
+                                    "showWhenDataModelInvalid": "Show",
+                                    "whenVisible": "Always",
+                                    "boundsType": "Absolute",
+                                    "bounds": "0 0 66 32"
+                                }
+                            },
+                            {
+                                "version": 2,
+                                "componentData": {
+                                    "version": 1,
+                                    "name": "seg 1",
+                                    "type": "Button",
+                                    "data": {
+                                        "version": 2,
+                                        "onImage": "btn_vtheme_1_on.png",
+                                        "offImage": "btn_vtheme_1_off.png",
+                                        "buttonId": 1,
+                                        "numButtonsInGroup": 4,
+                                        "handleName": "Data",
+                                        "gestureBehaviour": "Instant"
+                                    }
+                                },
+                                "handle remapping": {
+                                    "version": 1,
+                                    "map": []
+                                },
+                                "bounds": {
+                                    "version": 1,
+                                    "acceptsHWFocus": "No",
+                                    "showWhenDataModelInvalid": "Show",
+                                    "whenVisible": "Always",
+                                    "boundsType": "Absolute",
+                                    "bounds": "70 0 66 32"
+                                }
+                            },
+                            {
+                                "version": 2,
+                                "componentData": {
+                                    "version": 1,
+                                    "name": "seg 2",
+                                    "type": "Button",
+                                    "data": {
+                                        "version": 2,
+                                        "onImage": "btn_vtheme_2_on.png",
+                                        "offImage": "btn_vtheme_2_off.png",
+                                        "buttonId": 2,
+                                        "numButtonsInGroup": 4,
+                                        "handleName": "Data",
+                                        "gestureBehaviour": "Instant"
+                                    }
+                                },
+                                "handle remapping": {
+                                    "version": 1,
+                                    "map": []
+                                },
+                                "bounds": {
+                                    "version": 1,
+                                    "acceptsHWFocus": "No",
+                                    "showWhenDataModelInvalid": "Show",
+                                    "whenVisible": "Always",
+                                    "boundsType": "Absolute",
+                                    "bounds": "140 0 66 32"
+                                }
+                            },
+                            {
+                                "version": 2,
+                                "componentData": {
+                                    "version": 1,
+                                    "name": "seg 3",
+                                    "type": "Button",
+                                    "data": {
+                                        "version": 2,
+                                        "onImage": "btn_vtheme_3_on.png",
+                                        "offImage": "btn_vtheme_3_off.png",
+                                        "buttonId": 3,
+                                        "numButtonsInGroup": 4,
+                                        "handleName": "Data",
+                                        "gestureBehaviour": "Instant"
+                                    }
+                                },
+                                "handle remapping": {
+                                    "version": 1,
+                                    "map": []
+                                },
+                                "bounds": {
+                                    "version": 1,
+                                    "acceptsHWFocus": "No",
+                                    "showWhenDataModelInvalid": "Show",
+                                    "whenVisible": "Always",
+                                    "boundsType": "Absolute",
+                                    "bounds": "210 0 66 32"
+                                }
+                            }
+                        ]
+                    }
                 }
             ]
         },
@@ -11770,7 +11952,36 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "scope_tunnel",
+                                "name": "bg_theme_neon",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "Regular",
+                                    "colour": "0",
+                                    "image": "bg_scope.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "0 0 1280 628",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/0/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "neon_tunnel",
                                 "type": "Image",
                                 "data": {
                                     "version": 2,
@@ -11791,19 +12002,22 @@
                                 ]
                             },
                             "bounds": {
-                                "version": 1,
+                                "version": 2,
                                 "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
+                                "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "0 0 1280 628"
+                                "bounds": "0 0 1280 628",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/0/4/Parameter 134"
+                                ]
                             }
                         },
                         {
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "scope_mandala",
+                                "name": "neon_core",
                                 "type": "Image",
                                 "data": {
                                     "version": 2,
@@ -11824,19 +12038,22 @@
                                 ]
                             },
                             "bounds": {
-                                "version": 1,
+                                "version": 2,
                                 "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
+                                "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "380 54 520 520"
+                                "bounds": "380 54 520 520",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/0/4/Parameter 134"
+                                ]
                             }
                         },
                         {
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "scope_orb_a",
+                                "name": "neon_orb_1",
                                 "type": "XYPad",
                                 "data": {
                                     "version": 1,
@@ -11850,19 +12067,22 @@
                                 "map": []
                             },
                             "bounds": {
-                                "version": 1,
+                                "version": 2,
                                 "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
+                                "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "40 24 1200 580"
+                                "bounds": "40 24 1200 580",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/0/4/Parameter 134"
+                                ]
                             }
                         },
                         {
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "scope_orb_b",
+                                "name": "neon_orb_2",
                                 "type": "XYPad",
                                 "data": {
                                     "version": 1,
@@ -11876,19 +12096,22 @@
                                 "map": []
                             },
                             "bounds": {
-                                "version": 1,
+                                "version": 2,
                                 "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
+                                "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "40 24 1200 580"
+                                "bounds": "40 24 1200 580",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/0/4/Parameter 134"
+                                ]
                             }
                         },
                         {
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "scope_wing_l",
+                                "name": "neon_wing_l",
                                 "type": "Meter",
                                 "data": {
                                     "version": 3,
@@ -11901,7 +12124,9 @@
                                     "rmsHandle": "Parameter 132",
                                     "peakHoldHandle": "Hold/Parameter 132",
                                     "peakHoldSize": 4,
-                                    "peakHoldColour": "ffffffff"
+                                    "peakHoldColour": "ffffffff",
+                                    "offImage": "meter_wing_l_off.png",
+                                    "onImage": "meter_wing_l_on.png"
                                 }
                             },
                             "handle remapping": {
@@ -11909,19 +12134,22 @@
                                 "map": []
                             },
                             "bounds": {
-                                "version": 1,
+                                "version": 2,
                                 "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
+                                "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "20 584 610 24"
+                                "bounds": "20 584 610 24",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/0/4/Parameter 134"
+                                ]
                             }
                         },
                         {
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "scope_wing_r",
+                                "name": "neon_wing_r",
                                 "type": "Meter",
                                 "data": {
                                     "version": 3,
@@ -11934,7 +12162,9 @@
                                     "rmsHandle": "Parameter 133",
                                     "peakHoldHandle": "Hold/Parameter 133",
                                     "peakHoldSize": 4,
-                                    "peakHoldColour": "ffffffff"
+                                    "peakHoldColour": "ffffffff",
+                                    "offImage": "meter_wing_r_off.png",
+                                    "onImage": "meter_wing_r_on.png"
                                 }
                             },
                             "handle remapping": {
@@ -11942,12 +12172,749 @@
                                 "map": []
                             },
                             "bounds": {
-                                "version": 1,
+                                "version": 2,
                                 "acceptsHWFocus": "No",
-                                "showWhenDataModelInvalid": "Show",
+                                "showWhenDataModelInvalid": "Hide",
                                 "whenVisible": "Always",
                                 "boundsType": "Absolute",
-                                "bounds": "650 584 610 24"
+                                "bounds": "650 584 610 24",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/0/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "bg_theme_solar",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "Regular",
+                                    "colour": "0",
+                                    "image": "bg_scope_solar.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "0 0 1280 628",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/1/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "solar_tunnel",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "FilmStrip",
+                                    "colour": "0",
+                                    "image": "scope_solar_tunnel_strip.png",
+                                    "numFrames": 24,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 126"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "0 0 1280 628",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/1/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "solar_core",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "FilmStrip",
+                                    "colour": "0",
+                                    "image": "scope_solar_core_strip.png",
+                                    "numFrames": 20,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 127"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "380 54 520 520",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/1/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "solar_orb_1",
+                                "type": "XYPad",
+                                "data": {
+                                    "version": 1,
+                                    "xPositionHandle": "Parameter 128",
+                                    "yPositionHandle": "Parameter 129",
+                                    "image": "scope_orb_solar_1.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "40 24 1200 580",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/1/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "solar_orb_2",
+                                "type": "XYPad",
+                                "data": {
+                                    "version": 1,
+                                    "xPositionHandle": "Parameter 130",
+                                    "yPositionHandle": "Parameter 131",
+                                    "image": "scope_orb_solar_2.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "40 24 1200 580",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/1/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "solar_wing_l",
+                                "type": "Meter",
+                                "data": {
+                                    "version": 3,
+                                    "direction": "Left",
+                                    "invert": false,
+                                    "inactiveImage": "meter_wing_l_off.png",
+                                    "peakImage": "meter_wing_l_on.png",
+                                    "rmsImage": "meter_wing_l_on.png",
+                                    "peakHandle": "Parameter 132",
+                                    "rmsHandle": "Parameter 132",
+                                    "peakHoldHandle": "Hold/Parameter 132",
+                                    "peakHoldSize": 4,
+                                    "peakHoldColour": "ffffffff",
+                                    "offImage": "meter_wing_solar_l_off.png",
+                                    "onImage": "meter_wing_solar_l_on.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "20 584 610 24",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/1/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "solar_wing_r",
+                                "type": "Meter",
+                                "data": {
+                                    "version": 3,
+                                    "direction": "Right",
+                                    "invert": false,
+                                    "inactiveImage": "meter_wing_r_off.png",
+                                    "peakImage": "meter_wing_r_on.png",
+                                    "rmsImage": "meter_wing_r_on.png",
+                                    "peakHandle": "Parameter 133",
+                                    "rmsHandle": "Parameter 133",
+                                    "peakHoldHandle": "Hold/Parameter 133",
+                                    "peakHoldSize": 4,
+                                    "peakHoldColour": "ffffffff",
+                                    "offImage": "meter_wing_solar_r_off.png",
+                                    "onImage": "meter_wing_solar_r_on.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "650 584 610 24",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/1/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "bg_theme_cyber",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "Regular",
+                                    "colour": "0",
+                                    "image": "bg_scope_cyber.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "0 0 1280 628",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/2/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "cyber_tunnel",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "FilmStrip",
+                                    "colour": "0",
+                                    "image": "scope_cyber_tunnel_strip.png",
+                                    "numFrames": 24,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 126"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "0 0 1280 628",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/2/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "cyber_core",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "FilmStrip",
+                                    "colour": "0",
+                                    "image": "scope_cyber_core_strip.png",
+                                    "numFrames": 20,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 127"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "380 54 520 520",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/2/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "cyber_orb_1",
+                                "type": "XYPad",
+                                "data": {
+                                    "version": 1,
+                                    "xPositionHandle": "Parameter 128",
+                                    "yPositionHandle": "Parameter 129",
+                                    "image": "scope_orb_cyber_1.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "40 24 1200 580",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/2/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "cyber_orb_2",
+                                "type": "XYPad",
+                                "data": {
+                                    "version": 1,
+                                    "xPositionHandle": "Parameter 130",
+                                    "yPositionHandle": "Parameter 131",
+                                    "image": "scope_orb_cyber_2.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "40 24 1200 580",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/2/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "cyber_wing_l",
+                                "type": "Meter",
+                                "data": {
+                                    "version": 3,
+                                    "direction": "Left",
+                                    "invert": false,
+                                    "inactiveImage": "meter_wing_l_off.png",
+                                    "peakImage": "meter_wing_l_on.png",
+                                    "rmsImage": "meter_wing_l_on.png",
+                                    "peakHandle": "Parameter 132",
+                                    "rmsHandle": "Parameter 132",
+                                    "peakHoldHandle": "Hold/Parameter 132",
+                                    "peakHoldSize": 4,
+                                    "peakHoldColour": "ffffffff",
+                                    "offImage": "meter_wing_cyber_l_off.png",
+                                    "onImage": "meter_wing_cyber_l_on.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "20 584 610 24",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/2/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "cyber_wing_r",
+                                "type": "Meter",
+                                "data": {
+                                    "version": 3,
+                                    "direction": "Right",
+                                    "invert": false,
+                                    "inactiveImage": "meter_wing_r_off.png",
+                                    "peakImage": "meter_wing_r_on.png",
+                                    "rmsImage": "meter_wing_r_on.png",
+                                    "peakHandle": "Parameter 133",
+                                    "rmsHandle": "Parameter 133",
+                                    "peakHoldHandle": "Hold/Parameter 133",
+                                    "peakHoldSize": 4,
+                                    "peakHoldColour": "ffffffff",
+                                    "offImage": "meter_wing_cyber_r_off.png",
+                                    "onImage": "meter_wing_cyber_r_on.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "650 584 610 24",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/2/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "bg_theme_void",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "Regular",
+                                    "colour": "0",
+                                    "image": "bg_scope_void.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "0 0 1280 628",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/3/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "void_tunnel",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "FilmStrip",
+                                    "colour": "0",
+                                    "image": "scope_void_tunnel_strip.png",
+                                    "numFrames": 24,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 126"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "0 0 1280 628",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/3/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "void_core",
+                                "type": "Image",
+                                "data": {
+                                    "version": 2,
+                                    "imageType": "FilmStrip",
+                                    "colour": "0",
+                                    "image": "scope_void_core_strip.png",
+                                    "numFrames": 20,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 127"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "380 54 520 520",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/3/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "void_orb_1",
+                                "type": "XYPad",
+                                "data": {
+                                    "version": 1,
+                                    "xPositionHandle": "Parameter 128",
+                                    "yPositionHandle": "Parameter 129",
+                                    "image": "scope_orb_void_1.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "40 24 1200 580",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/3/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "void_orb_2",
+                                "type": "XYPad",
+                                "data": {
+                                    "version": 1,
+                                    "xPositionHandle": "Parameter 130",
+                                    "yPositionHandle": "Parameter 131",
+                                    "image": "scope_orb_void_2.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "40 24 1200 580",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/3/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "void_wing_l",
+                                "type": "Meter",
+                                "data": {
+                                    "version": 3,
+                                    "direction": "Left",
+                                    "invert": false,
+                                    "inactiveImage": "meter_wing_l_off.png",
+                                    "peakImage": "meter_wing_l_on.png",
+                                    "rmsImage": "meter_wing_l_on.png",
+                                    "peakHandle": "Parameter 132",
+                                    "rmsHandle": "Parameter 132",
+                                    "peakHoldHandle": "Hold/Parameter 132",
+                                    "peakHoldSize": 4,
+                                    "peakHoldColour": "ffffffff",
+                                    "offImage": "meter_wing_void_l_off.png",
+                                    "onImage": "meter_wing_void_l_on.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "20 584 610 24",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/3/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "void_wing_r",
+                                "type": "Meter",
+                                "data": {
+                                    "version": 3,
+                                    "direction": "Right",
+                                    "invert": false,
+                                    "inactiveImage": "meter_wing_r_off.png",
+                                    "peakImage": "meter_wing_r_on.png",
+                                    "rmsImage": "meter_wing_r_on.png",
+                                    "peakHandle": "Parameter 133",
+                                    "rmsHandle": "Parameter 133",
+                                    "peakHoldHandle": "Hold/Parameter 133",
+                                    "peakHoldSize": 4,
+                                    "peakHoldColour": "ffffffff",
+                                    "offImage": "meter_wing_void_r_off.png",
+                                    "onImage": "meter_wing_void_r_on.png"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": []
+                            },
+                            "bounds": {
+                                "version": 2,
+                                "acceptsHWFocus": "No",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "650 584 610 24",
+                                "additionalInvalidatingHandles": [
+                                    "IndexedEnabling/3/4/Parameter 134"
+                                ]
+                            }
+                        },
+                        {
+                            "version": 2,
+                            "componentData": {
+                                "version": 1,
+                                "name": "Theme",
+                                "type": "radioVTheme",
+                                "data": {
+                                    "version": 1,
+                                    "handleName": "Data"
+                                }
+                            },
+                            "handle remapping": {
+                                "version": 1,
+                                "map": [
+                                    {
+                                        "key": "Data",
+                                        "value": "Parameter 134"
+                                    }
+                                ]
+                            },
+                            "bounds": {
+                                "version": 1,
+                                "acceptsHWFocus": "Yes",
+                                "showWhenDataModelInvalid": "Hide",
+                                "whenVisible": "Always",
+                                "boundsType": "Absolute",
+                                "bounds": "974 22 276 32"
                             }
                         }
                     ]
