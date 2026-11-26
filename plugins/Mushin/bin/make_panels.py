@@ -427,16 +427,16 @@ def main():
             draw_text_5x7(buf, W, H, bx + 10, by + 6, "LFO 1 X", cyan, scale=1)
             draw_text_5x7(buf, W, H, bx + 68, by + 6, "X  LFO 2 Y", magenta, scale=1)
         elif filename == "bg_pump.png":
-            # IN & DUCK vertical meter bay in Row 2-3 Col 3 (983, 346, 278, 258)
-            bx, by, bw, bh = 983, 346, 278, 258
+            # IN & DUCK vertical meter bay in Row 3 Col 4 (983, 346, 278, 107)
+            bx, by, bw, bh = 983, 346, 278, 107
             draw_filled_box(buf, W, H, bx, by, bw, bh, (0x0C, 0x10, 0x16, 255))
             border = (0x22, 0x2C, 0x38, 255)
             draw_filled_box(buf, W, H, bx, by, bw, 1, border)
             draw_filled_box(buf, W, H, bx, by + bh - 1, bw, 1, border)
             draw_filled_box(buf, W, H, bx, by, 1, bh, border)
             draw_filled_box(buf, W, H, bx + bw - 1, by, 1, bh, border)
-            draw_text_5x7(buf, W, H, 1051, 360, "IN", cyan, scale=2)
-            draw_text_5x7(buf, W, H, 1159, 360, "DUCK", magenta, scale=2)
+            draw_text_5x7(buf, W, H, 1051, 351, "IN", cyan, scale=2)
+            draw_text_5x7(buf, W, H, 1159, 351, "DUCK", magenta, scale=2)
         elif filename == "bg_gate.png":
             # 16-step Gate Pattern card background in Row 2 Cols 1-3 (23, 196, 918, 107)
             draw_filled_box(buf, W, H, 23, 196, 918, 107, (0x10, 0x14, 0x1A, 255), (0x26, 0x2E, 0x3A, 255))

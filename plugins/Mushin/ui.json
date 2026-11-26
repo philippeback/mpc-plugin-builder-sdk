@@ -183,7 +183,7 @@
         { "param": "SC Drive", "widget": "switch" },
         { "param": "SC Cut", "widget": "switch" },
         { "param": "SC Gain", "widget": "switch" },
-        "empty"
+        { "param": "SC Source", "widget": "switch" }
       ]
     },
     {

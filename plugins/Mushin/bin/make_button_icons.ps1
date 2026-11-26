@@ -515,19 +515,19 @@ foreach ($state in @("on", "off")) {
     }
 }
 
-# 14. Pump Meters (40x190): meter_in (cyan) & meter_duck (magenta)
+# 14. Pump Meters (40x76): meter_in (cyan) & meter_duck (magenta)
 foreach ($m in @(
     @{ Prefix = "meter_in";   R = 0;   G = 229; B = 255 },
     @{ Prefix = "meter_duck"; R = 255; G = 77;  B = 141 }
 )) {
     foreach ($state in @("off", "on")) {
-        $bmp = New-Object System.Drawing.Bitmap(40, 190, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        $bmp = New-Object System.Drawing.Bitmap(40, 76, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
         $g = [System.Drawing.Graphics]::FromImage($bmp)
         $g.Clear([System.Drawing.Color]::FromArgb(255, 12, 16, 22))
         $alpha = if ($state -eq "on") { 245 } else { 40 }
         $segBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb($alpha, $m.R, $m.G, $m.B))
-        for ($y = 4; $y -le 182; $y += 6) {
-            $g.FillRectangle($segBrush, 4, $y, 32, 4)
+        for ($y = 3; $y -le 70; $y += 5) {
+            $g.FillRectangle($segBrush, 4, $y, 32, 3)
         }
         $segBrush.Dispose()
         Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir ($m.Prefix + "_$state.png"))
