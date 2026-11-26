@@ -38,9 +38,10 @@ public:
     void prepare(double sampleRate)
     {
         sampleRate_ = sampleRate;
-        attackCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.015f));   // 15 ms fast peak catch
-        releaseCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.450f));  // 450 ms smooth program release
-        gainSmoothCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.030f)); // 30 ms click-free gain glide
+        attackCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.001f));    // 1 ms instant peak catch (no overshoot)
+        releaseCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.450f));   // 450 ms smooth program release
+        gainSmoothCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.035f)); // 35 ms click-free gain glide
+        settleTargetSamples_ = std::max(1, (int)(sampleRate * 0.015));   // 15 ms active settle before upward boost
         trimSmoother_.setTime(50.0f, sampleRate);
         reset();
     }
@@ -48,6 +49,7 @@ public:
     void reset()
     {
         env_ = 0.0f;
+        settleCount_ = 0;
         desiredAutoGain_ = 1.0f;
         currentAutoGain_ = 1.0f;
         trimSmoother_.snap(1.0f);
@@ -64,15 +66,19 @@ public:
 
         if (!autoEnabled) {
             desiredAutoGain_ = 1.0f;
-        } else if (peak > env_) {
-            env_ = attackCoef_ * (env_ - peak) + peak;
-            if (env_ > 0.008f) {
-                desiredAutoGain_ = clamp(targetGain_ / env_, 0.25f, 8.0f);
-            }
+            settleCount_ = 0;
         } else if (peak > 0.008f) {
-            // Only ride downward while active signal is above -42 dBFS; holds steady during tails/gaps
-            env_ = releaseCoef_ * (env_ - peak) + peak;
-            desiredAutoGain_ = clamp(targetGain_ / std::max(env_, 0.008f), 0.25f, 8.0f);
+            if (peak > env_)
+                env_ = attackCoef_ * (env_ - peak) + peak;
+            else
+                env_ = releaseCoef_ * (env_ - peak) + peak;
+
+            if (settleCount_ < settleTargetSamples_) {
+                ++settleCount_;
+            }
+            const float rawGain = clamp(targetGain_ / std::max(env_, 0.008f), 0.25f, 8.0f);
+            // Allow immediate attenuation during transient onset, hold boost until initial 15ms settle completes
+            desiredAutoGain_ = (settleCount_ >= settleTargetSamples_) ? rawGain : std::min(1.0f, rawGain);
         }
 
         currentAutoGain_ = gainSmoothCoef_ * (currentAutoGain_ - desiredAutoGain_) + desiredAutoGain_;
@@ -83,9 +89,11 @@ public:
 
 private:
     double sampleRate_ = 44100.0;
-    float attackCoef_ = 0.9985f;
+    float attackCoef_ = 0.9775f;
     float releaseCoef_ = 0.99995f;
-    float gainSmoothCoef_ = 0.9992f;
+    float gainSmoothCoef_ = 0.9993f;
+    int settleTargetSamples_ = 661;
+    int settleCount_ = 0;
     float env_ = 0.0f;
     float targetGain_ = 0.3548f; // -9 dBFS
     float desiredAutoGain_ = 1.0f;
@@ -364,6 +372,8 @@ public:
     void reset()
     {
         envelope_ = 0.0f;
+        lastEnv_ = 0.0f;
+        testPhaseSamples_ = 0.0;
         hpFilter_.reset();
         lpFilter_.reset();
     }
@@ -399,22 +409,29 @@ public:
 
     float lastEnv() const { return lastEnv_; }
 
-    float processSample(float sidechainSample) noexcept
+    float processSample(float sidechainSample, bool testPulse = false) noexcept
     {
         if (!active_) { lastEnv_ = 0.0f; return 0.0f; }
 
-        float filtered = hpFilter_.process(sidechainSample, SVF::Mode::Highpass);
-        filtered = lpFilter_.process(filtered, SVF::Mode::Lowpass);
-
-        float x = std::fabs(filtered);
-        if (rmsMode_) x = x * x;
+        float x = 0.0f;
+        if (source_ == Source::TestSignal) {
+            x = testPulse ? 1.0f : 0.0f;
+        } else {
+            float filtered = hpFilter_.process(sidechainSample, SVF::Mode::Highpass);
+            filtered = lpFilter_.process(filtered, SVF::Mode::Lowpass);
+            x = std::fabs(filtered);
+            if (rmsMode_) x = x * x;
+        }
 
         if (x > envelope_)
             envelope_ = attack_ * (envelope_ - x) + x;
         else
             envelope_ = release_ * (envelope_ - x) + x;
 
-        const float env = clamp(rmsMode_ ? std::sqrt(std::max(0.0f, envelope_)) : envelope_, 0.0f, 1.0f);
+        const float env = clamp((rmsMode_ && source_ == Source::Internal)
+                                    ? std::sqrt(std::max(0.0f, envelope_))
+                                    : envelope_,
+                                0.0f, 1.0f);
         lastEnv_ = env;
         float modulation = 0.0f;
         if (env > threshold_ && env > 1.0e-5f) {
@@ -424,8 +441,11 @@ public:
         return modulation * amount_;
     }
 
+    double& testPhaseSamples() { return testPhaseSamples_; }
+
 private:
     double sampleRate_ = 44100.0;
+    double testPhaseSamples_ = 0.0;
     float attack_ = 0.0f, release_ = 0.0f, envelope_ = 0.0f, lastEnv_ = 0.0f;
     bool rmsMode_ = false;
     bool active_ = false;
@@ -934,7 +954,7 @@ public:
         addParam(floatParam ("filter_b_grit",      "Grit",     0.0f, 1.0f, 0.0f, "", 2));
         addParam(choiceParam("filter_b_type",      "Type",     {"CLN", "VOWL", "ACID", "DIGI"}, 0));
         addParam(choiceParam("filter_b_mode",      "Mode",     {"LP", "HP", "BP", "NOTCH"}, 0));
-        addParam(choiceParam("routing",            "Path",     {"SERIAL", "PARAL"}, 0));
+        addParam(choiceParam("routing",            "Path",     {"SERIAL", "PARAL", "STEREO"}, 0));
 
         // LFOs
         addParam(logParam   ("lfo1_freq", "LFO 1 Freq", 0.1f, 20.0f, 1.0f, "Hz", 2));
@@ -1093,7 +1113,7 @@ public:
                                (kGateMasks[0] & (1u << i)) != 0));
         }
         addParam(floatParam("tg_offset", "Gate Offset", -100.0f, 100.0f, 0.0f, "%", 0));
-        addParam(boolParam ("in_auto",   "Auto In",     false));
+        addParam(boolParam ("in_auto",   "Auto In",     true));
         addParam(floatParam("in_target", "In Target",   -24.0f, 0.0f, -9.0f, "dB", 1));
         addParam(floatParam("in_trim",   "In Trim",     -18.0f, 24.0f, 0.0f, "dB", 1));
 
@@ -1282,7 +1302,7 @@ public:
         filterB_.setType(getInt(kFBType));
         filterB_.setMode(getInt(kFBMode));
 
-        const bool parallelRouting = (getInt(kRouting) == 1);
+        const int filterRouting = getInt(kRouting);
 
         lfo1_.setFrequency(mpc::clamp(get(kLfo1Freq), 0.1f, 25.0f));
         lfo1_.setShape(getInt(kLfo1Wave));
@@ -1385,6 +1405,13 @@ public:
         const double tgOffsetSamples = (get(kTgOffset) * 0.01) * stepSamples;
         const bool tgActive = getBool(kTgActive) && (stepSamples > 0.0);
 
+        const double beatSamples = (60.0 / (double)bpm) * sr;
+        const double scTestPulseSamples = 0.014 * sr;
+        const bool scIsTest = sidechain_.isActive() && (sidechain_.getSource() == SidechainProcessor::Source::TestSignal);
+        const double scBaseBeatPos = ctx.transport.playing
+            ? (ctx.transport.ppqPos * beatSamples)
+            : sidechain_.testPhaseSamples();
+
         const float* inL = ctx.inputs[0];
         const float* inR = (ctx.numInputs > 1 && ctx.inputs[1]) ? ctx.inputs[1] : ctx.inputs[0];
         float* outL = ctx.outputs[0];
@@ -1431,7 +1458,13 @@ public:
 
             float scMod = 0.0f;
             if (sidechain_.isActive()) {
-                scMod = sidechain_.processSample(0.5f * (dryL + dryR)) * scMixVal;
+                bool scTestPulse = false;
+                if (scIsTest && beatSamples > 0.0) {
+                    double inBeat = std::fmod(scBaseBeatPos + s, beatSamples);
+                    if (inBeat < 0.0) inBeat += beatSamples;
+                    scTestPulse = (inBeat < scTestPulseSamples);
+                }
+                scMod = sidechain_.processSample(0.5f * (dryL + dryR), scTestPulse) * scMixVal;
                 blockPeakDuck = std::max(blockPeakDuck, std::fabs(scMod));
             }
 
@@ -1516,10 +1549,13 @@ public:
 
                 if (noiseActive && noiseRoute == 1) w += genSample;
                 const float preFilt = w;
-                if (!parallelRouting) {
+                if (filterRouting == 0) {
                     w = filterB_.processSample(ch, filterA_.processSample(ch, w));
-                } else {
+                } else if (filterRouting == 1) {
                     w = 0.5f * (filterA_.processSample(ch, w) + filterB_.processSample(ch, w));
+                } else {
+                    // STEREO routing: Left channel -> Filter A, Right channel -> Filter B
+                    w = (ch == 0) ? filterA_.processSample(0, w) : filterB_.processSample(1, w);
                 }
                 w = preFilt + (w - preFilt) * filterMixVal;
 
@@ -1554,6 +1590,9 @@ public:
 
         if (!ctx.transport.playing && tgActive) {
             tranceGate_.advanceFreeRunningClock(n, cycleSamples);
+        }
+        if (!ctx.transport.playing && scIsTest && beatSamples > 0.0) {
+            sidechain_.testPhaseSamples() = std::fmod(sidechain_.testPhaseSamples() + n, beatSamples);
         }
 
         // Update read-only Pump & Limiter meters after initial settle (~30 Hz host notify)
@@ -1637,11 +1676,11 @@ private:
         setTargetParam(kFAReso, mpc::clamp(baseValues_[kFAReso] + 0.50f * mChoke + 0.35f * mKinetic, 0.0f, 0.98f));
         setTargetParam(kFAGrit, mpc::clamp(baseValues_[kFAGrit] + 0.5f * mReso, 0.0f, 1.0f));
 
-        const bool isParallel = ((int)std::lround(baseValues_[kRouting]) == 1);
-        const bool chokeBand = (!isParallel && mChoke > 0.02f && (int)std::lround(baseValues_[kFBMode]) == 0 && baseValues_[kFBCutoff] > 15000.0f);
+        const bool isParallelOrStereo = ((int)std::lround(baseValues_[kRouting]) >= 1);
+        const bool chokeBand = (!isParallelOrStereo && mChoke > 0.02f && (int)std::lround(baseValues_[kFBMode]) == 0 && baseValues_[kFBCutoff] > 15000.0f);
         const float fbCutoff = chokeBand
             ? mpc::clamp(20.0f * std::pow(2.0f, 5.0f * mChoke), 20.0f, 20000.0f)
-            : mpc::clamp(baseValues_[kFBCutoff] * std::pow(2.0f, (isParallel ? -7.0f : -4.0f) * mChoke - 2.5f * mKinetic), 20.0f, 20000.0f);
+            : mpc::clamp(baseValues_[kFBCutoff] * std::pow(2.0f, (isParallelOrStereo ? -7.0f : -4.0f) * mChoke - 2.5f * mKinetic), 20.0f, 20000.0f);
         setTargetParam(kFBCutoff, fbCutoff);
         setTargetParam(kFBReso, mpc::clamp(baseValues_[kFBReso] + 0.50f * mChoke + 0.35f * mKinetic, 0.0f, 0.98f));
         setTargetParam(kFBGrit, mpc::clamp(baseValues_[kFBGrit] + 0.5f * mReso, 0.0f, 1.0f));
@@ -1734,11 +1773,11 @@ private:
                 baseValues_[idx] = mpc::clamp(val - 0.5f * mReso, 0.0f, 1.0f);
                 break;
             case kFBCutoff: {
-                const bool isParallel = ((int)std::lround(baseValues_[kRouting]) == 1);
-                const bool chokeBand = (!isParallel && mChoke > 0.02f && (int)std::lround(baseValues_[kFBMode]) == 0 && baseValues_[kFBCutoff] > 15000.0f);
+                const bool isParallelOrStereo = ((int)std::lround(baseValues_[kRouting]) >= 1);
+                const bool chokeBand = (!isParallelOrStereo && mChoke > 0.02f && (int)std::lround(baseValues_[kFBMode]) == 0 && baseValues_[kFBCutoff] > 15000.0f);
                 baseValues_[idx] = chokeBand
                     ? val
-                    : mpc::clamp(val * std::pow(2.0f, (isParallel ? 7.0f : 4.0f) * mChoke + 2.5f * mKinetic), 20.0f, 20000.0f);
+                    : mpc::clamp(val * std::pow(2.0f, (isParallelOrStereo ? 7.0f : 4.0f) * mChoke + 2.5f * mKinetic), 20.0f, 20000.0f);
                 break;
             }
             case kFBReso:
@@ -1840,11 +1879,12 @@ private:
         });
 
         addPreset("Mushin Pumper", {
-            {kScvActive, 1.0f}, {kDrive, 2.0f}, {kThreshold, -2.0f}, {kAutoGain, 1.0f},
-            {kFACutoff, 9500.0f}, {kFAReso, 0.35f},
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 10.0f},
-            {kScThresh, -28.0f}, {kScAmount, -100.0f}, {kScAttack, 2.0f}, {kScRelease, 190.0f},
-            {kScLpf, 350.0f}, {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}
+            {kAutoIn, 1.0f}, {kInTarget, -8.5f},
+            {kScvActive, 1.0f}, {kDrive, 2.0f}, {kThreshold, -2.5f}, {kAutoGain, 1.0f},
+            {kFACutoff, 11000.0f}, {kFAReso, 0.35f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 8.0f},
+            {kScThresh, -18.0f}, {kScAmount, -78.0f}, {kScAttack, 2.0f}, {kScRelease, 190.0f},
+            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}
         });
 
         // PSY: Psytrance & Darkpsy Chains (06-12)
@@ -1862,7 +1902,7 @@ private:
             {kAutoIn, 1.0f}, {kInTarget, -8.0f},
             {kRouting, 1.0f}, {kFilterMix, 0.88f},
             {kScvActive, 1.0f}, {kDrive, 3.0f}, {kThreshold, -4.0f}, {kAutoGain, 1.0f},
-            {kNoiseType, 4.0f}, {kNoiseFreq, 110.0f}, {kNoiseFmMod, 0.34f},
+            {kNoiseType, 4.0f}, {kNoiseFreq, 25.0f}, {kNoiseFmMod, 0.34f},
             {kFAType, 2.0f}, {kFAMode, 2.0f}, {kFACutoff, 1150.0f}, {kFAReso, 0.72f}, {kFADrive, 2.1f}, {kFAGrit, 0.24f},
             {kFBType, 2.0f}, {kFBMode, 0.0f}, {kFBCutoff, 2900.0f}, {kFBReso, 0.52f}, {kFBDrive, 1.5f},
             {kLfo1Freq, 6.2f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.54f},
@@ -1873,16 +1913,15 @@ private:
         });
 
         addPreset("PSY: Rolling Bass 16", {
-            {kAutoIn, 1.0f}, {kInTarget, -7.0f},
-            {kScvActive, 1.0f}, {kDrive, 3.4f}, {kThreshold, -4.5f}, {kAutoGain, 1.0f},
-            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 1050.0f}, {kFAReso, 0.54f}, {kFADrive, 2.0f}, {kFAGrit, 0.18f},
-            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 45.0f}, {kFBReso, 0.28f},
-            {kTgActive, 1.0f}, {kTgPattern, 25.0f}, {kTgRate, 0.0f},
-            {kTgDepth, 72.0f}, {kTgStart, 2.0f}, {kTgHold, 62.0f}, {kTgEnd, 18.0f},
-            {kScActive, 1.0f}, {kScSource, 0.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f},
-            {kScThresh, -22.0f}, {kScAmount, 65.0f}, {kScAttack, 1.5f}, {kScRelease, 110.0f},
-            {kScLpf, 220.0f}, {kScTargetGain, 0.0f}, {kScTargetCut, 1.0f},
-            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 3.2f}, {kLimCeiling, -0.3f}
+            {kAutoIn, 1.0f}, {kInTarget, -7.5f},
+            {kScvActive, 1.0f}, {kDrive, 2.2f}, {kThreshold, -3.5f}, {kAutoGain, 1.0f}, {kMix, 0.80f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 1350.0f}, {kFAReso, 0.30f}, {kFADrive, 1.3f},
+            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 42.0f}, {kFBReso, 0.15f},
+            {kLfo1Freq, 0.25f}, {kLfo1Wave, 0.0f}, {kModL1T1, 0.18f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f},
+            {kScThresh, -16.0f}, {kScAmount, -78.0f}, {kScAttack, 2.0f}, {kScRelease, 95.0f},
+            {kScTargetGain, 1.0f}, {kScTargetCut, 0.0f},
+            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 1.5f}, {kLimCeiling, -0.3f}
         });
 
         addPreset("PSY: Dark Squelch", {
@@ -2032,7 +2071,7 @@ private:
             {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 0.0f}, {kLimCeiling, -0.3f}
         });
         addPreset("FLT: Stereo Split", {
-            {kRouting, 1.0f}, {kFilterMix, 0.85f}, {kFAType, 0.0f}, {kFAMode, 0.0f}, {kFACutoff, 750.0f}, {kFAReso, 0.60f},
+            {kRouting, 2.0f}, {kFilterMix, 0.90f}, {kFAType, 0.0f}, {kFAMode, 0.0f}, {kFACutoff, 750.0f}, {kFAReso, 0.60f},
             {kFBType, 2.0f}, {kFBMode, 1.0f}, {kFBCutoff, 1400.0f}, {kFBReso, 0.65f},
             {kLfo1Freq, 0.20f}, {kModL1T1, 0.50f}, {kModL1T4, -0.50f},
             {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 0.0f}, {kLimCeiling, -0.3f}
@@ -2254,49 +2293,49 @@ private:
 
         // PUMP: Deep Sidechain Ducking (no Limiter Drive undoing the pump!) (70-77)
         addPreset("PUMP: Init", {
-            {kScActive, 1.0f}, {kScSource, 0.0f}, {kScMode, 1.0f}, {kScRatio, 10.0f},
-            {kScThresh, -28.0f}, {kScAmount, -80.0f}, {kScAttack, 2.0f}, {kScRelease, 190.0f},
-            {kScLpf, 350.0f}, {kScTargetGain, 1.0f}
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f},
+            {kScThresh, -18.0f}, {kScAmount, -78.0f}, {kScAttack, 2.0f}, {kScRelease, 190.0f},
+            {kScTargetGain, 1.0f}
         });
         addPreset("PUMP: House Duck", {
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 12.0f}, {kScThresh, -30.0f},
-            {kScAmount, -100.0f}, {kScAttack, 1.5f}, {kScRelease, 210.0f}, {kScLpf, 400.0f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f}, {kScThresh, -18.0f},
+            {kScAmount, -82.0f}, {kScAttack, 1.5f}, {kScRelease, 210.0f},
             {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kFACutoff, 10000.0f}, {kFAReso, 0.30f}
         });
         addPreset("PUMP: Test Pulse 4x4", {
-            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 14.0f},
-            {kScThresh, -26.0f}, {kScAmount, -100.0f}, {kScAttack, 1.0f}, {kScRelease, 240.0f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 12.0f},
+            {kScThresh, -18.0f}, {kScAmount, -85.0f}, {kScAttack, 1.0f}, {kScRelease, 230.0f},
             {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kFACutoff, 8500.0f}, {kFAReso, 0.40f}
         });
         addPreset("PUMP: Kick Keyed LPF", {
-            {kScActive, 1.0f}, {kScMode, 0.0f}, {kScRatio, 16.0f}, {kScThresh, -32.0f},
-            {kScAmount, -100.0f}, {kScAttack, 1.0f}, {kScRelease, 175.0f},
-            {kScHpf, 30.0f}, {kScLpf, 180.0f}, {kScTargetGain, 1.0f}
+            {kScActive, 1.0f}, {kScSource, 0.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f}, {kScThresh, -15.0f},
+            {kScAmount, -75.0f}, {kScAttack, 1.0f}, {kScRelease, 175.0f},
+            {kScHpf, 30.0f}, {kScLpf, 160.0f}, {kScTargetGain, 1.0f}
         });
         addPreset("PUMP: Vacuum Drop", {
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 20.0f}, {kScThresh, -36.0f},
-            {kScAmount, -100.0f}, {kScAttack, 0.5f}, {kScRelease, 340.0f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 16.0f}, {kScThresh, -20.0f},
+            {kScAmount, -92.0f}, {kScAttack, 0.8f}, {kScRelease, 300.0f},
             {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kFACutoff, 12000.0f}, {kFAReso, 0.45f}
         });
         addPreset("PUMP: Filter Breathe", {
             {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 7500.0f}, {kFAReso, 0.55f},
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 10.0f}, {kScThresh, -28.0f},
-            {kScAmount, -100.0f}, {kScAttack, 4.0f}, {kScRelease, 260.0f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f}, {kScThresh, -18.0f},
+            {kScAmount, -80.0f}, {kScAttack, 3.0f}, {kScRelease, 250.0f},
             {kScTargetGain, 0.0f}, {kScTargetCut, 1.0f}, {kScTargetReso, 1.0f},
             {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 0.0f}, {kLimCeiling, -0.3f}
         });
         addPreset("PUMP: Drive Surge", {
             {kScvActive, 1.0f}, {kDrive, 2.0f}, {kAutoGain, 1.0f},
-            {kScActive, 1.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f}, {kScThresh, -26.0f},
-            {kScAmount, 85.0f}, {kScAttack, 2.0f}, {kScRelease, 180.0f},
+            {kScActive, 1.0f}, {kScSource, 0.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f}, {kScThresh, -15.0f},
+            {kScAmount, 75.0f}, {kScAttack, 2.0f}, {kScRelease, 180.0f},
             {kScTargetGain, 0.0f}, {kScTargetDrive, 1.0f}, {kScTargetReso, 1.0f}, {kFACutoff, 3200.0f},
             {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 0.0f}, {kLimCeiling, -0.3f}
         });
         addPreset("PUMP: French Touch", {
-            {kScvActive, 1.0f}, {kDrive, 2.6f}, {kThreshold, -4.0f}, {kAutoGain, 1.0f},
+            {kScvActive, 1.0f}, {kDrive, 2.4f}, {kThreshold, -4.0f}, {kAutoGain, 1.0f},
             {kFACutoff, 6500.0f}, {kFAReso, 0.45f},
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 14.0f}, {kScThresh, -30.0f},
-            {kScAmount, -100.0f}, {kScAttack, 1.5f}, {kScRelease, 220.0f}, {kScLpf, 300.0f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f}, {kScThresh, -18.0f},
+            {kScAmount, -80.0f}, {kScAttack, 1.5f}, {kScRelease, 210.0f},
             {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}
         });
 
@@ -2328,7 +2367,8 @@ private:
             {kNoiseActive, 1.0f}, {kNoiseType, 1.0f}, {kNoiseRoute, 1.0f}, {kNoiseLevel, -38.0f}, {kNoiseFmMod, 0.18f},
             {kQeActive, 1.0f}, {kQeDepth, 8.5f}, {kQeDownsample, 2.0f}, {kQeMix, 0.28f},
             {kTgActive, 1.0f}, {kTgPattern, 77.0f}, {kTgOffset, 15.0f}, {kTgDepth, 68.0f},
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 8.0f}, {kScThresh, -28.0f}, {kScAmount, -75.0f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 8.0f}, {kScThresh, -18.0f}, {kScAmount, -58.0f},
+            {kScAttack, 2.0f}, {kScRelease, 160.0f},
             {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f},
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
             {kDelayFeedback, 0.35f}, {kDelayMix, 0.22f},
@@ -2367,8 +2407,8 @@ private:
             {kScvActive, 1.0f}, {kDrive, 3.8f}, {kExhaustion, 1.0f}, {kThreshold, -5.0f}, {kAutoGain, 1.0f},
             {kQeActive, 1.0f}, {kQeLink, 1.0f}, {kQeDownsample, 5.0f}, {kQeMix, 0.50f},
             {kFACutoff, 6800.0f}, {kFAReso, 0.40f},
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 12.0f}, {kScThresh, -30.0f}, {kScAmount, -100.0f},
-            {kScAttack, 1.5f}, {kScRelease, 200.0f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f}, {kScThresh, -18.0f}, {kScAmount, -78.0f},
+            {kScAttack, 1.5f}, {kScRelease, 185.0f},
             {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kScTargetReso, 1.0f}
         });
         addPreset("COMBO: Dub Techno", {
@@ -2449,8 +2489,8 @@ private:
         addPreset("COMBO: Electro Pump", {
             {kScvActive, 1.0f}, {kDrive, 4.5f}, {kExhaustion, 1.0f}, {kThreshold, -5.8f}, {kAutoGain, 1.0f},
             {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 5400.0f}, {kFAReso, 0.55f}, {kFAGrit, 0.28f},
-            {kScActive, 1.0f}, {kScMode, 1.0f}, {kScRatio, 14.0f}, {kScThresh, -30.0f}, {kScAmount, -100.0f},
-            {kScAttack, 1.0f}, {kScRelease, 165.0f}, {kScLpf, 320.0f},
+            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f}, {kScThresh, -18.0f}, {kScAmount, -80.0f},
+            {kScAttack, 1.5f}, {kScRelease, 165.0f},
             {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f}, {kScTargetReso, 1.0f}
         });
     }

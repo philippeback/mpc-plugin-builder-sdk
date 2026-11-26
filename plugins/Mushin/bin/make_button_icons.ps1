@@ -156,39 +156,54 @@ foreach ($state in @("on", "off")) {
     $pen.Dispose()
 }
 
-# 3. Routing (seg2: 122x40): 0=Serial, 1=Parallel (from mushin/Source/Web/index.html:1559-1578)
+# 3. Routing (seg3: 80x40): 0=Serial, 1=Parallel, 2=Stereo (L->A, R->B)
 foreach ($state in @("on", "off")) {
     $isOn = ($state -eq "on")
-    $base = Join-Path $SkinsDir "seg2_$state.png"
+    $base = Join-Path $SkinsDir "seg3_$state.png"
     $col = Get-StrokeColor $isOn
-    $pen = New-Object System.Drawing.Pen($col, 2.0)
+    $acc = Get-AccentColor $isOn
+    $pen = New-Object System.Drawing.Pen($col, 1.8)
     $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
     $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
     $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
 
     # 0: Serial [A] -- [B]
     $bmp, $g = New-ButtonCanvas $base
-    $g.DrawRectangle($pen, 31, 13, 16, 14)
-    $g.DrawRectangle($pen, 75, 13, 16, 14)
-    $dashPen = New-Object System.Drawing.Pen($col, 2.0)
+    $g.DrawRectangle($pen, 15, 13, 14, 14)
+    $g.DrawRectangle($pen, 51, 13, 14, 14)
+    $dashPen = New-Object System.Drawing.Pen($col, 1.8)
     $dashPen.DashPattern = @(2.0, 2.0)
-    $g.DrawLine($dashPen, 49, 20, 73, 20)
+    $g.DrawLine($dashPen, 31, 20, 49, 20)
     $dashPen.Dispose()
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_route_0_$state.png")
 
     # 1: Parallel split -> [A] / [B] -> join
     $bmp, $g = New-ButtonCanvas $base
-    $g.DrawLine($pen, 29, 20, 41, 20)
-    $g.DrawLine($pen, 41, 13, 41, 27)
-    $g.DrawLine($pen, 41, 13, 51, 13)
-    $g.DrawLine($pen, 41, 27, 51, 27)
-    $g.DrawRectangle($pen, 51, 9, 20, 8)
-    $g.DrawRectangle($pen, 51, 23, 20, 8)
-    $g.DrawLine($pen, 71, 13, 81, 13)
-    $g.DrawLine($pen, 71, 27, 81, 27)
-    $g.DrawLine($pen, 81, 13, 81, 27)
-    $g.DrawLine($pen, 81, 20, 93, 20)
+    $g.DrawLine($pen, 12, 20, 22, 20)
+    $g.DrawLine($pen, 22, 13, 22, 27)
+    $g.DrawLine($pen, 22, 13, 30, 13)
+    $g.DrawLine($pen, 22, 27, 30, 27)
+    $g.DrawRectangle($pen, 30, 9, 20, 8)
+    $g.DrawRectangle($pen, 30, 23, 20, 8)
+    $g.DrawLine($pen, 50, 13, 58, 13)
+    $g.DrawLine($pen, 50, 27, 58, 27)
+    $g.DrawLine($pen, 58, 13, 58, 27)
+    $g.DrawLine($pen, 58, 20, 68, 20)
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_route_1_$state.png")
+
+    # 2: Stereo dual L->[A], R->[B]
+    $bmp, $g = New-ButtonCanvas $base
+    $accPen = New-Object System.Drawing.Pen($acc, 1.8)
+    Draw-CenteredText $g "L" 16 13 9 $col
+    $g.DrawLine($pen, 23, 13, 31, 13)
+    $g.DrawRectangle($accPen, 31, 9, 20, 8)
+    $g.DrawLine($pen, 51, 13, 66, 13)
+    Draw-CenteredText $g "R" 16 27 9 $col
+    $g.DrawLine($pen, 23, 27, 31, 27)
+    $g.DrawRectangle($pen, 31, 23, 20, 8)
+    $g.DrawLine($pen, 51, 27, 66, 27)
+    $accPen.Dispose()
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_route_2_$state.png")
 
     $pen.Dispose()
 }
