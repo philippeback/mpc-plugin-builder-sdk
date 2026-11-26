@@ -1,6 +1,8 @@
 Add-Type -AssemblyName System.Drawing
 
-$assetsDir = Join-Path (Split-Path $PSScriptRoot -Parent) "assets"
+$pluginDir = Split-Path $PSScriptRoot -Parent
+$sdkRoot = Split-Path (Split-Path $pluginDir -Parent) -Parent
+$assetsDir = Join-Path $pluginDir "assets"
 $orbsPath = Join-Path $assetsDir "orbs_sheet.jpg"
 
 if (-not (Test-Path $orbsPath)) {
@@ -8,74 +10,73 @@ if (-not (Test-Path $orbsPath)) {
     exit 1
 }
 
-$orbsImg = [System.Drawing.Bitmap]::FromFile($orbsPath)
-$cellW = $orbsImg.Width / 4.0
-$cellH = $orbsImg.Height / 2.0
-$size = 180
-$numFrames = 16
-
-for ($r = 0; $r -lt 2; $r++) {
-    for ($c = 0; $c -lt 4; $c++) {
-        $idx = $r * 4 + $c
-        $strip = New-Object System.Drawing.Bitmap($size, ($size * $numFrames), [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
-        $g = [System.Drawing.Graphics]::FromImage($strip)
-        $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-        $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
-        $g.Clear([System.Drawing.Color]::Transparent)
-
-        $srcRect = New-Object System.Drawing.RectangleF(($c * $cellW + $cellW * 0.06), ($r * $cellH + $cellH * 0.04), ($cellW * 0.88), ($cellH * 0.92))
-
-        for ($f = 0; $f -lt $numFrames; $f++) {
-            $t = $f / [double]($numFrames - 1)
-            $fy = $f * $size
-            $pad = 8
-            $orbRect = New-Object System.Drawing.RectangleF($pad, ($fy + $pad), ($size - $pad * 2), ($size - $pad * 2))
-
-            # Brightness/contrast ramp from dormant (0.35) to energized (1.15)
-            $gain = [float](0.35 + 0.80 * $t)
-            $cm = New-Object System.Drawing.Imaging.ColorMatrix
-            $cm.Matrix00 = $gain
-            $cm.Matrix11 = $gain
-            $cm.Matrix22 = $gain
-            $cm.Matrix33 = 1.0
-            $cm.Matrix44 = 1.0
-
-            $ia = New-Object System.Drawing.Imaging.ImageAttributes
-            $ia.SetColorMatrix($cm)
-
-            # Clip orb to circle
-            $path = New-Object System.Drawing.Drawing2D.GraphicsPath
-            $path.AddEllipse($orbRect)
-            $state = $g.Save()
-            $g.SetClip($path)
-            $g.DrawImage($orbsImg, [System.Drawing.Rectangle]::Round($orbRect), $srcRect.X, $srcRect.Y, $srcRect.Width, $srcRect.Height, [System.Drawing.GraphicsUnit]::Pixel, $ia)
-            $g.Restore($state)
-            $path.Dispose()
-            $ia.Dispose()
-
-            # Outer energy ring growing with t
-            if ($t -gt 0.02) {
-                $alpha = [int](40 + 215 * $t)
-                $ringCol = if ($r -eq 0) { [System.Drawing.Color]::FromArgb($alpha, 0, 229, 255) } else { [System.Drawing.Color]::FromArgb($alpha, 255, 77, 141) }
-                $penW = [float](1.2 + 1.8 * $t)
-                $pen = New-Object System.Drawing.Pen($ringCol, $penW)
-                $ringRect = New-Object System.Drawing.RectangleF(($pad - 2), ($fy + $pad - 2), ($size - $pad * 2 + 4), ($size - $pad * 2 + 4))
-                $g.DrawArc($pen, $ringRect, -225, [float](270 * $t))
-                $pen.Dispose()
-            }
-        }
-
-        $g.Dispose()
-        $outPath = Join-Path $assetsDir ("orb_strip_" + $idx + ".png")
-        $strip.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
-        $strip.Dispose()
-        Write-Host "Wrote $outPath"
-    }
+$zigPy = Join-Path $sdkRoot ".sdk-tools\zigenv\Scripts\python.exe"
+$genCpp = Join-Path $PSScriptRoot "gen_orbs.cpp"
+if (-not (Test-Path $zigPy) -or -not (Test-Path $genCpp)) {
+    Write-Error "Missing Zig Python ($zigPy) or gen_orbs.cpp ($genCpp)"
+    exit 1
 }
 
+$workDir = Join-Path ([System.IO.Path]::GetTempPath()) "mushin_orbs_build"
+New-Item -ItemType Directory -Force -Path $workDir | Out-Null
+
+# 1. Decode orbs_sheet.jpg -> raw 32bpp BGRA
+$orbsImg = [System.Drawing.Bitmap]::FromFile($orbsPath)
+$w = $orbsImg.Width
+$h = $orbsImg.Height
+$rawBmp = New-Object System.Drawing.Bitmap($w, $h, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+$g = [System.Drawing.Graphics]::FromImage($rawBmp)
+$g.DrawImage($orbsImg, 0, 0, $w, $h)
+$g.Dispose()
 $orbsImg.Dispose()
 
-# Stack gate_pat_0..7.png into a single 8-frame vertical FilmStrip (gate_pat_strip.png)
+$rect = New-Object System.Drawing.Rectangle(0, 0, $w, $h)
+$bd = $rawBmp.LockBits($rect, [System.Drawing.Imaging.ImageLockMode]::ReadOnly, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+$bytes = New-Object byte[] ($bd.Stride * $h)
+[System.Runtime.InteropServices.Marshal]::Copy($bd.Scan0, $bytes, 0, $bytes.Length)
+$rawBmp.UnlockBits($bd)
+$rawBmp.Dispose()
+
+$rawPath = Join-Path $workDir "orbs_sheet.bgra"
+[System.IO.File]::WriteAllBytes($rawPath, $bytes)
+
+# 2. Compile & run high-speed 2x2 SSAA cyber-mecha orb shader
+$exePath = Join-Path $workDir "gen_orbs.exe"
+& $zigPy -m ziglang c++ -O3 -std=c++17 $genCpp -o $exePath
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Failed to compile gen_orbs.cpp"
+    exit 1
+}
+
+& $exePath $rawPath $w $h $workDir
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "gen_orbs.exe failed"
+    exit 1
+}
+
+# 3. Encode each 180x3960 (22-frame) raw strip -> PNG in assets/
+$size = 180
+$numFrames = 22
+$stripH = $size * $numFrames
+
+for ($idx = 0; $idx -lt 8; $idx++) {
+    $bgraPath = Join-Path $workDir ("orb_strip_" + $idx + ".bgra")
+    $outBytes = [System.IO.File]::ReadAllBytes($bgraPath)
+    $bmp = New-Object System.Drawing.Bitmap($size, $stripH, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $oRect = New-Object System.Drawing.Rectangle(0, 0, $size, $stripH)
+    $oBd = $bmp.LockBits($oRect, [System.Drawing.Imaging.ImageLockMode]::WriteOnly, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    [System.Runtime.InteropServices.Marshal]::Copy($outBytes, 0, $oBd.Scan0, $outBytes.Length)
+    $bmp.UnlockBits($oBd)
+
+    $outPath = Join-Path $assetsDir ("orb_strip_" + $idx + ".png")
+    $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
+    $bmp.Dispose()
+    Write-Host "Wrote $outPath"
+}
+
+Remove-Item -Recurse -Force $workDir -ErrorAction SilentlyContinue
+
+# 4. Stack gate_pat_0..7.png into a single 8-frame vertical FilmStrip (gate_pat_strip.png)
 $gw = 918
 $gh = 107
 $gateStrip = New-Object System.Drawing.Bitmap($gw, ($gh * 8), [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)

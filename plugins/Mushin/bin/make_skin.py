@@ -415,7 +415,7 @@ def make_orb_local_def(orb_idx):
                             "version": 2,
                             "knobType": "FilmStrip",
                             "filmStrip": f"orb_strip_{orb_idx}.png",
-                            "numFrames": 16,
+                            "numFrames": 22,
                             "invert": False,
                             "handleName": "Data",
                         },

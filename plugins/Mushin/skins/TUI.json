@@ -1802,7 +1802,7 @@
                                         "version": 2,
                                         "knobType": "FilmStrip",
                                         "filmStrip": "orb_strip_0.png",
-                                        "numFrames": 16,
+                                        "numFrames": 22,
                                         "invert": false,
                                         "handleName": "Data"
                                     }
@@ -1977,7 +1977,7 @@
                                         "version": 2,
                                         "knobType": "FilmStrip",
                                         "filmStrip": "orb_strip_1.png",
-                                        "numFrames": 16,
+                                        "numFrames": 22,
                                         "invert": false,
                                         "handleName": "Data"
                                     }
@@ -2152,7 +2152,7 @@
                                         "version": 2,
                                         "knobType": "FilmStrip",
                                         "filmStrip": "orb_strip_2.png",
-                                        "numFrames": 16,
+                                        "numFrames": 22,
                                         "invert": false,
                                         "handleName": "Data"
                                     }
@@ -2327,7 +2327,7 @@
                                         "version": 2,
                                         "knobType": "FilmStrip",
                                         "filmStrip": "orb_strip_3.png",
-                                        "numFrames": 16,
+                                        "numFrames": 22,
                                         "invert": false,
                                         "handleName": "Data"
                                     }
@@ -2502,7 +2502,7 @@
                                         "version": 2,
                                         "knobType": "FilmStrip",
                                         "filmStrip": "orb_strip_4.png",
-                                        "numFrames": 16,
+                                        "numFrames": 22,
                                         "invert": false,
                                         "handleName": "Data"
                                     }
@@ -2677,7 +2677,7 @@
                                         "version": 2,
                                         "knobType": "FilmStrip",
                                         "filmStrip": "orb_strip_5.png",
-                                        "numFrames": 16,
+                                        "numFrames": 22,
                                         "invert": false,
                                         "handleName": "Data"
                                     }
@@ -2852,7 +2852,7 @@
                                         "version": 2,
                                         "knobType": "FilmStrip",
                                         "filmStrip": "orb_strip_6.png",
-                                        "numFrames": 16,
+                                        "numFrames": 22,
                                         "invert": false,
                                         "handleName": "Data"
                                     }
@@ -3027,7 +3027,7 @@
                                         "version": 2,
                                         "knobType": "FilmStrip",
                                         "filmStrip": "orb_strip_7.png",
-                                        "numFrames": 16,
+                                        "numFrames": 22,
                                         "invert": false,
                                         "handleName": "Data"
                                     }
