@@ -36,9 +36,9 @@
                 "Bank Direction": "RowTopDown",
                 "Q-Links": {
                     "Q-Link 1": 63,
-                    "Q-Link 2": -1,
-                    "Q-Link 3": -1,
-                    "Q-Link 4": -1,
+                    "Q-Link 2": 115,
+                    "Q-Link 3": 116,
+                    "Q-Link 4": 117,
                     "Q-Link 5": 59,
                     "Q-Link 6": 60,
                     "Q-Link 7": 61,

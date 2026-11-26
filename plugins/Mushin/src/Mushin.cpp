@@ -1,7 +1,8 @@
 // Mushin.cpp - MPC standalone port of the Mushin multi-stage effect plugin.
 //
 // Signal path:
-//   in -> [Pre-Dist Noise] -> S-Curve Waveshaper -> [Pre-Filter Noise]
+//   in -> Input Gain Stager (Auto-Level + Trim) -> [Pre-Dist Noise]
+//      -> S-Curve Waveshaper -> [Pre-Filter Noise]
 //      -> Dual Filter & LFO Matrix (Serial/Parallel) -> Info Decay (Bit/Downsample)
 //      -> [Post-Filter Noise] -> Dry/Wet Mix -> Trance Gate -> Final Gain
 //      -> Stereo Delay -> Final Limiter -> out
@@ -27,6 +28,70 @@
 namespace {
 
 using namespace mpc::dsp;
+
+// ---------------------------------------------------------------------------
+// Input Gain Stager (Auto-Leveler + Manual Pre-FX Trim)
+// ---------------------------------------------------------------------------
+class InputGainStager
+{
+public:
+    void prepare(double sampleRate)
+    {
+        sampleRate_ = sampleRate;
+        attackCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.015f));   // 15 ms fast peak catch
+        releaseCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.450f));  // 450 ms smooth program release
+        gainSmoothCoef_ = std::exp(-1.0f / (float(sampleRate) * 0.030f)); // 30 ms click-free gain glide
+        trimSmoother_.setTime(50.0f, sampleRate);
+        reset();
+    }
+
+    void reset()
+    {
+        env_ = 0.0f;
+        desiredAutoGain_ = 1.0f;
+        currentAutoGain_ = 1.0f;
+        trimSmoother_.snap(1.0f);
+    }
+
+    void setTargetDb(float db) { targetGain_ = dbToGain(clamp(db, -24.0f, 0.0f)); }
+    void setTrimDb(float db) { trimSmoother_.setTarget(dbToGain(clamp(db, -18.0f, 24.0f))); }
+    void snapTrim(float db) { trimSmoother_.snap(dbToGain(clamp(db, -18.0f, 24.0f))); }
+
+    void processSample(float& left, float& right, bool autoEnabled) noexcept
+    {
+        const float trim = trimSmoother_.process();
+        const float peak = std::max(std::fabs(left), std::fabs(right));
+
+        if (!autoEnabled) {
+            desiredAutoGain_ = 1.0f;
+        } else if (peak > env_) {
+            env_ = attackCoef_ * (env_ - peak) + peak;
+            if (env_ > 0.008f) {
+                desiredAutoGain_ = clamp(targetGain_ / env_, 0.25f, 8.0f);
+            }
+        } else if (peak > 0.008f) {
+            // Only ride downward while active signal is above -42 dBFS; holds steady during tails/gaps
+            env_ = releaseCoef_ * (env_ - peak) + peak;
+            desiredAutoGain_ = clamp(targetGain_ / std::max(env_, 0.008f), 0.25f, 8.0f);
+        }
+
+        currentAutoGain_ = gainSmoothCoef_ * (currentAutoGain_ - desiredAutoGain_) + desiredAutoGain_;
+        const float totalGain = currentAutoGain_ * trim;
+        left *= totalGain;
+        right *= totalGain;
+    }
+
+private:
+    double sampleRate_ = 44100.0;
+    float attackCoef_ = 0.9985f;
+    float releaseCoef_ = 0.99995f;
+    float gainSmoothCoef_ = 0.9992f;
+    float env_ = 0.0f;
+    float targetGain_ = 0.3548f; // -9 dBFS
+    float desiredAutoGain_ = 1.0f;
+    float currentAutoGain_ = 1.0f;
+    Smoother trimSmoother_;
+};
 
 // ---------------------------------------------------------------------------
 // S-Curve Waveshaper
@@ -821,6 +886,9 @@ public:
         kTgStep8, kTgStep9, kTgStep10, kTgStep11,
         kTgStep12, kTgStep13, kTgStep14, kTgStep15,
         kTgOffset,
+        kAutoIn,
+        kInTarget,
+        kInTrim,
 
         kNumParams
     };
@@ -1025,6 +1093,9 @@ public:
                                (kGateMasks[0] & (1u << i)) != 0));
         }
         addParam(floatParam("tg_offset", "Gate Offset", -100.0f, 100.0f, 0.0f, "%", 0));
+        addParam(boolParam ("in_auto",   "Auto In",     false));
+        addParam(floatParam("in_target", "In Target",   -24.0f, 0.0f, -9.0f, "dB", 1));
+        addParam(floatParam("in_trim",   "In Trim",     -18.0f, 24.0f, 0.0f, "dB", 1));
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -1109,6 +1180,7 @@ public:
 
     void prepare(double sampleRate, int /*maxBlockSize*/) override
     {
+        inputStager_.prepare(sampleRate);
         waveshaper_.prepare(sampleRate);
         filterA_.prepare(sampleRate);
         filterB_.prepare(sampleRate);
@@ -1138,6 +1210,10 @@ public:
 
     void reset() override
     {
+        inputStager_.setTargetDb(get(kInTarget));
+        inputStager_.setTrimDb(get(kInTrim));
+        inputStager_.reset();
+        inputStager_.snapTrim(get(kInTrim));
         waveshaper_.setDrive(mpc::clamp(get(kDrive), 1.0f, 32.0f));
         waveshaper_.setExhaustion(getBool(kExhaustion));
         waveshaper_.setThreshold(mpc::dsp::dbToGain(get(kThreshold)));
@@ -1181,6 +1257,10 @@ public:
         const int n = ctx.numFrames;
 
         // 1. Update per-block parameters (macros already reflected into underlying params)
+        const bool autoInActive = getBool(kAutoIn);
+        inputStager_.setTargetDb(get(kInTarget));
+        inputStager_.setTrimDb(get(kInTrim));
+
         waveshaper_.setDrive(mpc::clamp(get(kDrive), 1.0f, 32.0f));
         waveshaper_.setExhaustion(getBool(kExhaustion));
         waveshaper_.setThreshold(mpc::dsp::dbToGain(get(kThreshold)));
@@ -1337,8 +1417,9 @@ public:
             float wsDrive, wsThresh;
             waveshaper_.advanceSmoothers(wsDrive, wsThresh);
 
-            const float dryL = inL[s];
-            const float dryR = inR[s];
+            float dryL = inL[s];
+            float dryR = inR[s];
+            inputStager_.processSample(dryL, dryR, autoInActive);
             blockPeakIn = std::max(blockPeakIn, std::max(std::fabs(dryL), std::fabs(dryR)));
 
             float rawGen = 0.0f;
@@ -1768,74 +1849,92 @@ private:
 
         // PSY: Psytrance & Darkpsy Chains (06-12)
         addPreset("PSY: Init", {
-            {kScvActive, 1.0f}, {kDrive, 2.0f}, {kThreshold, -2.0f}, {kAutoGain, 1.0f},
-            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 2200.0f}, {kFAReso, 0.45f}, {kFADrive, 1.4f},
-            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 42.0f}, {kFBReso, 0.20f},
+            {kAutoIn, 1.0f}, {kInTarget, -8.5f},
+            {kScvActive, 1.0f}, {kDrive, 2.2f}, {kThreshold, -2.5f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 2600.0f}, {kFAReso, 0.48f}, {kFADrive, 1.5f},
+            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 42.0f}, {kFBReso, 0.22f},
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
-            {kDelayFeedback, 0.32f}, {kDelayMix, 0.18f},
-            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 0.0f}, {kLimCeiling, -0.3f}
+            {kDelayFeedback, 0.34f}, {kDelayMix, 0.20f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 1.5f}, {kLimCeiling, -0.3f}
         });
 
         addPreset("PSY: Forest FM Lead", {
-            {kScvActive, 1.0f}, {kDrive, 2.8f}, {kThreshold, -4.0f}, {kAutoGain, 1.0f},
-            {kNoiseType, 2.0f}, {kNoiseFreq, 185.0f}, {kNoiseFmMod, 0.28f},
-            {kFAType, 2.0f}, {kFAMode, 2.0f}, {kFACutoff, 1350.0f}, {kFAReso, 0.62f}, {kFADrive, 1.8f},
-            {kLfo1Freq, 3.8f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.42f},
-            {kLfo2Freq, 0.35f}, {kLfo2Wave, 0.0f}, {kModL2T2, 0.22f},
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 1.0f}, {kFilterMix, 0.88f},
+            {kScvActive, 1.0f}, {kDrive, 3.0f}, {kThreshold, -4.0f}, {kAutoGain, 1.0f},
+            {kNoiseType, 4.0f}, {kNoiseFreq, 110.0f}, {kNoiseFmMod, 0.34f},
+            {kFAType, 2.0f}, {kFAMode, 2.0f}, {kFACutoff, 1150.0f}, {kFAReso, 0.72f}, {kFADrive, 2.1f}, {kFAGrit, 0.24f},
+            {kFBType, 2.0f}, {kFBMode, 0.0f}, {kFBCutoff, 2900.0f}, {kFBReso, 0.52f}, {kFBDrive, 1.5f},
+            {kLfo1Freq, 6.2f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.54f},
+            {kLfo2Freq, 0.45f}, {kLfo2Wave, 0.0f}, {kModL2T4, -0.45f}, {kModL2T2, 0.20f},
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
-            {kDelayFeedback, 0.42f}, {kDelayMix, 0.26f},
-            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 1.8f}, {kLimCeiling, -0.3f}
+            {kDelayFeedback, 0.45f}, {kDelayMix, 0.28f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.5f}, {kLimCeiling, -0.3f}
         });
 
         addPreset("PSY: Rolling Bass 16", {
-            {kScvActive, 1.0f}, {kDrive, 3.2f}, {kThreshold, -3.5f}, {kAutoGain, 1.0f},
-            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 480.0f}, {kFAReso, 0.48f}, {kFADrive, 1.7f},
-            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 42.0f}, {kFBReso, 0.25f},
-            {kScActive, 1.0f}, {kScSource, 1.0f}, {kScMode, 0.0f}, {kScRatio, 12.0f},
-            {kScThresh, -26.0f}, {kScAmount, -85.0f}, {kScAttack, 1.0f}, {kScRelease, 135.0f},
-            {kScTargetGain, 1.0f}, {kScTargetCut, 1.0f},
-            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 2.2f}, {kLimCeiling, -0.3f}
+            {kAutoIn, 1.0f}, {kInTarget, -7.0f},
+            {kScvActive, 1.0f}, {kDrive, 3.4f}, {kThreshold, -4.5f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 1050.0f}, {kFAReso, 0.54f}, {kFADrive, 2.0f}, {kFAGrit, 0.18f},
+            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 45.0f}, {kFBReso, 0.28f},
+            {kTgActive, 1.0f}, {kTgPattern, 25.0f}, {kTgRate, 0.0f},
+            {kTgDepth, 72.0f}, {kTgStart, 2.0f}, {kTgHold, 62.0f}, {kTgEnd, 18.0f},
+            {kScActive, 1.0f}, {kScSource, 0.0f}, {kScMode, 0.0f}, {kScRatio, 10.0f},
+            {kScThresh, -22.0f}, {kScAmount, 65.0f}, {kScAttack, 1.5f}, {kScRelease, 110.0f},
+            {kScLpf, 220.0f}, {kScTargetGain, 0.0f}, {kScTargetCut, 1.0f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 3.2f}, {kLimCeiling, -0.3f}
         });
 
         addPreset("PSY: Dark Squelch", {
-            {kRouting, 1.0f}, {kScvActive, 1.0f}, {kDrive, 3.5f}, {kThreshold, -5.0f}, {kAutoGain, 1.0f},
-            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 720.0f}, {kFAReso, 0.72f}, {kFADrive, 2.2f}, {kFAGrit, 0.20f},
-            {kFBType, 1.0f}, {kFBMode, 2.0f}, {kFBCutoff, 1450.0f}, {kFBReso, 0.60f},
-            {kLfo1Freq, 1.25f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.48f},
-            {kLfo2Freq, 0.45f}, {kLfo2Wave, 0.0f}, {kModL2T4, -0.45f},
-            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 1.8f}, {kLimCeiling, -0.3f}
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 1.0f}, {kFilterMix, 0.90f},
+            {kScvActive, 1.0f}, {kDrive, 3.8f}, {kThreshold, -5.5f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 640.0f}, {kFAReso, 0.84f}, {kFADrive, 2.5f}, {kFAGrit, 0.28f},
+            {kFBType, 1.0f}, {kFBMode, 2.0f}, {kFBCutoff, 1850.0f}, {kFBReso, 0.68f}, {kFBDrive, 1.6f},
+            {kLfo1Freq, 2.2f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.70f},
+            {kLfo2Freq, 0.65f}, {kLfo2Wave, 1.0f}, {kModL2T4, -0.55f},
+            {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
+            {kDelayFeedback, 0.36f}, {kDelayMix, 0.22f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.5f}, {kLimCeiling, -0.3f}
         });
 
         addPreset("PSY: Gate Grid 148", {
-            {kScvActive, 1.0f}, {kDrive, 2.4f}, {kThreshold, -2.5f}, {kAutoGain, 1.0f},
-            {kFAType, 2.0f}, {kFAMode, 2.0f}, {kFACutoff, 1900.0f}, {kFAReso, 0.52f}, {kFADrive, 1.5f},
-            {kLfo1Freq, 0.60f}, {kModL1T1, 0.35f},
-            {kTgActive, 1.0f}, {kTgPattern, 26.0f}, {kTgRate, 0.0f}, {kTgOffset, 12.0f},
-            {kTgDepth, 82.0f}, {kTgStart, 3.0f}, {kTgHold, 55.0f}, {kTgEnd, 14.0f},
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 1.0f}, {kFilterMix, 0.88f},
+            {kScvActive, 1.0f}, {kDrive, 2.8f}, {kThreshold, -3.5f}, {kAutoGain, 1.0f},
+            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 2300.0f}, {kFAReso, 0.62f}, {kFADrive, 1.8f},
+            {kFBType, 1.0f}, {kFBMode, 2.0f}, {kFBCutoff, 1450.0f}, {kFBReso, 0.56f},
+            {kLfo1Freq, 0.80f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.55f},
+            {kTgActive, 1.0f}, {kTgPattern, 25.0f}, {kTgRate, 0.0f}, {kTgOffset, 10.0f},
+            {kTgDepth, 88.0f}, {kTgStart, 2.0f}, {kTgHold, 52.0f}, {kTgEnd, 12.0f},
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
-            {kDelayFeedback, 0.38f}, {kDelayMix, 0.24f},
-            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 1.5f}, {kLimCeiling, -0.3f}
+            {kDelayFeedback, 0.40f}, {kDelayMix, 0.26f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.4f}, {kLimCeiling, -0.3f}
         });
 
         addPreset("PSY: Alien Formant", {
-            {kRouting, 0.0f}, {kScvActive, 1.0f}, {kDrive, 2.9f}, {kThreshold, -4.0f}, {kAutoGain, 1.0f},
-            {kFAType, 1.0f}, {kFAMode, 2.0f}, {kFACutoff, 860.0f}, {kFAReso, 0.64f}, {kFADrive, 1.7f}, {kFAGrit, 0.18f},
-            {kFBType, 2.0f}, {kFBMode, 3.0f}, {kFBCutoff, 2100.0f}, {kFBReso, 0.58f},
-            {kLfo1Freq, 2.4f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.44f},
-            {kLfo2Freq, 0.42f}, {kLfo2Wave, 1.0f}, {kModL2T4, -0.50f},
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 1.0f}, {kFilterMix, 0.90f},
+            {kScvActive, 1.0f}, {kDrive, 3.2f}, {kThreshold, -4.5f}, {kAutoGain, 1.0f},
+            {kNoiseType, 3.0f}, {kNoiseFreq, 95.0f}, {kNoiseFmMod, 0.30f},
+            {kFAType, 1.0f}, {kFAMode, 0.0f}, {kFACutoff, 780.0f}, {kFAReso, 0.74f}, {kFADrive, 2.0f}, {kFAGrit, 0.24f},
+            {kFBType, 2.0f}, {kFBMode, 2.0f}, {kFBCutoff, 2200.0f}, {kFBReso, 0.68f}, {kFBDrive, 1.5f},
+            {kLfo1Freq, 4.2f}, {kLfo1Wave, 4.0f}, {kModL1T1, 0.62f},
+            {kLfo2Freq, 0.85f}, {kLfo2Wave, 2.0f}, {kModL2T4, -0.55f},
             {kDelayActive, 1.0f}, {kDelaySync, 1.0f}, {kDelayTempo, 0.0f}, {kDelayPingPong, 1.0f},
-            {kDelayFeedback, 0.40f}, {kDelayMix, 0.25f},
-            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 1.6f}, {kLimCeiling, -0.3f}
+            {kDelayFeedback, 0.42f}, {kDelayMix, 0.26f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.4f}, {kLimCeiling, -0.3f}
         });
 
         addPreset("PSY: Night Riser", {
-            {kRouting, 0.0f}, {kScvActive, 1.0f}, {kDrive, 2.6f}, {kThreshold, -3.0f}, {kAutoGain, 1.0f},
-            {kNoiseActive, 1.0f}, {kNoiseType, 0.0f}, {kNoiseRoute, 1.0f}, {kNoiseLevel, -38.0f}, {kNoiseFmMod, 0.20f},
-            {kFAType, 2.0f}, {kFAMode, 0.0f}, {kFACutoff, 4200.0f}, {kFAReso, 0.45f}, {kFADrive, 1.5f},
-            {kFBType, 0.0f}, {kFBMode, 1.0f}, {kFBCutoff, 140.0f}, {kFBReso, 0.35f},
-            {kLfo1Freq, 0.50f}, {kModL1T1, 0.30f},
-            {kDelayActive, 1.0f}, {kDelayTime, 28.0f}, {kDelayFeedback, 0.55f}, {kDelayMix, 0.22f},
-            {kLimActive, 1.0f}, {kLimMode, 0.0f}, {kLimDrive, 1.8f}, {kLimCeiling, -0.3f}
+            {kAutoIn, 1.0f}, {kInTarget, -8.0f},
+            {kRouting, 0.0f}, {kScvActive, 1.0f}, {kDrive, 3.2f}, {kThreshold, -4.0f}, {kAutoGain, 1.0f},
+            {kNoiseActive, 1.0f}, {kNoiseType, 1.0f}, {kNoiseRoute, 1.0f}, {kNoiseLevel, -24.0f}, {kNoiseFmMod, 0.24f},
+            {kFAType, 2.0f}, {kFAMode, 1.0f}, {kFACutoff, 220.0f}, {kFAReso, 0.55f}, {kFADrive, 1.6f},
+            {kFBType, 2.0f}, {kFBMode, 0.0f}, {kFBCutoff, 3200.0f}, {kFBReso, 0.72f}, {kFBDrive, 1.9f}, {kFBGrit, 0.22f},
+            {kLfo1Freq, 0.25f}, {kLfo1Wave, 2.0f}, {kModL1T1, 0.60f}, {kModL1T4, -0.45f},
+            {kDelayActive, 1.0f}, {kDelayTime, 18.0f}, {kDelayFeedback, 0.72f}, {kDelayMix, 0.30f},
+            {kLimActive, 1.0f}, {kLimMode, 1.0f}, {kLimDrive, 2.8f}, {kLimCeiling, -0.3f}
         });
 
         // SAT: S-Curve & Exhaustion (13-22)
@@ -2356,6 +2455,7 @@ private:
         });
     }
 
+    InputGainStager inputStager_;
     Waveshaper waveshaper_;
     MushinFilter filterA_, filterB_;
     mpc::dsp::LFO lfo1_, lfo2_;

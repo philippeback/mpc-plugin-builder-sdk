@@ -281,8 +281,8 @@ def generate_main_bg(assets_dir):
     draw_text_5x7(buf, W, H, 886, 6, "MUSHIN // MACRO PERFORMANCE", cyan, scale=2)
 
     # Bank 1 & Bank 2 outer stylized panels (spaced cleanly clear of Q-Link highlights)
-    draw_panel(buf, 8, 24, 1264, 288, "BANK 1 - CORE DESTRUCTION & CHOKE")
-    draw_panel(buf, 8, 324, 1264, 296, "BANK 2 - MOTION, SPACE & RHYTHM")
+    draw_panel(buf, 8, 24, 1264, 288, "BANK 1 - CORE DESTRUCTION & CHOKE", TITLE_COL)
+    draw_panel(buf, 8, 324, 1264, 296, "BANK 2 - MOTION, SPACE & RHYTHM", magenta)
 
     # Left accent rails
     draw_filled_box(buf, W, H, 8, 38, 4, 260, cyan)
@@ -375,8 +375,7 @@ def main():
         buf = bytearray(bytes(BG) * (W * H))
         draw_panel(buf, 8, 12, 1264, 300, top_title, TITLE_COL)
         if bot_title is not None:
-            bot_col = magenta if bot_title in ("FILTER B", "LFO 2 MATRIX") else TITLE_COL
-            draw_panel(buf, 8, 320, 1264, 302, bot_title, bot_col)
+            draw_panel(buf, 8, 320, 1264, 302, bot_title, magenta)
         draw_filled_box(buf, W, H, 8, 26, 4, 272, cyan)
         draw_filled_box(buf, W, H, 8, 334, 4, 274, magenta)
         if filename == "bg_filter.png":
@@ -395,6 +394,8 @@ def main():
                 for gy in (180 + 35, 180 + 70):
                     draw_filled_box(buf, W, H, bx + 1, gy, 290, 1, (0x18, 0x20, 0x2A, 255))
                 draw_text_5x7(buf, W, H, bx + 8, 186, lbl, col, scale=1)
+        elif filename == "bg_scurve.png":
+            draw_panel(buf, 335, 478, 934, 136, "INPUT STAGE", magenta)
         elif filename == "bg_lfo.png":
             draw_filled_box(buf, W, H, 16, 44, 606, 3, cyan)
             draw_filled_box(buf, W, H, 656, 44, 606, 3, magenta)
@@ -437,7 +438,7 @@ def main():
             draw_filled_box(buf, W, H, bx, by + bh - 1, bw, 1, border)
             draw_filled_box(buf, W, H, bx, by, 1, bh, border)
             draw_filled_box(buf, W, H, bx + bw - 1, by, 1, bh, border)
-            draw_text_5x7(buf, W, H, 358, 506, "LIMITER GR", cyan, scale=2)
+            draw_text_5x7(buf, W, H, 358, 506, "LIMITER GR", magenta, scale=2)
         out_path = os.path.join(assets_dir, filename)
         write_png(out_path, W, H, buf)
         print(f"Wrote {out_path}")

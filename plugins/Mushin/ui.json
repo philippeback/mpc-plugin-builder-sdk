@@ -37,7 +37,7 @@
       ]
     },
     {
-      "name": "S-CURVE",
+      "name": "SATURATION",
       "background": "bg_scurve.png",
       "controls": [
         { "param": "S-Curve Active", "widget": "switch" },
@@ -56,9 +56,9 @@
         { "param": "Decay Mix", "widget": "fader" },
 
         { "param": "Exh Link", "widget": "switch" },
-        "empty",
-        "empty",
-        "empty"
+        { "param": "Auto In", "widget": "switch" },
+        { "param": "In Target", "widget": "knob" },
+        { "param": "In Trim", "widget": "knob", "polarity": "bipolar" }
       ]
     },
     {
