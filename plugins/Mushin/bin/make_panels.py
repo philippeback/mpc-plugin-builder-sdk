@@ -377,9 +377,9 @@ def main():
         if bot_title is not None:
             bot_col = magenta if bot_title in ("FILTER B", "LFO 2 MATRIX") else TITLE_COL
             draw_panel(buf, 8, 320, 1264, 302, bot_title, bot_col)
+        draw_filled_box(buf, W, H, 8, 26, 4, 272, cyan)
+        draw_filled_box(buf, W, H, 8, 334, 4, 274, magenta)
         if filename == "bg_filter.png":
-            draw_filled_box(buf, W, H, 8, 26, 4, 272, cyan)
-            draw_filled_box(buf, W, H, 8, 334, 4, 274, magenta)
             draw_panel(buf, 975, 478, 294, 136, "ROUTING", TITLE_COL)
             # Filter A & B Freq x Res XY telemetry bays (Row 1, cols 2-3: 656..1254, y=180..287)
             for bx, col, lbl in [(656, cyan, "A FREQ X RES"), (962, magenta, "B FREQ X RES")]:
@@ -395,9 +395,6 @@ def main():
                 for gy in (180 + 35, 180 + 70):
                     draw_filled_box(buf, W, H, bx + 1, gy, 290, 1, (0x18, 0x20, 0x2A, 255))
                 draw_text_5x7(buf, W, H, bx + 8, 186, lbl, col, scale=1)
-        elif filename == "bg_matrix.png":
-            draw_filled_box(buf, W, H, 8, 26, 4, 272, cyan)
-            draw_filled_box(buf, W, H, 8, 334, 4, 274, magenta)
         elif filename == "bg_lfo.png":
             draw_filled_box(buf, W, H, 16, 44, 606, 3, cyan)
             draw_filled_box(buf, W, H, 656, 44, 606, 3, magenta)
