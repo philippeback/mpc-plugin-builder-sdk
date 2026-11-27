@@ -2185,8 +2185,10 @@ private:
 
         // RESONATOR (Delay)
         const bool baseDelayOn = (baseValues_[kDelayActive] >= 0.5f);
-        setTargetParam(kDelayActive, (baseDelayOn || mReso > 0.05f) ? 1.0f : 0.0f);
-        setTargetParam(kDelayTime, (!baseDelayOn && mReso > 0.05f) ? (32.0f - 20.0f * mReso) : baseValues_[kDelayTime]);
+        const bool resoMacroOn = (mReso > 0.05f);
+        setTargetParam(kDelayActive, (baseDelayOn || resoMacroOn) ? 1.0f : 0.0f);
+        setTargetParam(kDelaySync, resoMacroOn ? 0.0f : baseValues_[kDelaySync]);
+        setTargetParam(kDelayTime, resoMacroOn ? (32.0f - 20.0f * mReso) : baseValues_[kDelayTime]);
         setTargetParam(kDelayFeedback, std::max(baseValues_[kDelayFeedback], 0.88f * mReso));
         setTargetParam(kDelayMix, std::max(baseValues_[kDelayMix], 0.45f * mReso));
 
