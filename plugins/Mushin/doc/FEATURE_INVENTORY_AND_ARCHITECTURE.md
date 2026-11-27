@@ -41,7 +41,7 @@ Input L/R ──▶ [Auto Input Stager (RMS Target + Auto Trim)]
 1. **Input Gain Stager (`Auto In`, `In Target`, `In Trim`):** RMS level detector (`450 ms` smooth release) trimming hot/quiet stems toward `-20 dBFS`–`0 dBFS` target so saturation and limiter thresholds hit consistent sweet spots across tracks.
 2. **S-Curve Saturation & Pre/Post Order (`S-Curve Active`, `Flt->Sat`):** Bypassable symmetric/asymmetric saturation with **Exhaustion** (`hard clipping + bias`), automatic loudness compensation (`Auto Gain`), and **`Flt->Sat`** order toggle (`Off` = Drive into Filter; `On` = Filter resonances into Drive).
 3. **Dual Stereo Filter A (Cyan) & B (Magenta):**
-   - **4 Filter Models:** `CLN` (SVF), `VOWL` (3-band morphing Vocal Formant), `ACID` (nonlinear 303-style feedback), `DIGI` (resonant crisp digital).
+   - **4 Filter Models:** `CLN` (12 dB/oct SVF), `VOWL` (3-band morphing Vocal Formant), `ACID` (nonlinear 303-style feedback), `DIGI` (cascaded 24 dB/oct surgical digital SVF with hard-clipping & quantized Grit).
    - **4 Shapes:** `LP`, `HP`, `BP`, `NOTCH`, plus per-filter `Drive`, `Grit`, `Filt Mix`, and live `Freq × Res` **XY Pads**.
    - **4 Topologies (`Routing`):** `SERIAL` (A → B), `PARAL` (A + B), `STEREO` (L → A, R → B), and `M/S` (Mid → A, Side → B).
 4. **LFO 1 & 2, Noise/Tone Oscillator & Modulation Matrix:**

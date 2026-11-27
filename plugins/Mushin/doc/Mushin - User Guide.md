@@ -262,7 +262,7 @@ The **FILTER** page provides two identical 4-topology stereo SVF/formant engines
 | **Reso** *(A Reso)* | Filter resonance / Q peaking. **ACID** type boosts Q by `1.15×` for squelchy 303 peaks; **VOWL** raises parallel formant Q up to `0.98`. | `0.00 – 1.00` (Default: `0.10`) |
 | **Drive** *(A Drive)* | Pre-filter saturation stage pushing harmonics into Filter A (`ACID` applies an additional `1.4×` drive factor). | `1.0 – 10.0 x` (Default: `1.0 x`) |
 | **Grit** *(A Grit)* | Post-filter saturation fold adding aggressive edge before Filter A outputs. | `0.00 – 1.00` (Default: `0.00`) |
-| **Type** *(A Type)* | Selects Filter A's voicing character: **CLN** (transparent SVF), **VOWL** (3-band vocal formant array), **ACID** (303-inspired hot-drive high-Q SVF), or **DIGI** (surgical digital SVF). | `CLN, VOWL, ACID, DIGI` (Default: `CLN`) |
+| **Type** *(A Type)* | Selects Filter A's voicing character: **CLN** (transparent 12 dB/oct SVF), **VOWL** (3-band vocal formant array), **ACID** (303-inspired hot-drive high-Q SVF), or **DIGI** (cascaded 24 dB/oct surgical digital SVF with hard clipping and quantized Grit). | `CLN, VOWL, ACID, DIGI` (Default: `CLN`) |
 | **Mode** *(A Mode)* | Selects filter response shape (or spectral tilt mix in **VOWL** mode). | `LP, HP, BP, NOTCH` (Default: `LP`) |
 
 #### Filter B & Global Filter Routing (Magenta Zone + Routing Subpanel)

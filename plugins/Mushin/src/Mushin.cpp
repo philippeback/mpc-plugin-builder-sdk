@@ -170,26 +170,33 @@ public:
         outThreshold = threshold_.process();
     }
 
-    float processSample(float sample, float currentDrive, float currentThreshold) noexcept
+    void processFrame(float& left, float& right, float currentDrive, float currentThreshold) noexcept
     {
-        const float x = sample * currentDrive;
-        float y;
-        if (exhausted_) {
-            y = clamp(x, -currentThreshold, currentThreshold);
-        } else {
-            const float denom = currentThreshold + 1.0e-3f;
-            const float shaped = fastTanh(x / denom) * denom;
-            const float satMix = clamp(std::max((currentDrive - 1.0f) * 1.8f, (1.0f - currentThreshold) * 2.5f), 0.0f, 1.0f);
-            y = x + (shaped - x) * satMix;
+        float sharedComp = 1.0f;
+        if (autogain_) {
+            const float framePeak = std::max(std::fabs(left), std::fabs(right));
+            inputPeak_ = std::max(framePeak, inputPeak_ * decay_);
+            const float a = clamp(inputPeak_, 0.01f, 1.0f);
+            sharedComp = a + (1.0f - a) / std::max(currentDrive, 1.0e-4f);
         }
 
-        if (autogain_) {
-            inputPeak_ = std::max(std::fabs(sample), inputPeak_ * decay_);
-            const float a = clamp(inputPeak_, 0.01f, 1.0f);
-            const float gainComp = a + (1.0f - a) / std::max(currentDrive, 1.0e-4f);
-            y *= gainComp;
-        }
-        return y;
+        const float denom = currentThreshold + 1.0e-3f;
+        const float satMix = clamp(std::max((currentDrive - 1.0f) * 1.8f, (1.0f - currentThreshold) * 2.5f), 0.0f, 1.0f);
+
+        auto shapeSample = [&](float sample) noexcept -> float {
+            const float x = sample * currentDrive;
+            float y;
+            if (exhausted_) {
+                y = clamp(x, -currentThreshold, currentThreshold);
+            } else {
+                const float shaped = fastTanh(x / denom) * denom;
+                y = x + (shaped - x) * satMix;
+            }
+            return y * sharedComp;
+        };
+
+        left = shapeSample(left);
+        right = shapeSample(right);
     }
 
 private:
@@ -243,10 +250,16 @@ public:
         float r = clamp(resonance01, 0.0f, 1.0f);
         if (type_ == Type::Acid) {
             r = clamp(r * 1.15f, 0.0f, 0.99f);
+        } else if (type_ == Type::Digital) {
+            r = clamp(r * 1.06f, 0.0f, 0.992f);
         }
         bypass_ = (allowBypass && type_ == Type::Clean && mode_ == Mode::Lowpass && c >= 19950.0f && drive_ <= 1.001f && grit_ <= 0.001f);
         svfL_.set(c, r);
         svfR_.set(c, r);
+        if (type_ == Type::Digital) {
+            fL_[0].set(c, r);
+            fR_[0].set(c, r);
+        }
 
         if (type_ == Type::Vowel) {
             // Morph across 5 vocal formants A -> E -> I -> O -> U via log cutoff
@@ -280,7 +293,8 @@ public:
 
         const float preMix = clamp((preDrive - 1.0f) * 1.8f, 0.0f, 1.0f);
         const float driven = sample * preDrive;
-        const float x = driven + (fastTanh(driven) - driven) * preMix;
+        const float shapedPre = (type_ == Type::Digital) ? clamp(driven, -1.0f, 1.0f) : fastTanh(driven);
+        const float x = driven + (shapedPre - driven) * preMix;
 
         float filtered = 0.0f;
         if (type_ == Type::Vowel) {
@@ -311,9 +325,22 @@ public:
                 case Mode::Notch:    svfMode = SVF::Mode::Notch; break;
             }
             filtered = (ch == 0) ? svfL_.process(x, svfMode) : svfR_.process(x, svfMode);
+            if (type_ == Type::Digital) {
+                // Cascade second pole pair for crisp 24 dB/oct surgical digital response
+                filtered = (ch == 0) ? fL_[0].process(filtered, svfMode) : fR_[0].process(filtered, svfMode);
+            }
         }
 
         float out = filtered * (1.0f + grit_);
+        if (type_ == Type::Digital) {
+            if (grit_ > 0.002f) {
+                const float qSteps = 48.0f - 38.0f * clamp(grit_, 0.0f, 1.0f);
+                const float quantized = std::round(clamp(out, -1.5f, 1.5f) * qSteps) / qSteps;
+                out += (quantized - out) * clamp(grit_ * 1.4f, 0.0f, 1.0f);
+            }
+            const float clipAmt = clamp(std::max(preMix, grit_ * 6.0f), 0.0f, 1.0f);
+            return out + (clamp(out, -1.0f, 1.0f) - out) * clipAmt;
+        }
         const float postMix = clamp(std::max(preMix, grit_ * 10.0f), 0.0f, 1.0f);
         return out + (fastTanh(out) - out) * postMix;
     }
@@ -745,6 +772,12 @@ public:
         fbHpR_.reset();
         lastFbL_ = lastFbR_ = 0.0f;
         modPhase_ = 0.0f;
+        hasAudio_ = false;
+    }
+
+    void clearIfDirty() noexcept
+    {
+        if (hasAudio_) reset();
     }
 
     // color in [-1, 1]: < 0 darkens & tape-saturates feedback; > 0 high-passes & widens stereo shimmer
@@ -783,7 +816,11 @@ public:
     void processSample(float& left, float& right, float timeMs, float feedback, float mix,
                        bool pingpong, bool sync, float syncBpm, int syncType) noexcept
     {
-        if (mix <= 0.001f) return;
+        if (mix <= 0.001f) {
+            clearIfDirty();
+            return;
+        }
+        hasAudio_ = true;
 
         float targetTimeMs = timeMs;
         if (sync) {
@@ -846,6 +883,7 @@ private:
     float color_ = 0.0f, lastColorSet_ = -99.0f;
     float tapeDrive_ = 1.0f, tapeNorm_ = 1.0f;
     float modPhase_ = 0.0f, modInc_ = 0.0f, modDepthSamples_ = 0.0f;
+    bool hasAudio_ = false;
 };
 
 // ---------------------------------------------------------------------------
@@ -867,9 +905,9 @@ public:
     {
         std::fill(bufL_.begin(), bufL_.end(), 0.0f);
         std::fill(bufR_.begin(), bufR_.end(), 0.0f);
-        writeIdx_[0] = writeIdx_[1] = 0;
-        env_[0] = env_[1] = 0.0f;
-        smoothedGR_[0] = smoothedGR_[1] = 1.0f;
+        writeIdx_ = 0;
+        env_ = 0.0f;
+        smoothedGR_ = 1.0f;
     }
 
     void processSample(float& left, float& right, float driveGain, float ceilingDb,
@@ -877,65 +915,60 @@ public:
     {
         if (bufL_.empty()) return;
 
-        float* bufs[2] = { bufL_.data(), bufR_.data() };
         const int len = (int)bufL_.size();
-        const float in[2] = { left * driveGain, right * driveGain };
-        float out[2] = { 0.0f, 0.0f };
+        const float in0 = left * driveGain;
+        const float in1 = right * driveGain;
 
-        for (int ch = 0; ch < 2; ++ch) {
-            const float inVal = in[ch];
-            int& wIdx = writeIdx_[ch];
-            bufs[ch][wIdx] = inVal;
-            const int rIdx = (wIdx + 1) % len;
-            const float delayed = bufs[ch][rIdx];
-            wIdx = rIdx;
+        bufL_[writeIdx_] = in0;
+        bufR_[writeIdx_] = in1;
+        const int rIdx = (writeIdx_ + 1) % len;
+        const float delayed0 = bufL_[rIdx];
+        const float delayed1 = bufR_[rIdx];
+        writeIdx_ = rIdx;
 
-            const float absVal = std::fabs(inVal);
-            if (absVal > env_[ch])
-                env_[ch] = absVal;
-            else
-                env_[ch] = absVal + releaseCoef * (env_[ch] - absVal);
+        // Stereo-linked peak envelope prevents center image shift on asymmetrical L/R or M/S peaks
+        const float absVal = std::max(std::fabs(in0), std::fabs(in1));
+        if (absVal > env_)
+            env_ = absVal;
+        else
+            env_ = absVal + releaseCoef * (env_ - absVal);
 
-            if (env_[ch] < 1.0e-6f) env_[ch] = 0.0f;
+        if (env_ < 1.0e-6f) env_ = 0.0f;
 
-            float targetGain = 1.0f;
-            if (env_[ch] > 1.0e-5f) {
-                if (mode == 0) {
-                    if (env_[ch] > ceilingGain)
-                        targetGain = ceilingGain / env_[ch];
-                } else {
-                    const float envDb = gainToDb(env_[ch]);
-                    const float diffDb = envDb - ceilingDb;
-                    if (diffDb > 0.0f) {
-                        const float compressedDb = ceilingDb + (diffDb / 20.0f);
-                        targetGain = dbToGain(compressedDb) / env_[ch];
-                    }
+        float targetGain = 1.0f;
+        if (env_ > 1.0e-5f) {
+            if (mode == 0) {
+                if (env_ > ceilingGain)
+                    targetGain = ceilingGain / env_;
+            } else {
+                const float envDb = gainToDb(env_);
+                const float diffDb = envDb - ceilingDb;
+                if (diffDb > 0.0f) {
+                    const float compressedDb = ceilingDb + (diffDb / 20.0f);
+                    targetGain = dbToGain(compressedDb) / env_;
                 }
             }
-
-            smoothedGR_[ch] += 0.25f * (targetGain - smoothedGR_[ch]);
-            if (std::isnan(smoothedGR_[ch]) || std::isinf(smoothedGR_[ch]))
-                smoothedGR_[ch] = 1.0f;
-
-            const float wet = delayed * smoothedGR_[ch];
-            out[ch] = (1.0f - mix) * delayed + mix * wet;
         }
 
-        left = out[0];
-        right = out[1];
+        smoothedGR_ += 0.25f * (targetGain - smoothedGR_);
+        if (std::isnan(smoothedGR_) || std::isinf(smoothedGR_))
+            smoothedGR_ = 1.0f;
+
+        left  = (1.0f - mix) * delayed0 + mix * (delayed0 * smoothedGR_);
+        right = (1.0f - mix) * delayed1 + mix * (delayed1 * smoothedGR_);
     }
 
     float currentGR() const noexcept
     {
-        return 1.0f - std::min(smoothedGR_[0], smoothedGR_[1]);
+        return 1.0f - smoothedGR_;
     }
 
 private:
     double sampleRate_ = 44100.0;
     std::vector<float> bufL_, bufR_;
-    int writeIdx_[2] = {0, 0};
-    float env_[2] = {0.0f, 0.0f};
-    float smoothedGR_[2] = {1.0f, 1.0f};
+    int writeIdx_ = 0;
+    float env_ = 0.0f;
+    float smoothedGR_ = 1.0f;
 };
 
 } // namespace
@@ -1825,8 +1858,7 @@ public:
                     wet[1] += genSample;
                 }
                 if (scvActive) {
-                    wet[0] = waveshaper_.processSample(wet[0], effDrive, wsThresh);
-                    wet[1] = waveshaper_.processSample(wet[1], effDrive, wsThresh);
+                    waveshaper_.processFrame(wet[0], wet[1], effDrive, wsThresh);
                 }
             };
 
@@ -1884,6 +1916,8 @@ public:
             if (delayActive) {
                 delay_.processSample(wet[0], wet[1], curDelayTime, curDelayFb, curDelayMix,
                                      delayPingPong, delaySync, bpm, delayTempoVal);
+            } else {
+                delay_.clearIfDirty();
             }
 
             if (limActive) {
@@ -2082,8 +2116,15 @@ private:
         // GATE CARVE (at mGate=0.5: 4-On-Floor, Depth=88%, Mix=0.82, Start=8.6ms, Hold=48%, End=34ms)
         const bool baseTgOn = (baseValues_[kTgActive] >= 0.5f);
         const bool gateMacroOn = (mGate > 0.05f);
+        const bool forceFourOnFloor = (gateMacroOn && !baseTgOn);
         setTargetParam(kTgActive, (baseTgOn || gateMacroOn) ? 1.0f : 0.0f);
-        setTargetParam(kTgPattern, (gateMacroOn && !baseTgOn) ? 4.0f : baseValues_[kTgPattern]);
+        setTargetParam(kTgPattern, forceFourOnFloor ? 4.0f : baseValues_[kTgPattern]);
+        {
+            const uint16_t mask4 = kGateMasks[4];
+            for (int i = 0; i < 16; ++i) {
+                setTargetParam(kTgStep0 + i, forceFourOnFloor ? ((mask4 & (1u << i)) ? 1.0f : 0.0f) : baseValues_[kTgStep0 + i]);
+            }
+        }
         setTargetParam(kTgStart, gateMacroOn
             ? (baseTgOn ? std::min(baseValues_[kTgStart], 12.2f - 7.2f * mGate) : (12.2f - 7.2f * mGate))
             : baseValues_[kTgStart]);
