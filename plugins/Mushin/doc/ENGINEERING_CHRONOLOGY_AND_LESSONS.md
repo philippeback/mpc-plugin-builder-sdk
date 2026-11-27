@@ -40,6 +40,10 @@ These constraints were uncovered directly during iterative hardware tests on an 
    - Smoothly sweeping metrics (`SCOPE`, `IN/DUCK`, `LIMITER GR`, `Decay Viz`) should notify at `~30 Hz` (`sr / 30.0`) with deadbands (`0.005f–0.008f`) to avoid flooding MPC's `audioMasterAutomate` queue. Conversely, discrete step indicators (`Gate Step` `135`) only change `~4–12` times/sec and benefit from immediate notification upon step change (<`3 ms` transition accuracy).
 8. **Parameter Index Permanence:**
    - Always **append** new parameters at the end of `enum Params` (`115..125`, `126..133`, `134`, `135`) so saved MPC projects and existing `TUI.json` / `Q-Links.json` handle bindings never shift.
+9. **Same-Track Multi-Instance `.xpl` Preset Loading Quirk (`MPC OS 3.10.1.12`):**
+   - Verified in C++ (`VSTPluginMain` with two simultaneous `AEffect` instances) that `Mushin` + `mpc_plugin.h` keep all parameter storage, programs, and chunks completely isolated per instance.
+   - On hardware, **built-in programs** (`effSetProgram`) target only the active insert slot cleanly, even when two instances sit on two slots of the same track. However, **loading a `.xpl` preset file from disk** causes MPC OS's browser loader (matching `<PLUGIN uid="..."/>` without an insert slot index) to apply the preset across all matching instances on that track.
+   - *Workarounds:* Use built-in presets + per-slot edits for same-track chains, or route the second instance on a separate Submix / Audio Track when loading `.xpl` files from disk.
 
 ---
 
