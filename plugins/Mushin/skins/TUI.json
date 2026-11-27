@@ -4811,7 +4811,7 @@
                                         "onImage": "btn_lfowave_0_on.png",
                                         "offImage": "btn_lfowave_0_off.png",
                                         "buttonId": 0,
-                                        "numButtonsInGroup": 5,
+                                        "numButtonsInGroup": 6,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -4826,7 +4826,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "16 54 46 40"
+                                    "bounds": "17 54 38 40"
                                 }
                             },
                             {
@@ -4840,7 +4840,7 @@
                                         "onImage": "btn_lfowave_1_on.png",
                                         "offImage": "btn_lfowave_1_off.png",
                                         "buttonId": 1,
-                                        "numButtonsInGroup": 5,
+                                        "numButtonsInGroup": 6,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -4855,7 +4855,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "66 54 46 40"
+                                    "bounds": "58 54 38 40"
                                 }
                             },
                             {
@@ -4869,7 +4869,7 @@
                                         "onImage": "btn_lfowave_2_on.png",
                                         "offImage": "btn_lfowave_2_off.png",
                                         "buttonId": 2,
-                                        "numButtonsInGroup": 5,
+                                        "numButtonsInGroup": 6,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -4884,7 +4884,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "116 54 46 40"
+                                    "bounds": "99 54 38 40"
                                 }
                             },
                             {
@@ -4898,7 +4898,7 @@
                                         "onImage": "btn_lfowave_3_on.png",
                                         "offImage": "btn_lfowave_3_off.png",
                                         "buttonId": 3,
-                                        "numButtonsInGroup": 5,
+                                        "numButtonsInGroup": 6,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -4913,7 +4913,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "166 54 46 40"
+                                    "bounds": "140 54 38 40"
                                 }
                             },
                             {
@@ -4927,7 +4927,7 @@
                                         "onImage": "btn_lfowave_4_on.png",
                                         "offImage": "btn_lfowave_4_off.png",
                                         "buttonId": 4,
-                                        "numButtonsInGroup": 5,
+                                        "numButtonsInGroup": 6,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -4942,7 +4942,36 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "216 54 46 40"
+                                    "bounds": "181 54 38 40"
+                                }
+                            },
+                            {
+                                "version": 2,
+                                "componentData": {
+                                    "version": 1,
+                                    "name": "seg 5",
+                                    "type": "Button",
+                                    "data": {
+                                        "version": 2,
+                                        "onImage": "btn_lfowave_5_on.png",
+                                        "offImage": "btn_lfowave_5_off.png",
+                                        "buttonId": 5,
+                                        "numButtonsInGroup": 6,
+                                        "handleName": "Data",
+                                        "gestureBehaviour": "Instant"
+                                    }
+                                },
+                                "handle remapping": {
+                                    "version": 1,
+                                    "map": []
+                                },
+                                "bounds": {
+                                    "version": 1,
+                                    "acceptsHWFocus": "No",
+                                    "showWhenDataModelInvalid": "Show",
+                                    "whenVisible": "Always",
+                                    "boundsType": "Absolute",
+                                    "bounds": "222 54 38 40"
                                 }
                             }
                         ]
@@ -6124,7 +6153,7 @@
                                         "onImage": "btn_lfowave_0_on.png",
                                         "offImage": "btn_lfowave_0_off.png",
                                         "buttonId": 0,
-                                        "numButtonsInGroup": 5,
+                                        "numButtonsInGroup": 6,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -6139,7 +6168,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "16 54 46 40"
+                                    "bounds": "17 54 38 40"
                                 }
                             },
                             {
@@ -6153,7 +6182,7 @@
                                         "onImage": "btn_lfowave_1_on.png",
                                         "offImage": "btn_lfowave_1_off.png",
                                         "buttonId": 1,
-                                        "numButtonsInGroup": 5,
+                                        "numButtonsInGroup": 6,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -6168,7 +6197,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "66 54 46 40"
+                                    "bounds": "58 54 38 40"
                                 }
                             },
                             {
@@ -6182,7 +6211,7 @@
                                         "onImage": "btn_lfowave_2_on.png",
                                         "offImage": "btn_lfowave_2_off.png",
                                         "buttonId": 2,
-                                        "numButtonsInGroup": 5,
+                                        "numButtonsInGroup": 6,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -6197,7 +6226,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "116 54 46 40"
+                                    "bounds": "99 54 38 40"
                                 }
                             },
                             {
@@ -6211,7 +6240,7 @@
                                         "onImage": "btn_lfowave_3_on.png",
                                         "offImage": "btn_lfowave_3_off.png",
                                         "buttonId": 3,
-                                        "numButtonsInGroup": 5,
+                                        "numButtonsInGroup": 6,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -6226,7 +6255,7 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "166 54 46 40"
+                                    "bounds": "140 54 38 40"
                                 }
                             },
                             {
@@ -6240,7 +6269,7 @@
                                         "onImage": "btn_lfowave_4_on.png",
                                         "offImage": "btn_lfowave_4_off.png",
                                         "buttonId": 4,
-                                        "numButtonsInGroup": 5,
+                                        "numButtonsInGroup": 6,
                                         "handleName": "Data",
                                         "gestureBehaviour": "Instant"
                                     }
@@ -6255,7 +6284,36 @@
                                     "showWhenDataModelInvalid": "Show",
                                     "whenVisible": "Always",
                                     "boundsType": "Absolute",
-                                    "bounds": "216 54 46 40"
+                                    "bounds": "181 54 38 40"
+                                }
+                            },
+                            {
+                                "version": 2,
+                                "componentData": {
+                                    "version": 1,
+                                    "name": "seg 5",
+                                    "type": "Button",
+                                    "data": {
+                                        "version": 2,
+                                        "onImage": "btn_lfowave_5_on.png",
+                                        "offImage": "btn_lfowave_5_off.png",
+                                        "buttonId": 5,
+                                        "numButtonsInGroup": 6,
+                                        "handleName": "Data",
+                                        "gestureBehaviour": "Instant"
+                                    }
+                                },
+                                "handle remapping": {
+                                    "version": 1,
+                                    "map": []
+                                },
+                                "bounds": {
+                                    "version": 1,
+                                    "acceptsHWFocus": "No",
+                                    "showWhenDataModelInvalid": "Show",
+                                    "whenVisible": "Always",
+                                    "boundsType": "Absolute",
+                                    "bounds": "222 54 38 40"
                                 }
                             }
                         ]

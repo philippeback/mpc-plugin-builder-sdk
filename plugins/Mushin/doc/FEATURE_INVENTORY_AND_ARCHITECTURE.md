@@ -45,7 +45,7 @@ Input L/R ──▶ [Auto Input Stager (RMS Target + Auto Trim)]
    - **4 Shapes:** `LP`, `HP`, `BP`, `NOTCH`, plus per-filter `Drive`, `Grit`, `Filt Mix`, and live `Freq × Res` **XY Pads**.
    - **4 Topologies (`Routing`):** `SERIAL` (A → B), `PARAL` (A + B), `STEREO` (L → A, R → B), and `M/S` (Mid → A, Side → B).
 4. **LFO 1 & 2, Noise/Tone Oscillator & Modulation Matrix:**
-   - Dual LFOs (`0.1–20 Hz`, `Sine/Tri/Saw/Square/Random`) paired on a full-width `LFO 1 × LFO 2` **XY Pad**.
+   - Dual LFOs (`0.1–20 Hz`, `Sine/Tri/Saw/Square/Random/Drift`) paired on a full-width `LFO 1 × LFO 2` **XY Pad**; **Drift** uses a dual-timescale (`1 : 1/π`) Catmull-Rom cubic random spline with distinct seeds for LFO 1 & 2 to emulate vintage analog instability.
    - 6-shape Noise/Tone Oscillator (`White`, `Pink`, `Sine`, `Tri`, `Saw`, `Sq`) insertable `PRE-D`, `PRE-F`, or `POST` with `Filter FM`.
    - **2×6 LFO Matrix** (`LFO 1` & `LFO 2` → Filter A/B `Cut`, `Res`, `Grit`) + **6 Envelope Follower destinations** (`Env Cut` & `Env Drive` on `LFO`; `Env A Res`, `Env B Cut`, `Env L1 Spd`, `Env LFO Amt` on `LFO MTX`).
 5. **Info Decay:** Continuous `2.0–16.0` bit quantization + `1–32x` zero-order-hold sample-rate decimation + `Exh Link` dynamic bit/rate modulation, driving the `#FF4D8D` `Decay Viz` (`Parameter 97`) pixel bay.
@@ -82,7 +82,7 @@ Input L/R ──▶ [Auto Input Stager (RMS Target + Auto Trim)]
 |---|---|---|
 | `0..5` | **S-Curve Master** | `0` Gain, `1` Drive, `2` Exhaustion (bool), `3` Threshold, `4` Auto Gain (bool), `5` Mix |
 | `6..18` | **Dual Filters** | `6..11` Filter A (Cutoff, Reso, Drive, Grit, Type `CLN/VOWL/ACID/DIGI`, Mode `LP/HP/BP/NOTCH`), `12..17` Filter B, `18` Routing `SERIAL/PARAL/STEREO/M/S` |
-| `19..34` | **LFOs & Matrix** | `19..22` LFO 1 & 2 Freq/Wave (`Sine/Tri/Saw/Sq/Rnd`), `23..28` LFO 1 → A/B (Cut/Res/Grit), `29..34` LFO 2 → A/B (Cut/Res/Grit) |
+| `19..34` | **LFOs & Matrix** | `19..22` LFO 1 & 2 Freq/Wave (`Sine/Tri/Saw/Sq/Rnd/Drift`), `23..28` LFO 1 → A/B (Cut/Res/Grit), `29..34` LFO 2 → A/B (Cut/Res/Grit) |
 | `35..44` | **Sidechain Core** | `35` SC Active, `36` SC Source (`INT/4x4`), `37` Thresh, `38` Attack, `39` Release, `40` Mode (`PEAK/RMS`), `41` Amount, `42` Legacy Target, `43` HPF, `44` LPF |
 | `45..50` | **Noise / Tone Osc** | `45` Active, `46` Type (`White/Pink/Sine/Tri/Saw/Sq`), `47` Freq, `48` Level, `49` Route (`PRE-D/PRE-F/POST`), `50` Filter FM |
 | `51..58` | **Trance Gate Core** | `51` Active, `52` Mix, `53` Pattern (`0..127`), `54` Rate (`1/16,1/8,1/4`), `55` Start, `56` Hold, `57` End, `58` Depth |

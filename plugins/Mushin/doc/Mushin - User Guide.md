@@ -57,7 +57,7 @@ Thank you for installing **Mushin** by **PhilippeBack**. Mushin is a multi-stage
 - **136 Parameters (122 Automatable + 14 Read-Only Telemetry Controls):** Full recall via host chunk state (`MSHB` format) and automatic parameter sync across hardware Q-Links and the MPC touchscreen.
 - **168 Built-In Programs:** Curated presets organized by category prefixes (*PSY*, *SAT*, *FLT*, *VOWL*, *DECY*, *LFO*, *GATE*, *PUMP*, *COMBO/MUSH*, *L/R*, *M/S*, *PAD*, *SYN*, *SWV*, *VOX*).
 - **Swappable Core Saturation & Dual SVF Filter Engine:** **S-Curve** asymmetric/hard **Exhaustion** waveshaper paired with dual 4-type (**CLN**, **VOWL**, **ACID**, **DIGI**), 4-mode (**LP**, **HP**, **BP**, **NOTCH**) filters supporting **SERIAL**, **PARAL**, **STEREO** (L→A / R→B), and **M/S** (Mid→A / Side→B) routing, plus **Flt->Sat** order reversal.
-- **Modulation, Noise & Audio Dynamics:** Two multi-shape LFOs (**Sine**, **Triangle**, **Saw**, **Square**, **Random**), a 6-type **Noise** / tone generator with **Filter FM**, an audio **Envelope Follower** targeting cutoffs, drive, resonance, and LFO rate/amount, and a **2×6** bipolar LFO modulation matrix.
+- **Modulation, Noise & Audio Dynamics:** Two multi-shape LFOs (**Sine**, **Triangle**, **Saw**, **Square**, **Random**, **Drift**), a 6-type **Noise** / tone generator with **Filter FM**, an audio **Envelope Follower** targeting cutoffs, drive, resonance, and LFO rate/amount, and a **2×6** bipolar LFO modulation matrix.
 - **16-Step Trance Gate & 4×4 Sidechain Pump:** **128** built-in gate patterns, 16 individually tappable step toggles, `Start`/`Hold`/`End` envelope shaping, phase **Gate Offset** (`-100%` to `+100%`), and a multi-target **Sidechain** processor driven either by live input audio (**INT**) or an internal quarter-note pulse (**4x4**).
 - **Color Ping-Pong Delay, Lookahead Limiter & Real-Time Visualizer:** **Delay Color** macro sweeping from warm saturated tape echoes (`-1.00`) to crystalline chorus shimmer (`+1.00`), 2 ms lookahead **CLEAN** / **LMC** limiter, and a dedicated multi-layer **SCOPE** visualizer screen (`F6` SubTab 2).
 - **ARM Standalone Optimization:** Written in dependency-free C++ using MIT-licensed `mpc::dsp` primitives, with 16-sample sub-block filter coefficient updates for single-digit ARM CPU overhead.
@@ -287,9 +287,9 @@ The **FILTER** page provides two identical 4-topology stereo SVF/formant engines
 | Parameter | Description | Range / Values |
 |---|---|---|
 | **LFO 1 Freq** | Oscillation frequency of **LFO 1** on logarithmic scale (expandable up to `35 Hz` via **Env L1 Spd** dynamic modulation). | `0.10 – 20.00 Hz` (Default: `1.00 Hz`) |
-| **LFO 1 Wave** | Waveform shape for **LFO 1** (**Double-tap** or turn for menu overlay). | `Sine, Triangle, Saw, Square, Random` (Default: `Sine`) |
+| **LFO 1 Wave** | Waveform shape for **LFO 1** (**Drift** creates dual-timescale Catmull-Rom analog thermal wander). | `Sine, Triangle, Saw, Square, Random, Drift` (Default: `Sine`) |
 | **LFO 2 Freq** | Oscillation frequency of **LFO 2** on logarithmic scale (modulated dynamically via **Env LFO Amt**). | `0.10 – 20.00 Hz` (Default: `1.00 Hz`) |
-| **LFO 2 Wave** | Waveform shape for **LFO 2**. | `Sine, Triangle, Saw, Square, Random` (Default: `Sine`) |
+| **LFO 2 Wave** | Waveform shape for **LFO 2** (independent RNG seed from **LFO 1** in **Drift** mode). | `Sine, Triangle, Saw, Square, Random, Drift` (Default: `Sine`) |
 | **Noise Active** | Enables audible injection of the **Noise** / tone generator into the signal path (**Filter FM** still runs from raw oscillator output when `Filter FM > 0` even if **Noise Active** is **Off**). | `Off, On` (Default: `Off`) |
 | **Type** *(Noise Type)* | Selects noise spectrum or pitched carrier waveform for audio injection and Filter FM. | `White, Pink, Sine, Triangle, Saw, Square` (Default: `White`) |
 | **Freq** *(Noise Freq)* | Pitched tone frequency when **Noise Type** is **Sine**, **Triangle**, **Saw**, or **Square**. | `20 – 20000 Hz` (Default: `440 Hz`) |

@@ -695,7 +695,7 @@ def main():
     ]
     for base_k, new_k, prefix, cnt in icon_radio_specs:
         local_defs.append(make_icon_radio_def(local_defs, base_k, new_k, prefix, cnt))
-    local_defs.append(make_multi_icon_radio_def(local_defs, "radioLfoWave", "btn_lfowave", [16, 66, 116, 166, 216], 46))
+    local_defs.append(make_multi_icon_radio_def(local_defs, "radioLfoWave", "btn_lfowave", [17, 58, 99, 140, 181, 222], 38))
     local_defs.append(make_multi_icon_radio_def(local_defs, "radioNoiseType", "btn_noisetype", [17, 58, 99, 140, 181, 222], 38))
 
     # Reserve top-left margin for host's yellow Q badge before cloning magenta variants

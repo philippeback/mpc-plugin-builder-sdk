@@ -326,48 +326,59 @@ foreach ($state in @("on", "off")) {
     $pen.Dispose()
 }
 
-# 8. LFO Wave (46x40): 0=Sine, 1=Triangle, 2=Saw, 3=Square, 4=Random
+# 8. LFO Wave (38x40): 0=Sine, 1=Triangle, 2=Saw, 3=Square, 4=Random, 5=Drift
 foreach ($state in @("on", "off")) {
     $isOn = ($state -eq "on")
     $base = Join-Path $SkinsDir "seg4_$state.png"
     $col = Get-StrokeColor $isOn
-    $pen = New-Object System.Drawing.Pen($col, 2.1)
+    $acc = Get-AccentColor $isOn
+    $pen = New-Object System.Drawing.Pen($col, 2.0)
     $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
     $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
     $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+    $driftPen = New-Object System.Drawing.Pen($acc, 2.0)
+    $driftPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $driftPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $driftPen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
 
     # 0: Sine
-    $bmp, $g = New-SegCanvas $base 46
+    $bmp, $g = New-SegCanvas $base 38
     $pts = @()
-    for ($i = 0; $i -le 16; $i++) {
-        $t = $i / 16.0
-        $x = 10.0 + $t * 26.0
-        $y = 20.0 - 7.5 * [Math]::Sin($t * 2.0 * [Math]::PI)
+    for ($i = 0; $i -le 14; $i++) {
+        $t = $i / 14.0
+        $x = 8.0 + $t * 22.0
+        $y = 20.0 - 7.0 * [Math]::Sin($t * 2.0 * [Math]::PI)
         $pts += [float]$x; $pts += [float]$y
     }
     Draw-Curve $g $pen $pts
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_0_$state.png")
 
     # 1: Triangle
-    $bmp, $g = New-SegCanvas $base 46
-    Draw-Polyline $g $pen @(10, 20, 16.5, 12, 29.5, 28, 36, 20)
+    $bmp, $g = New-SegCanvas $base 38
+    Draw-Polyline $g $pen @(8, 20, 13.5, 12, 24.5, 28, 30, 20)
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_1_$state.png")
 
     # 2: Saw
-    $bmp, $g = New-SegCanvas $base 46
-    Draw-Polyline $g $pen @(10, 27, 23, 13, 23, 27, 36, 13)
+    $bmp, $g = New-SegCanvas $base 38
+    Draw-Polyline $g $pen @(8, 27, 19, 13, 19, 27, 30, 13)
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_2_$state.png")
 
     # 3: Square
-    $bmp, $g = New-SegCanvas $base 46
-    Draw-Polyline $g $pen @(10, 26, 10, 13, 23, 13, 23, 27, 36, 27, 36, 14)
+    $bmp, $g = New-SegCanvas $base 38
+    Draw-Polyline $g $pen @(8, 26, 8, 13, 19, 13, 19, 27, 30, 27, 30, 14)
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_3_$state.png")
 
     # 4: Random (stepped S&H)
-    $bmp, $g = New-SegCanvas $base 46
-    Draw-Polyline $g $pen @(10, 22, 16, 22, 16, 13, 22, 13, 22, 27, 29, 27, 29, 17, 36, 17)
+    $bmp, $g = New-SegCanvas $base 38
+    Draw-Polyline $g $pen @(7, 22, 13, 22, 13, 13, 19, 13, 19, 27, 25, 27, 25, 17, 31, 17)
     Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_4_$state.png")
 
+    # 5: Drift (organic wandering analog curve)
+    $bmp, $g = New-SegCanvas $base 38
+    Draw-Curve $g $driftPen @(7, 23, 11, 13, 15, 19, 19, 27, 23, 21, 27, 12, 31, 23)
+    Save-ButtonCanvas $bmp $g (Join-Path $SkinsDir "btn_lfowave_5_$state.png")
+
+    $driftPen.Dispose()
     $pen.Dispose()
 }
 

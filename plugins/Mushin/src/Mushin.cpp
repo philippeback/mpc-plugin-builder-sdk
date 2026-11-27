@@ -943,6 +943,106 @@ private:
 // ---------------------------------------------------------------------------
 // Mushin MPC Plugin
 // ---------------------------------------------------------------------------
+// Dual-Mode LFO: wraps mpc::dsp::LFO (0..4) + Vintage Analog Drift spline (5)
+// ---------------------------------------------------------------------------
+class DriftLFO
+{
+public:
+    void setSeed(uint32_t seed)
+    {
+        rng_ = mpc::dsp::Xorshift32(seed ? seed : 0xD41F7u);
+        reseedKnots();
+    }
+
+    void setSampleRate(double sr)
+    {
+        sr_ = (float)std::max(sr, 1.0);
+        base_.setSampleRate(sr);
+        setFrequency(freq_);
+    }
+
+    void setShape(int shapeIdx)
+    {
+        shape_ = mpc::clamp(shapeIdx, 0, 5);
+        if (shape_ < 5) base_.setShape(shape_);
+    }
+
+    void setFrequency(float hz)
+    {
+        freq_ = hz;
+        base_.setFrequency(hz);
+        inc_ = mpc::clamp(freq_ / sr_, 0.0f, 0.25f);
+    }
+
+    void reset()
+    {
+        base_.reset();
+        reseedKnots();
+        driftPhase_ = 0.0f;
+        slowPhase_ = 0.0f;
+        last_ = 0.0f;
+    }
+
+    float process() noexcept
+    {
+        if (shape_ < 5) {
+            last_ = base_.process();
+            return last_;
+        }
+        const float fastV = hermite(k_[0], k_[1], k_[2], k_[3], driftPhase_);
+        const float slowV = hermite(sk_[0], sk_[1], sk_[2], sk_[3], slowPhase_);
+        driftPhase_ += inc_;
+        if (driftPhase_ >= 1.0f) {
+            driftPhase_ -= 1.0f;
+            advanceKnots(k_);
+        }
+        slowPhase_ += inc_ * 0.318309886f; // 1/pi irrational ratio avoids periodic repetition
+        if (slowPhase_ >= 1.0f) {
+            slowPhase_ -= 1.0f;
+            advanceKnots(sk_);
+        }
+        last_ = mpc::clamp(0.72f * fastV + 0.28f * slowV, -1.0f, 1.0f);
+        return last_;
+    }
+
+    float last() const noexcept { return last_; }
+
+private:
+    static inline float hermite(float y0, float y1, float y2, float y3, float t) noexcept
+    {
+        const float t2 = t * t;
+        const float t3 = t2 * t;
+        return 0.5f * ((2.0f * y1)
+            + (-y0 + y2) * t
+            + (2.0f * y0 - 5.0f * y1 + 4.0f * y2 - y3) * t2
+            + (-y0 + 3.0f * y1 - 3.0f * y2 + y3) * t3);
+    }
+
+    void advanceKnots(float arr[4]) noexcept
+    {
+        arr[0] = arr[1];
+        arr[1] = arr[2];
+        arr[2] = arr[3];
+        arr[3] = rng_.nextBipolar() * 0.85f;
+    }
+
+    void reseedKnots() noexcept
+    {
+        for (int i = 0; i < 4; ++i) {
+            k_[i] = rng_.nextBipolar() * 0.85f;
+            sk_[i] = rng_.nextBipolar() * 0.85f;
+        }
+    }
+
+    mpc::dsp::LFO base_;
+    mpc::dsp::Xorshift32 rng_{0xD41F7u};
+    int shape_ = 0;
+    float sr_ = 44100.0f, freq_ = 1.0f, inc_ = 1.0f / 44100.0f;
+    float driftPhase_ = 0.0f, slowPhase_ = 0.0f, last_ = 0.0f;
+    float k_[4] = {}, sk_[4] = {};
+};
+
+// ---------------------------------------------------------------------------
 class Mushin : public mpc::Plugin
 {
 public:
@@ -1063,9 +1163,9 @@ public:
 
         // LFOs
         addParam(logParam   ("lfo1_freq", "LFO 1 Freq", 0.1f, 20.0f, 1.0f, "Hz", 2));
-        addParam(choiceParam("lfo1_wave", "LFO 1 Wave", {"Sine", "Triangle", "Saw", "Square", "Random"}, 0));
+        addParam(choiceParam("lfo1_wave", "LFO 1 Wave", {"Sine", "Triangle", "Saw", "Square", "Random", "Drift"}, 0));
         addParam(logParam   ("lfo2_freq", "LFO 2 Freq", 0.1f, 20.0f, 1.0f, "Hz", 2));
-        addParam(choiceParam("lfo2_wave", "LFO 2 Wave", {"Sine", "Triangle", "Saw", "Square", "Random"}, 0));
+        addParam(choiceParam("lfo2_wave", "LFO 2 Wave", {"Sine", "Triangle", "Saw", "Square", "Random", "Drift"}, 0));
 
         // Mod Matrix
         addParam(floatParam("mod_lfo1_target1", "A Cut",  -1.0f, 1.0f, 0.0f, "", 2));
@@ -1253,6 +1353,8 @@ public:
             baseValues_[i] = get(i);
         }
 
+        lfo1_.setSeed(0xA11CE5u);
+        lfo2_.setSeed(0xB2D4F9u);
         addBuiltInPrograms();
     }
 
@@ -3597,7 +3699,7 @@ private:
     EnvelopeFollower envFollower_;
     Waveshaper waveshaper_;
     MushinFilter filterA_, filterB_;
-    mpc::dsp::LFO lfo1_, lfo2_;
+    DriftLFO lfo1_, lfo2_;
     SidechainProcessor sidechain_;
     NoiseOscillator noiseOsc_;
     TranceGateProcessor tranceGate_;
