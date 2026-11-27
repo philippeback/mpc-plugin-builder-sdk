@@ -32,7 +32,7 @@ Input L/R ──▶ [Auto Input Stager (RMS Target + Auto Trim)]
           ──▶ [16-Step Trance Gate (128 Masks + Touch Steps + Gate Offset + AHDS + Playhead)]
           ──▶ [Sidechain Pumper (INT / 4x4 Test -> Drive / Cut / Gain / A Reso)]
           ──▶ [Master Output Gain]
-          ──▶ [Stereo / Comb / Ping-Pong / Color Delay]
+          ──▶ [5-Mode Color Delay: STEREO / P-PONG / 3:4 X / MULTI / DIFFUSE]
           ──▶ [2 ms Lookahead Limiter (CLEAN / LMC)]
           ──▶ Output L/R + [~30 Hz Telemetry: IN/DUCK/GR/Decay/SCOPE (8 params)/Gate Playhead]
 ```
@@ -56,8 +56,8 @@ Input L/R ──▶ [Auto Input Stager (RMS Target + Auto Trim)]
 7. **Sidechain Pumper (`PUMP`):**
    - `PEAK`/`RMS` detector, `Ratio` (`1:1–20:1`), `HPF`/`LPF` key filters, internal audio (`INT`) or self-clocked **`4x4` Test Pulse**.
    - Four independent simultaneous targets: `SC Drive`, `SC Cut` (`±6 octaves`), `SC Gain` (ducking), and `SC Reso` (Filter A resonance), plus live vertical `IN` (cyan) & `DUCK` (magenta) meters.
-8. **Color Ping-Pong Delay & Lookahead Limiter (`DLY+LIM`):**
-   - `1–2000 ms` free or BPM-synced (`1/16..1/32D`: straight, dotted, triplet, smoothed on switch) Stereo / `Ping-Pong` Delay (down to tight metallic comb-resonators) with **`Delay Color`** (`-1.00` saturated Dub Tape ↔ `+1.00` shimmering Chorus modulation).
+8. **5-Mode Color Delay & Lookahead Limiter (`DLY+LIM`):**
+   - `1–2000 ms` free or BPM-synced (`1/16..1/32D`: straight, dotted, triplet, smoothed on switch) 5-mode Delay (**STEREO**, **P-PONG**, **3:4 X** polyrhythmic cross-bounce, **MULTI** 3-head tape echo, **DIFFUSE** 2-stage Schroeder allpass smear) with **`Delay Color`** (`-1.00` saturated Dub Tape ↔ `+1.00` shimmering Chorus modulation).
    - `2 ms` lookahead Limiter (`CLEAN` brickwall / `LMC` 20:1 aggressive squash, `Drive`, `Ceiling`, `Release`, parallel `Mix`, horizontal `LIMITER GR` meter).
 9. **`SCOPE` Visual Synthesizer (`F6` SubTab 2):**
    - Real-time ~30 Hz audio telemetry (`Viz Phase`, `Viz Pulse`, `Viz X1/Y1`, `Viz X2/Y2`, `Viz Left/Right`) driving 4 complete switchable themes (**NEON**, **SOLAR**, **CYBER**, **VOID** via **`Theme` `Parameter 134`**), while keeping all 16 hardware Q-Links live for macro/filter/delay stage control.
@@ -87,7 +87,7 @@ Input L/R ──▶ [Auto Input Stager (RMS Target + Auto Trim)]
 | `45..50` | **Noise / Tone Osc** | `45` Active, `46` Type (`White/Pink/Sine/Tri/Saw/Sq`), `47` Freq, `48` Level, `49` Route (`PRE-D/PRE-F/POST`), `50` Filter FM |
 | `51..58` | **Trance Gate Core** | `51` Active, `52` Mix, `53` Pattern (`0..127`), `54` Rate (`1/16..1/128`), `55` Start, `56` Hold, `57` End, `58` Depth |
 | `59..63` | **Info Decay** | `59` Active, `60` Bit Depth, `61` Downsample, `62` Mix, `63` Exh Link |
-| `64..76` | **Delay & Limiter** | `64..70` Delay (Active, Time, Feedback, Mix, Ping-Pong, Sync, Tempo), `71..76` Limiter (Active, Mode `CLEAN/LMC`, Drive, Ceiling, Release, Mix) |
+| `64..76` | **Delay & Limiter** | `64..70` Delay (Active, Time, Feedback, Mix, Mode `STEREO/P-PONG/3:4 X/MULTI/DIFFUSE`, Sync, Tempo), `71..76` Limiter (Active, Mode `CLEAN/LMC`, Drive, Ceiling, Release, Mix) |
 | `77..84` | **MAIN Macros (`F1`)** | `77` EXHAUSTION, `78` CHOKE, `79` INFO DECAY, `80` CORRUPT MIX, `81` KINETIC MOD, `82` RESONATOR, `83` GATE CARVE, `84` SMASH |
 | `85..97` | **Mix, Meter & Pump Extras** | `85` Filt Mix, `86` Gate Floor *(RO)*, `87` SC Mix, `88` SC In *(RO)*, `89` SC Duck *(RO)*, `90` SC Ratio, `91..94` SC Drive/Cut/Gain/Reso, `95` Lim GR *(RO)*, `96` S-Curve Active, `97` Decay Viz *(RO)* |
 | `98..114` | **Gate Steps & Offset** | `98..113` Step 1..16 (bool), `114` Gate Offset (`-100..+100%`) |

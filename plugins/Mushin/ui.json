@@ -192,7 +192,7 @@
       "controls": [
         { "param": "Delay Active", "widget": "switch" },
         { "param": "Delay Sync", "widget": "switch" },
-        { "param": "Ping-Pong", "widget": "switch" },
+        { "param": "Delay Mode", "widget": "knob", "overlay": "menu" },
         { "param": "Delay Color", "widget": "knob", "polarity": "bipolar" },
 
         { "param": "Delay FB", "widget": "knob" },

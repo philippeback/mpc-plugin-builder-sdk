@@ -751,12 +751,41 @@ private:
 class DelayProcessor
 {
 public:
+    struct Allpass
+    {
+        std::vector<float> buf;
+        int idx = 0;
+        void prepare(int len)
+        {
+            buf.assign((size_t)std::max(1, len), 0.0f);
+            idx = 0;
+        }
+        void reset()
+        {
+            std::fill(buf.begin(), buf.end(), 0.0f);
+            idx = 0;
+        }
+        float process(float x, float g) noexcept
+        {
+            if (buf.empty()) return x;
+            const float d = buf[idx];
+            const float v = x + g * d;
+            buf[idx] = v;
+            if (++idx >= (int)buf.size()) idx = 0;
+            return d - g * v;
+        }
+    };
+
     void prepare(double sampleRate)
     {
         sampleRate_ = sampleRate;
         const int maxSamples = (int)(sampleRate * 2.15) + 1;
         delayL_.prepare(maxSamples);
         delayR_.prepare(maxSamples);
+        ap1L_.prepare((int)(0.0113 * sampleRate));
+        ap2L_.prepare((int)(0.0171 * sampleRate));
+        ap1R_.prepare((int)(0.0127 * sampleRate));
+        ap2R_.prepare((int)(0.0193 * sampleRate));
         lastColorSet_ = -99.0f;
         setColor(0.0f);
         reset();
@@ -766,6 +795,10 @@ public:
     {
         delayL_.reset();
         delayR_.reset();
+        ap1L_.reset();
+        ap2L_.reset();
+        ap1R_.reset();
+        ap2R_.reset();
         fbLpL_.reset();
         fbLpR_.reset();
         fbHpL_.reset();
@@ -825,7 +858,7 @@ public:
     }
 
     void processSample(float& left, float& right, float timeMs, float feedback, float mix,
-                       bool pingpong, bool sync, float syncBpm, int syncType) noexcept
+                       int mode, bool sync, float syncBpm, int syncType) noexcept
     {
         if (mix <= 0.001f) {
             clearIfDirty();
@@ -849,21 +882,57 @@ public:
 
         const float baseSamples = msToSamples(targetTimeMs, sampleRate_);
         const float maxD = (float)delayL_.maxDelay();
-        const float delayedL = delayL_.readLinear(clamp(baseSamples + modOffset, 1.0f, maxD));
-        const float delayedR = delayR_.readLinear(clamp(baseSamples - modOffset, 1.0f, maxD));
+        float delayedL = 0.0f, delayedR = 0.0f;
+        float fbSrcL = 0.0f, fbSrcR = 0.0f;
 
-        if (pingpong) {
-            // Seed mono sum into L and cross-bounce to R so centered sources ping-pong L/R on grid
+        if (mode == 2) {
+            // 3:4 X — Asymmetric polyrhythmic cross-bounce
+            delayedL = delayL_.readLinear(clamp(baseSamples + modOffset, 1.0f, maxD));
+            delayedR = delayR_.readLinear(clamp(baseSamples * 0.75f - modOffset, 1.0f, maxD));
+            delayL_.write(left + lastFbR_ * feedback);
+            delayR_.write(right + lastFbL_ * feedback);
+            fbSrcL = delayedL;
+            fbSrcR = delayedR;
+        } else if (mode == 3) {
+            // MULTI — 3-head tape echo (0.333x / 0.666x / 1.0x), main 1.0x tap feeds back
+            const float t1L = delayL_.readLinear(clamp(baseSamples * 0.333f + modOffset, 1.0f, maxD));
+            const float t2R = delayR_.readLinear(clamp(baseSamples * 0.666f - modOffset, 1.0f, maxD));
+            const float t3L = delayL_.readLinear(clamp(baseSamples + modOffset, 1.0f, maxD));
+            const float t3R = delayR_.readLinear(clamp(baseSamples - modOffset, 1.0f, maxD));
+            delayedL = 0.45f * t1L + 0.25f * t2R + 0.55f * t3L;
+            delayedR = 0.25f * t1L + 0.45f * t2R + 0.55f * t3R;
+            delayL_.write(left + lastFbL_ * feedback);
+            delayR_.write(right + lastFbR_ * feedback);
+            fbSrcL = t3L;
+            fbSrcR = t3R;
+        } else if (mode == 1) {
+            // P-PONG — Mono-summed seed L -> R -> L cross-bounce
+            delayedL = delayL_.readLinear(clamp(baseSamples + modOffset, 1.0f, maxD));
+            delayedR = delayR_.readLinear(clamp(baseSamples - modOffset, 1.0f, maxD));
             const float ppSeed = 0.5f * (left + right);
             delayL_.write(ppSeed + lastFbR_ * feedback);
             delayR_.write(lastFbL_ * feedback);
+            fbSrcL = delayedL;
+            fbSrcR = delayedR;
         } else {
-            delayL_.write(left + lastFbL_ * feedback);
-            delayR_.write(right + lastFbR_ * feedback);
+            // STEREO (0) and DIFFUSE (4)
+            delayedL = delayL_.readLinear(clamp(baseSamples + modOffset, 1.0f, maxD));
+            delayedR = delayR_.readLinear(clamp(baseSamples - modOffset, 1.0f, maxD));
+            if (mode == 4) {
+                delayedL = ap2L_.process(ap1L_.process(delayedL, 0.55f), 0.55f);
+                delayedR = ap2R_.process(ap1R_.process(delayedR, 0.55f), 0.55f);
+                delayL_.write(left + lastFbR_ * feedback);
+                delayR_.write(right + lastFbL_ * feedback);
+            } else {
+                delayL_.write(left + lastFbL_ * feedback);
+                delayR_.write(right + lastFbR_ * feedback);
+            }
+            fbSrcL = delayedL;
+            fbSrcR = delayedR;
         }
 
-        float fbL = fbHpL_.process(fbLpL_.process(delayedL));
-        float fbR = fbHpR_.process(fbLpR_.process(delayedR));
+        float fbL = fbHpL_.process(fbLpL_.process(fbSrcL));
+        float fbR = fbHpR_.process(fbLpR_.process(fbSrcR));
         if (color_ < -0.01f) {
             const float uL = fbL * tapeDrive_;
             const float uR = fbR * tapeDrive_;
@@ -880,6 +949,7 @@ public:
 private:
     double sampleRate_ = 44100.0;
     DelayLine delayL_, delayR_;
+    Allpass ap1L_, ap2L_, ap1R_, ap2R_;
     OnePoleLP fbLpL_, fbLpR_;
     OnePoleHP fbHpL_, fbHpR_;
     float lastFbL_ = 0.0f, lastFbR_ = 0.0f;
@@ -1293,7 +1363,7 @@ public:
         addParam(logParam   ("delay_time",     "Time",      1.0f, 2000.0f, 300.0f, "ms", 0));
         addParam(floatParam ("delay_feedback", "Feedback",  0.0f, 0.95f, 0.3f, "", 2));
         addParam(floatParam ("delay_mix",      "Mix",       0.0f, 1.0f, 0.3f, "", 2));
-        addParam(boolParam  ("delay_pingpong", "Ping-Pong", false));
+        addParam(choiceParam("delay_pingpong", "Mode", {"STEREO", "P-PONG", "3:4 X", "MULTI", "DIFFUSE"}, 0));
         addParam(boolParam  ("delay_sync",     "Sync",      false));
         addParam(choiceParam("delay_tempo",    "Tempo",     {"1/16", "1/8", "1/4", "1/2", "1/16D", "1/8D", "1/4D", "1/16T", "1/8T", "1/4T", "1/32", "1/32D"}, 2));
 
@@ -1664,7 +1734,7 @@ public:
         smoothedDelayTime_.setTarget(targetDelayMs);
         smoothedDelayFb_.setTarget(get(kDelayFeedback));
         smoothedDelayMix_.setTarget(get(kDelayMix));
-        const bool delayPingPong = getBool(kDelayPingPong);
+        const int delayMode = mpc::clamp(getInt(kDelayPingPong), 0, 4);
         if (delayActive) {
             delay_.setColor(get(kDelayColor));
         }
@@ -1926,7 +1996,7 @@ public:
 
             if (delayActive) {
                 delay_.processSample(wet[0], wet[1], curDelayTime, curDelayFb, curDelayMix,
-                                     delayPingPong, false, bpm, delayTempoVal);
+                                     delayMode, false, bpm, delayTempoVal);
             } else {
                 delay_.clearIfDirty();
             }

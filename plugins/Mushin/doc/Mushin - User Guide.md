@@ -59,7 +59,7 @@ Thank you for installing **Mushin** by **PhilippeBack**. Mushin is a multi-stage
 - **Swappable Core Saturation & Dual SVF Filter Engine:** **S-Curve** asymmetric/hard **Exhaustion** waveshaper paired with dual 4-type (**CLN**, **VOWL**, **ACID**, **DIGI**), 4-mode (**LP**, **HP**, **BP**, **NOTCH**) filters supporting **SERIAL**, **PARAL**, **STEREO** (L→A / R→B), and **M/S** (Mid→A / Side→B) routing, plus **Flt->Sat** order reversal.
 - **Modulation, Noise & Audio Dynamics:** Two multi-shape LFOs (**Sine**, **Triangle**, **Saw**, **Square**, **Random**, **Drift**), a 6-type **Noise** / tone generator with **Filter FM**, an audio **Envelope Follower** targeting cutoffs, drive, resonance, and LFO rate/amount, and a **2×6** bipolar LFO modulation matrix.
 - **16-Step Trance Gate & 4×4 Sidechain Pump:** **128** built-in gate patterns, 16 individually tappable step toggles, `Start`/`Hold`/`End` envelope shaping, phase **Gate Offset** (`-100%` to `+100%`), and a multi-target **Sidechain** processor driven either by live input audio (**INT**) or an internal quarter-note pulse (**4x4**).
-- **Color Ping-Pong Delay, Lookahead Limiter & Real-Time Visualizer:** **Delay Color** macro sweeping from warm saturated tape echoes (`-1.00`) to crystalline chorus shimmer (`+1.00`), 2 ms lookahead **CLEAN** / **LMC** limiter, and a dedicated multi-layer **SCOPE** visualizer screen (`F6` SubTab 2).
+- **Multi-Mode Color Delay, Lookahead Limiter & Real-Time Visualizer:** 5-topology delay (**STEREO**, **P-PONG**, **3:4 X**, **MULTI**, **DIFFUSE**) with **Delay Color** sweeping from warm saturated tape echoes (`-1.00`) to crystalline chorus shimmer (`+1.00`), 2 ms lookahead **CLEAN** / **LMC** limiter, and a dedicated multi-layer **SCOPE** visualizer screen (`F6` SubTab 2).
 - **ARM Standalone Optimization:** Written in dependency-free C++ using MIT-licensed `mpc::dsp` primitives, with 16-sample sub-block filter coefficient updates for single-digit ARM CPU overhead.
 
 ### System Requirements & Support
@@ -150,7 +150,7 @@ Mushin arranges its **136** controls across **9 logical touchscreen tabs** mappe
 | **F4** | 2 | **LFO MTX** | `bg_matrix.png` | **LFO 1 & 2 Matrix** + **Env > Flt** & **Env > LFO** modulation |
 | **F5** | 1 | **GATE** | `bg_gate.png` | 16-Step **Trance Gate**, 128 patterns, **Gate Env** AHDS graph |
 | **F5** | 2 | **PUMP** | `bg_pump.png` | **Sidechain Pump**, **Detector Filter**, **IN/DUCK** meters |
-| **F6** | 1 | **DLY+LIM** | `bg_dly_lim.png` | Color Stereo/Ping-Pong **Delay**, Lookahead **Limiter** & **LIMITER GR** |
+| **F6** | 1 | **DLY+LIM** | `bg_dly_lim.png` | 5-Mode Color **Delay**, Lookahead **Limiter** & **LIMITER GR** |
 | **F6** | 2 | **SCOPE** | `bg_scope.png` | Real-time Milkdrop-style sprite visualizer + live macro control |
 
 ### Program Mode vs. Screen Mode Q-Links
@@ -185,7 +185,7 @@ Input ──► Input Gain Stager (Auto In, In Target, In Trim)
           Dry/Wet Mix ──► 16-Step Trance Gate ──► Final Gain (× Sidechain)
                │
                ▼
-          Color Delay (Time / Sync Tempo, Ping-Pong, Delay Color)
+          Color Delay (Time / Sync Tempo, 5-Mode Engine, Delay Color)
                │
                ▼
           Lookahead Limiter (2 ms CLEAN / LMC, Drive, Ceiling, Release, Mix) ──► Output
@@ -366,13 +366,13 @@ Rows 1–2 assign **LFO 1** across Filter A & B (Cols 1–3); Rows 3–4 assign 
 
 ### DLY+LIM: Color Delay & Lookahead Limiter (`F6` SubTab 1)
 
-#### Stereo / Ping-Pong Color Delay (Top Zone)
+#### 5-Mode Color Delay (Top Zone)
 
 | Parameter | Description | Range / Values |
 |---|---|---|
-| **Active** *(Delay Active)* | Enables or bypasses the Stereo/Ping-Pong Delay module. | `Off, On` (Default: `Off`) |
+| **Active** *(Delay Active)* | Enables or bypasses the 5-mode Color Delay module. | `Off, On` (Default: `Off`) |
 | **Sync** *(Delay Sync)* | Locks delay time to host/project BPM note divisions (**On**) vs free milliseconds (**Off**). **Conditionally switches Row 2 Col 2** between **Delay Time** and **Delay Tempo**. | `Off, On` (Default: `Off`) |
-| **Ping-Pong** | When **On**, sums stereo input into the Left tap (`0.5 × (L + R)`) and cross-bounces `L → R → L` on beat even for mono/centered signals; **Off** keeps independent Dual L/R stereo delay lines. | `Off, On` (Default: `Off`) |
+| **Mode** *(Delay Mode)* | Selects delay topology (double-tap knob or press Enter to open selection menu): **STEREO** (dual L/R feedback), **P-PONG** (mono-summed `0.5 × (L+R)` cross-bounce `L → R → L`), **3:4 X** (`1.0×` Left vs `0.75×` Right polyrhythmic cross-feedback), **MULTI** (3-head Space Echo at `0.33× / 0.66× / 1.0×` feeding back on main head), or **DIFFUSE** (dual Schroeder allpass smear stages in the feedback loop). | `STEREO, P-PONG, 3:4 X, MULTI, DIFFUSE` (Default: `STEREO`) |
 | **Delay Color** | Bipolar feedback toning & stereo modulation macro: **Negative** (`-1.00`) rolls feedback lowpass down to `480 Hz`, adds rational tape saturation, and applies subtle `0.75 Hz` `±0.65 ms` flutter; **Positive** (`+1.00`) sweeps feedback highpass up to `950 Hz`, opens top air (`16 kHz`), and adds `1.25 Hz` `±1.45 ms` stereo chorus shimmer. | `-1.00 to +1.00` (Default: `0.00`) |
 | **Feedback** *(Delay FB)* | Regenerative delay feedback loop amount (internally limited below self-oscillation clipping). | `0.00 – 0.95` (Default: `0.30`) |
 | **Time** *(Delay Time)* | *(Visible when **Sync = Off**)* Manual delay time in milliseconds (up to `2000 ms`, usable down to `12–32 ms` for Karplus/comb resonator effects). | `1 – 2000 ms` (Default: `300 ms`) |
@@ -438,7 +438,7 @@ The **SCOPE** tab renders a multi-layer SNES-sprite / Milkdrop-style real-time a
 
 1. On **FILTER** (**F3**), set **Routing** (`Q-Link 4`) to **M/S** (`Mid → Filter A`, `Side → Filter B`).
 2. Keep **Filter A** (**CLN LP** or **ACID LP**) tight around `120–400 Hz` or gentle on the center mono image while modulating **Filter B** (`VOWL BP` / `CLN HP`) with **LFO 1/2** (`L1 B Cut`) so only the stereo sides swirl wide.
-3. On **DLY+LIM** (**F6** SubTab 1), turn **Delay Active** and **Ping-Pong** **On**, enable **Delay Sync** (`1/8` or `1/16`), and dial **Delay Color** (`Q-Link 16`, Row 1 Col 4) negative (`-0.50`) for warm analog dub tape echoes or positive (`+0.55`) for crystalline stereo chorus tails.
+3. On **DLY+LIM** (**F6** SubTab 1), turn **Delay Active** **On**, set **Mode** (`Q-Link 15`, Row 1 Col 3) to **P-PONG**, **3:4 X**, **MULTI**, or **DIFFUSE**, enable **Delay Sync** (`1/8` or `1/8D`), and dial **Delay Color** (`Q-Link 16`, Row 1 Col 4) negative (`-0.50`) for warm analog dub tape echoes or positive (`+0.55`) for crystalline stereo chorus tails.
 
 ---
 
@@ -457,7 +457,7 @@ The **SCOPE** tab renders a multi-layer SNES-sprite / Milkdrop-style real-time a
 | **LFO MTX** (`F4.2`) | `23` L1 A Cut / `24` L1 A Res / `25` L1 A Grit / `121` Env A Res | `26` L1 B Cut / `27` L1 B Res / `28` L1 B Grit / `122` Env B Cut | `29` L2 A Cut / `30` L2 A Res / `31` L2 A Grit / `123` Env L1 Spd | `32` L2 B Cut / `33` L2 B Res / `34` L2 B Grit / `124` Env LFO Amt |
 | **GATE** (`F5.1`) | `51` Gate Active / `53` Pattern / `54` Rate / `58` Depth | `— / — / — /` `52` Gate Mix | `55` Start / `56` Hold / `57` End / `114` Gate Offset | `— / — / — / —` |
 | **PUMP** (`F5.2`) | `35` SC Active / `40` Mode / `90` SC Ratio / `87` SC Mix | `37` Thresh / `41` Amount / `38` Attack / `39` Release | `43` HPF / `44` LPF / `94` SC Reso / `—` | `91` SC Drive / `92` SC Cut / `93` SC Gain / `36` SC Source |
-| **DLY+LIM** (`F6.1`) | `64` Delay Active / `69` Sync / `68` Ping-Pong / `125` Delay Color | `66` Feedback / `65` Time / `70` Tempo / `67` Delay Mix | `71` Lim Active / `73` Lim Drive / `75` Lim Rel / `74` Lim Ceil | `72` Lim Mode / `— / — /` `76` Lim Mix |
+| **DLY+LIM** (`F6.1`) | `64` Delay Active / `69` Sync / `68` Delay Mode / `125` Delay Color | `66` Feedback / `65` Time / `70` Tempo / `67` Delay Mix | `71` Lim Active / `73` Lim Drive / `75` Lim Rel / `74` Lim Ceil | `72` Lim Mode / `— / — /` `76` Lim Mix |
 | **SCOPE** (`F6.2`) | `77` EXHAUSTION / `78` CHOKE / `79` INFO DECAY / `80` CORRUPT MIX | `81` KINETIC MOD / `82` RESONATOR / `83` GATE CARVE / `84` SMASH | `6` A Cutoff / `7` A Reso / `12` B Cutoff / `19` LFO 1 Freq | `1` Drive / `5` Mix / `66` Delay FB / `67` Delay Mix |
 
 ---

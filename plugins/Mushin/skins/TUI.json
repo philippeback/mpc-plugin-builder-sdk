@@ -7360,7 +7360,12 @@
                 "value": [
                     "1/16",
                     "1/8",
-                    "1/4"
+                    "1/4",
+                    "1/16T",
+                    "1/32",
+                    "1/32T",
+                    "1/64",
+                    "1/128"
                 ]
             },
             {
@@ -7387,8 +7392,11 @@
             {
                 "key": "Parameter 68",
                 "value": [
-                    "Off",
-                    "On"
+                    "STEREO",
+                    "P-PONG",
+                    "3:4 X",
+                    "MULTI",
+                    "DIFFUSE"
                 ]
             },
             {
@@ -7404,7 +7412,15 @@
                     "1/16",
                     "1/8",
                     "1/4",
-                    "1/2"
+                    "1/2",
+                    "1/16D",
+                    "1/8D",
+                    "1/4D",
+                    "1/16T",
+                    "1/8T",
+                    "1/4T",
+                    "1/32",
+                    "1/32D"
                 ]
             },
             {
@@ -11214,8 +11230,8 @@
                             "version": 2,
                             "componentData": {
                                 "version": 1,
-                                "name": "Ping-Pong",
-                                "type": "toggle",
+                                "name": "Delay Mode",
+                                "type": "knobUniMenu",
                                 "data": {
                                     "version": 1,
                                     "handleName": "Data"

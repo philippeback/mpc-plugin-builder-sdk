@@ -95,6 +95,7 @@ DRY_LABELS = {
     # Delay
     "Delay Active": "Active",
     "Delay Sync": "Sync",
+    "Delay Mode": "Mode",
     "Delay FB": "Feedback",
     "Delay Time": "Time",
     "Delay Tempo": "Tempo",
@@ -615,7 +616,7 @@ UI_PARAM_KEYS = {
     51: "Gate Active", 52: "Gate Mix", 53: "Gate Pattern", 54: "Gate Rate",
     55: "Gate Start", 56: "Gate Hold", 57: "Gate End", 58: "Gate Depth",
     59: "Decay Active", 62: "Decay Mix",
-    64: "Delay Active", 65: "Delay Time", 66: "Delay FB", 67: "Delay Mix",
+    64: "Delay Active", 65: "Delay Time", 66: "Delay FB", 67: "Delay Mix", 68: "Delay Mode",
     69: "Delay Sync", 70: "Delay Tempo",
     71: "Limit Active", 72: "Limit Mode", 73: "Limit Drive", 74: "Limit Ceil",
     75: "Limit Rel", 76: "Limit Mix",
