@@ -245,7 +245,7 @@ The **SATURATION** page houses three interrelated zones: the top **S-CURVE** wav
 | Parameter | Description | Range / Values |
 |---|---|---|
 | **Auto In** | Activates Mushin's fast-attack (`1 ms`), smooth-release (`450 ms`) automatic input gain stager so quiet pads and loud master buses hit the shaper at consistent calibration. | `Off, On` (Default: `On`) |
-| **In Target** | Reference RMS/peak calibration level targeted by **Auto In** (`0.25x` to `8.0x` automatic trim range). | `-24.0 – 0.0 dB` (Default: `-9.0 dB`) |
+| **In Target** | Reference RMS/peak calibration level targeted by **Auto In** (`0.25x` to `4.0x` automatic trim range). | `-24.0 – 0.0 dB` (Default: `-12.0 dB`) |
 | **In Trim** | Manual pre-FX gain trim applied right after **Auto In** calibration. | `-18.0 – +24.0 dB` (Default: `0.0 dB`) |
 
 ---
