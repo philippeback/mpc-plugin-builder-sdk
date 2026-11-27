@@ -813,6 +813,17 @@ public:
         }
     }
 
+    static float syncFactor(int syncType) noexcept
+    {
+        static constexpr float kSyncFactors[12] = {
+            0.25f, 0.5f, 1.0f, 2.0f,
+            0.375f, 0.75f, 1.5f,
+            0.1666667f, 0.3333333f, 0.6666667f,
+            0.125f, 0.1875f
+        };
+        return kSyncFactors[clamp(syncType, 0, 11)];
+    }
+
     void processSample(float& left, float& right, float timeMs, float feedback, float mix,
                        bool pingpong, bool sync, float syncBpm, int syncType) noexcept
     {
@@ -825,15 +836,7 @@ public:
         float targetTimeMs = timeMs;
         if (sync) {
             const float bpm = syncBpm > 1.0f ? syncBpm : 120.0f;
-            const float quarterSec = 60.0f / bpm;
-            float factor = 1.0f;
-            switch (syncType) {
-                case 0: factor = 0.25f; break;
-                case 1: factor = 0.5f;  break;
-                case 2: factor = 1.0f;  break;
-                case 3: factor = 2.0f;  break;
-            }
-            targetTimeMs = quarterSec * factor * 1000.0f;
+            targetTimeMs = (60.0f / bpm) * syncFactor(syncType) * 1000.0f;
         }
 
         float modOffset = 0.0f;
@@ -1272,7 +1275,7 @@ public:
             "121 Beat 1 Only", "122 Beat 1 & 3", "123 Beat 2 & 4", "124 Beat 3 Only",
             "125 Sparse 4/16", "126 Sparse 5/16", "127 Odd 7/16", "128 Sustain 15"
         }, 0));
-        addParam(choiceParam("tg_rate",    "Rate",    {"1/16", "1/8", "1/4"}, 0));
+        addParam(choiceParam("tg_rate",    "Rate",    {"1/16", "1/8", "1/4", "1/16T", "1/32", "1/32T", "1/64", "1/128"}, 0));
         addParam(floatParam ("tg_start",   "Start",   0.0f, 100.0f, 5.0f, "ms", 1));
         addParam(floatParam ("tg_hold",    "Hold",    10.0f, 100.0f, 50.0f, "%", 0));
         addParam(floatParam ("tg_end",     "End",     0.0f, 200.0f, 10.0f, "ms", 1));
@@ -1292,7 +1295,7 @@ public:
         addParam(floatParam ("delay_mix",      "Mix",       0.0f, 1.0f, 0.3f, "", 2));
         addParam(boolParam  ("delay_pingpong", "Ping-Pong", false));
         addParam(boolParam  ("delay_sync",     "Sync",      false));
-        addParam(choiceParam("delay_tempo",    "Tempo",     {"1/16", "1/8", "1/4", "1/2"}, 2));
+        addParam(choiceParam("delay_tempo",    "Tempo",     {"1/16", "1/8", "1/4", "1/2", "1/16D", "1/8D", "1/4D", "1/16T", "1/8T", "1/4T", "1/32", "1/32D"}, 2));
 
         // Limiter
         addParam(boolParam  ("limiter_active",  "Active",  false));
@@ -1524,7 +1527,10 @@ public:
         smoothedScMix_.snap(get(kScMix));
         smoothedQeDepth_.snap(get(kQeDepth));
         smoothedQeMix_.snap(get(kQeMix));
-        smoothedDelayTime_.snap(get(kDelayTime));
+        const float initDelayMs = getBool(kDelaySync)
+            ? 500.0f * DelayProcessor::syncFactor(getInt(kDelayTempo))
+            : get(kDelayTime);
+        smoothedDelayTime_.snap(initDelayMs);
         smoothedDelayFb_.snap(get(kDelayFeedback));
         smoothedDelayMix_.snap(get(kDelayMix));
         smoothedLimDrive_.snap(get(kLimDrive));
@@ -1647,13 +1653,18 @@ public:
         smoothedQeMix_.setTarget(get(kQeMix));
         const int downsampleFactor = std::max(1, getInt(kQeDownsample));
 
+        const float bpm = mpc::dsp::safeBpm(ctx.transport.bpm);
+
         const bool delayActive = getBool(kDelayActive);
-        smoothedDelayTime_.setTarget(get(kDelayTime));
+        const bool delaySync = getBool(kDelaySync);
+        const int delayTempoVal = getInt(kDelayTempo);
+        const float targetDelayMs = delaySync
+            ? (60.0f / bpm) * DelayProcessor::syncFactor(delayTempoVal) * 1000.0f
+            : get(kDelayTime);
+        smoothedDelayTime_.setTarget(targetDelayMs);
         smoothedDelayFb_.setTarget(get(kDelayFeedback));
         smoothedDelayMix_.setTarget(get(kDelayMix));
         const bool delayPingPong = getBool(kDelayPingPong);
-        const bool delaySync = getBool(kDelaySync);
-        const int delayTempoVal = getInt(kDelayTempo);
         if (delayActive) {
             delay_.setColor(get(kDelayColor));
         }
@@ -1666,15 +1677,15 @@ public:
         smoothedLimMix_.setTarget(get(kLimMix));
 
         // Trance Gate block params
-        const float bpm = mpc::dsp::safeBpm(ctx.transport.bpm);
         if (ctx.transport.playing) {
             const double secPos = ctx.transport.ppqPos * (60.0 / (double)bpm);
             tranceGate_.setCurrentSamplePos(secPos * sr);
         }
-        double rateFactor = 4.0;
-        const int rateIdx = getInt(kTgRate);
-        if (rateIdx == 1) rateFactor = 2.0;
-        else if (rateIdx == 2) rateFactor = 1.0;
+        static constexpr double kRateFactors[8] = {
+            4.0, 2.0, 1.0, 6.0, 8.0, 12.0, 16.0, 32.0
+        };
+        const int rateIdx = mpc::clamp(getInt(kTgRate), 0, 7);
+        const double rateFactor = kRateFactors[rateIdx];
 
         const double stepSamples = (60.0 / ((double)bpm * rateFactor)) * sr;
         const double cycleSamples = stepSamples * 16.0;
@@ -1915,7 +1926,7 @@ public:
 
             if (delayActive) {
                 delay_.processSample(wet[0], wet[1], curDelayTime, curDelayFb, curDelayMix,
-                                     delayPingPong, delaySync, bpm, delayTempoVal);
+                                     delayPingPong, false, bpm, delayTempoVal);
             } else {
                 delay_.clearIfDirty();
             }
@@ -2007,11 +2018,6 @@ public:
             }
             set(kTgPlayStep, tgPlayStep01);
 
-            if (std::fabs(tgPlayStep01 - lastSentTgStep_) > 0.005f) {
-                lastSentTgStep_ = tgPlayStep01;
-                notifyHostParameterChanged(kTgPlayStep);
-            }
-
             if (currentProgram() != lastProgram_) {
                 lastProgram_ = currentProgram();
                 requestDisplayUpdate();
@@ -2035,6 +2041,7 @@ public:
                 notifyIfChanged(kScDuckMeter, duckMeter01, lastSentDuckMeter_, 0.005f);
                 notifyIfChanged(kLimGrMeter, limGr01, lastSentLimGrMeter_, 0.005f);
                 notifyIfChanged(kDecayViz, decayViz01, lastSentDecayViz_, 0.005f);
+                notifyIfChanged(kTgPlayStep, tgPlayStep01, lastSentTgStep_, 0.005f);
                 for (int v = 0; v < 8; ++v) {
                     notifyIfChanged(kVizPhase + v, vizVals[v], lastSentViz_[v], 0.008f);
                 }

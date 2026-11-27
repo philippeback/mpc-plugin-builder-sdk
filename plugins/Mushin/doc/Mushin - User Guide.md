@@ -326,7 +326,7 @@ Rows 1–2 assign **LFO 1** across Filter A & B (Cols 1–3); Rows 3–4 assign 
 |---|---|---|
 | **Gate Active** | Enables the tempo-synchronized 16-step amplitude chopper (locks to host PPQ when transport is playing, free-runs at project BPM when stopped). | `Off, On` (Default: `Off`) |
 | **Pattern** *(Gate Pattern)* | Selects one of **128** factory step masks organized across Core (`01–08`), House/Trance (`09–24`), Techno (`25–40`), Breakbeat/DnB (`41–56`), Trap/Hip-Hop (`57–72`), Euclidean (`73–88`), Afro-Latin/Funk (`89–104`), Glitch (`105–120`), and Sparse (`121–128`). Loading a pattern updates **Step 1–16** immediately. | `01 Straight 16` – `128 Sustain 15` (`128` patterns) |
-| **Rate** *(Gate Rate)* | Clock division per step across a 16-step loop. | `1/16, 1/8, 1/4` (Default: `1/16`) |
+| **Rate** *(Gate Rate)* | Clock division per step across a 16-step loop (supports straight, triplet, and ultra-fast glitch subdivisions; double-tap knob or press Enter to open selection menu). | `1/16, 1/8, 1/4, 1/16T, 1/32, 1/32T, 1/64, 1/128` (Default: `1/16`) |
 | **Depth** *(Gate Depth)* | Attenuation depth on closed steps (`0%` keeps signal full; `100%` drops closed steps to silence). Synced inversely with **Gate Floor**. | `0 – 100%` (Default: `50%`) |
 | **Step 1 – Step 16** | Individual step toggles across the 16-step sequence (`Odd` beat steps `1, 5, 9, 13` display beat pip markers). | `Off, On` (Default: pattern `01`: even steps `On`, odd steps `Off`) |
 | **Mix** *(Gate Mix)* | Dry/wet blend around the gate gain multiplier. | `0.00 – 1.00` (Default: `1.00`) |
@@ -376,7 +376,7 @@ Rows 1–2 assign **LFO 1** across Filter A & B (Cols 1–3); Rows 3–4 assign 
 | **Delay Color** | Bipolar feedback toning & stereo modulation macro: **Negative** (`-1.00`) rolls feedback lowpass down to `480 Hz`, adds rational tape saturation, and applies subtle `0.75 Hz` `±0.65 ms` flutter; **Positive** (`+1.00`) sweeps feedback highpass up to `950 Hz`, opens top air (`16 kHz`), and adds `1.25 Hz` `±1.45 ms` stereo chorus shimmer. | `-1.00 to +1.00` (Default: `0.00`) |
 | **Feedback** *(Delay FB)* | Regenerative delay feedback loop amount (internally limited below self-oscillation clipping). | `0.00 – 0.95` (Default: `0.30`) |
 | **Time** *(Delay Time)* | *(Visible when **Sync = Off**)* Manual delay time in milliseconds (up to `2000 ms`, usable down to `12–32 ms` for Karplus/comb resonator effects). | `1 – 2000 ms` (Default: `300 ms`) |
-| **Tempo** *(Delay Tempo)* | *(Visible when **Sync = On**)* Rhythmic note division synced to project BPM. | `1/16, 1/8, 1/4, 1/2` (Default: `1/4`) |
+| **Tempo** *(Delay Tempo)* | *(Visible when **Sync = On**)* Rhythmic note division synced to project BPM, including straight, dotted (`D`), and triplet (`T`) subdivisions with smoothed time transitions when changed live (double-tap knob or press Enter to open selection menu). | `1/16, 1/8, 1/4, 1/2, 1/16D, 1/8D, 1/4D, 1/16T, 1/8T, 1/4T, 1/32, 1/32D` (Default: `1/4`) |
 | **Mix** *(Delay Mix)* | Wet delay blend mixed over the dry post-gate signal. | `0.00 – 1.00` (Default: `0.30`) |
 
 #### Final 2 ms Lookahead Limiter (Bottom Zone)

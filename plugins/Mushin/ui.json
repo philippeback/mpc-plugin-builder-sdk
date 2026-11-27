@@ -142,7 +142,7 @@
       "controls": [
         { "param": "Gate Active", "widget": "switch" },
         { "param": "Gate Pattern", "widget": "knob", "overlay": "menu" },
-        { "param": "Gate Rate", "widget": "switch" },
+        { "param": "Gate Rate", "widget": "knob", "overlay": "menu" },
         { "param": "Gate Depth", "widget": "knob" },
 
         "empty",
@@ -197,7 +197,7 @@
 
         { "param": "Delay FB", "widget": "knob" },
         { "param": "Delay Time", "widget": "knob", "visibleWhen": { "param": "Delay Sync", "choice": "Off" } },
-        { "param": "Delay Tempo", "widget": "switch", "visibleWhen": { "param": "Delay Sync", "choice": "On" } },
+        { "param": "Delay Tempo", "widget": "knob", "overlay": "menu", "visibleWhen": { "param": "Delay Sync", "choice": "On" } },
         { "param": "Delay Mix", "widget": "fader" },
 
         { "param": "Limit Active", "widget": "switch" },

@@ -688,8 +688,6 @@ def main():
         ("radio4", "radioFMode", "btn_fmode", 4),
         ("radio4", "radioRoute", "btn_route", 4),
         ("radio3", "radioNRoute", "btn_nroute", 3),
-        ("radio3", "radioGRate", "btn_grate", 3),
-        ("radio4", "radioDTempo", "btn_dtempo", 4),
         ("radio2", "radioLMode", "btn_lmode", 2),
         ("radio2", "radioScMode", "btn_scmode", 2),
     ]
@@ -718,8 +716,6 @@ def main():
         "B Mode": "radioFModeMag",
         "Routing": "radioRoute",
         "Noise Route": "radioNRoute",
-        "Gate Rate": "radioGRate",
-        "Delay Tempo": "radioDTempo",
         "Limit Mode": "radioLMode",
         "LFO 1 Wave": "radioLfoWave",
         "LFO 2 Wave": "radioLfoWaveMag",
