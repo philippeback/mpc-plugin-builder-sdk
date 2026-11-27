@@ -1013,6 +1013,7 @@ public:
         kVizLeft,
         kVizRight,
         kVizTheme,
+        kTgPlayStep,
 
         kNumParams
     };
@@ -1240,6 +1241,11 @@ public:
             addParam(p);
         }
         addParam(choiceParam("viz_theme", "Theme", {"NEON", "SOLAR", "CYBER", "VOID"}, 0));
+        {
+            auto pPlay = floatParam("tg_play_step", "Gate Step", 0.0f, 1.0f, 1.0f, "", 2);
+            pPlay.automatable = false;
+            addParam(pPlay);
+        }
 
         if (numParams() != kNumParams) mpc::log("Mushin: parameter count mismatch");
 
@@ -1402,6 +1408,7 @@ public:
         lastSentDuckMeter_ = -1.0f;
         lastSentLimGrMeter_ = -1.0f;
         lastSentDecayViz_ = -1.0f;
+        lastSentTgStep_ = -1.0f;
         for (int i = 0; i < 8; ++i) lastSentViz_[i] = -1.0f;
     }
 
@@ -1851,6 +1858,23 @@ public:
             set(kLimGrMeter, limGr01);
             set(kDecayViz, decayViz01);
             for (int v = 0; v < 8; ++v) set(kVizPhase + v, vizVals[v]);
+
+            float tgPlayStep01 = 1.0f;
+            if (tgActive && cycleSamples > 0.0) {
+                const double tgPos = ctx.transport.playing
+                    ? (tranceGate_.currentSamplePos() + (double)(n / 2))
+                    : tranceGate_.currentSamplePos();
+                double sCycle = std::fmod(tgPos - tgOffsetSamples, cycleSamples);
+                if (sCycle < 0.0) sCycle += cycleSamples;
+                const int activeStep = mpc::clamp((int)(sCycle / stepSamples), 0, 15);
+                tgPlayStep01 = (float)activeStep / 16.0f;
+            }
+            set(kTgPlayStep, tgPlayStep01);
+
+            if (std::fabs(tgPlayStep01 - lastSentTgStep_) > 0.005f) {
+                lastSentTgStep_ = tgPlayStep01;
+                notifyHostParameterChanged(kTgPlayStep);
+            }
 
             if (currentProgram() != lastProgram_) {
                 lastProgram_ = currentProgram();
@@ -3600,6 +3624,7 @@ private:
     float lastSentDuckMeter_ = -1.0f;
     float lastSentLimGrMeter_ = -1.0f;
     float lastSentDecayViz_ = -1.0f;
+    float lastSentTgStep_ = -1.0f;
     float lastSentViz_[8] = {-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
     int lastProgram_ = 0;
 };

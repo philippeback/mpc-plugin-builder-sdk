@@ -54,7 +54,7 @@ Thank you for installing **Mushin** by **PhilippeBack**. Mushin is a multi-stage
 
 ### Overview & Features
 
-- **135 Parameters (122 Automatable + 13 Read-Only Telemetry Controls):** Full recall via host chunk state (`MSHB` format) and automatic parameter sync across hardware Q-Links and the MPC touchscreen.
+- **136 Parameters (122 Automatable + 14 Read-Only Telemetry Controls):** Full recall via host chunk state (`MSHB` format) and automatic parameter sync across hardware Q-Links and the MPC touchscreen.
 - **168 Built-In Programs:** Curated presets organized by category prefixes (*PSY*, *SAT*, *FLT*, *VOWL*, *DECY*, *LFO*, *GATE*, *PUMP*, *COMBO/MUSH*, *L/R*, *M/S*, *PAD*, *SYN*, *SWV*, *VOX*).
 - **Swappable Core Saturation & Dual SVF Filter Engine:** **S-Curve** asymmetric/hard **Exhaustion** waveshaper paired with dual 4-type (**CLN**, **VOWL**, **ACID**, **DIGI**), 4-mode (**LP**, **HP**, **BP**, **NOTCH**) filters supporting **SERIAL**, **PARAL**, **STEREO** (L→A / R→B), and **M/S** (Mid→A / Side→B) routing, plus **Flt->Sat** order reversal.
 - **Modulation, Noise & Audio Dynamics:** Two multi-shape LFOs (**Sine**, **Triangle**, **Saw**, **Square**, **Random**), a 6-type **Noise** / tone generator with **Filter FM**, an audio **Envelope Follower** targeting cutoffs, drive, resonance, and LFO rate/amount, and a **2×6** bipolar LFO modulation matrix.
@@ -139,7 +139,7 @@ Mushin will not appear in the browser until external plugin hosting is switched 
 
 ### MPC Screen Tabs & Hardware Mapping
 
-Mushin arranges its **135** controls across **9 logical touchscreen tabs** mapped to the MPC's **6 Function Keys (`F1`–`F6`)**, paired in dual-theme Cyan (top zone / Bank A) and Magenta (bottom zone / Bank B) bays:
+Mushin arranges its **136** controls across **9 logical touchscreen tabs** mapped to the MPC's **6 Function Keys (`F1`–`F6`)**, paired in dual-theme Cyan (top zone / Bank A) and Magenta (bottom zone / Bank B) bays:
 
 | Function Key | SubTab | Screen Tab Name | Skin Background | Primary Focus |
 |---|---|---|---|---|
@@ -335,6 +335,7 @@ Rows 1–2 assign **LFO 1** across Filter A & B (Cols 1–3); Rows 3–4 assign 
 | **End** *(Gate End)* | Release ramp down from peak to step close (capped to `0.5 × step`). | `0.0 – 200.0 ms` (Default: `10.0 ms`) |
 | **Gate Offset** | Phase-shifts the gate pattern timing relative to the beat by up to one full step earlier (`-100%`) or later (`+100%`). | `-100% to +100%` (Default: `0%`) |
 | **Gate Floor** | `[Read-Only Telemetry]` Complement of **Gate Depth** (`1.0 - Depth/100`) driving the live touchscreen AHDS envelope height. | `0.00 – 1.00` (Default: `0.50`) |
+| **Gate Step** (`135`, `tg_play_step`) | `[Read-Only Telemetry]` Active step playhead tracking the rhythm in real time with a glowing chaser/halo highlight across **Step 1–16** (switches dark when bypassed). | `0.00 – 1.00` (Default: `1.00` / Off) |
 
 ---
 
