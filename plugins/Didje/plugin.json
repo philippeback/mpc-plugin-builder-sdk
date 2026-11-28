@@ -1,0 +1,17 @@
+{
+  "name": "Didje",
+  "manufacturer": "PhilippeBack",
+  "version": "1.0.0",
+  "format": "vst2",
+  "kind": "instrument",
+  "uid": "Ddj1",
+  "numInputs": 0,
+  "numOutputs": 2,
+  "category": "Synth",
+  "file32": "VST/didje-arm32.so",
+  "file64": "VST/didje-arm64.so",
+  "description": "Physical-modeling didgeridoo synthesizer: lip-reed exciter with DriftLFO and breath noise, phase-compensated 1D waveguide bore, tempo-synced A-E-I-O-U vocal-tract formant morphing, and velocity/aftertouch overblow.",
+  "author": "PhilippeBack",
+  "url": "",
+  "license": "MIT"
+}

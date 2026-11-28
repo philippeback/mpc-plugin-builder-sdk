@@ -1,0 +1,25 @@
+{
+  "kit": "amber",
+  "qlinkGroups": "rows",
+  "pages": [
+    {
+      "name": "DIDJE",
+      "controls": [
+        { "param": "Vowel Morph",  "widget": "knob" },
+        { "param": "Breath Growl", "widget": "knob" },
+        { "param": "Wobble Rate",  "widget": "knob", "overlay": "menu" },
+        { "param": "Wobble Depth", "widget": "knob" },
+
+        { "param": "Drone Tune",   "widget": "knob", "polarity": "bipolar" },
+        { "param": "Bore Damp",    "widget": "knob" },
+        { "param": "Toot / Overb", "widget": "knob" },
+        { "param": "Out Gain",     "widget": "fader" },
+
+        { "param": "Glide",        "widget": "knob" },
+        { "param": "Body Width",   "widget": "knob" },
+        { "param": "Attack",       "widget": "fader" },
+        { "param": "Release",      "widget": "fader" }
+      ]
+    }
+  ]
+}

@@ -9,6 +9,7 @@ dist/
 plugins/*
 !plugins/.gitkeep
 !plugins/Mushin/
+!plugins/Didje/
 
 # Python
 __pycache__/
