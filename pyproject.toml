@@ -1,0 +1,11 @@
+[project]
+name = "mpc-plugin-builder-sdk"
+version = "1.0.0"
+description = "Toolkit for building instrument and effect plugins for Akai MPC standalone hardware"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv]
+package = false

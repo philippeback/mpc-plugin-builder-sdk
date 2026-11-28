@@ -393,6 +393,8 @@ public:
     }
     // Ask the host to re-read parameter names/values (needed if your names change dynamically).
     void requestDisplayUpdate() { if (host_ && effect_) host_(effect_, audioMasterUpdateDisplay, 0, 0, nullptr, 0.0f); }
+    // True while internalLoadState() or setProgram() is bulk-restoring parameters.
+    bool isBulkLoading() const { return bulkLoading_.load(std::memory_order_relaxed); }
     // Queue a MIDI event to send to the host at the end of this process() call.
     void sendMidi(const MidiEvent& e) { if (numMidiOut_ < kMaxMidiEvents) midiOut_[numMidiOut_++] = e; }
     // Change latency after construction.
@@ -517,15 +519,16 @@ public:
         auto getU32 = [&](uint32_t& v) { if (pos + 4 > size) return false; v = 0; for (int i = 0; i < 4; ++i) v |= (uint32_t)data[pos + (size_t)i] << (8 * i); pos += 4; return true; };
         uint32_t version = 0, n = 0;
         if (!getU32(version) || !getU32(n)) return false;
+        bulkLoading_.store(true, std::memory_order_relaxed);
         for (uint32_t k = 0; k < n; ++k)
         {
-            if (pos >= size) return false;
+            if (pos >= size) { bulkLoading_.store(false, std::memory_order_relaxed); return false; }
             uint8_t idLen = data[pos++];
-            if (pos + idLen + 4 > size) return false;
+            if (pos + idLen + 4 > size) { bulkLoading_.store(false, std::memory_order_relaxed); return false; }
             std::string id(reinterpret_cast<const char*>(data + pos), idLen); pos += idLen;
             uint32_t bits; getU32(bits); float plain; std::memcpy(&plain, &bits, 4);
             float norm = -1.0f;
-            if (version >= 2) { if (pos + 4 > size) return false; getU32(bits); std::memcpy(&norm, &bits, 4); }
+            if (version >= 2) { if (pos + 4 > size) { bulkLoading_.store(false, std::memory_order_relaxed); return false; } getU32(bits); std::memcpy(&norm, &bits, 4); }
             for (int i = 0; i < numParams(); ++i)
             {
                 if (params_[(size_t)i].id != id) continue;
@@ -537,6 +540,7 @@ public:
                 break;
             }
         }
+        bulkLoading_.store(false, std::memory_order_relaxed);
         uint32_t extraLen = 0;
         if (getU32(extraLen) && pos + extraLen <= size && extraLen > 0) loadExtraState(data + pos, extraLen);
         stateLoadPending_.store(true, std::memory_order_release);
@@ -556,7 +560,9 @@ public:
         if (programs_.empty() || i < 0 || i >= (int)programs_.size()) return;
         currentProgram_ = i;
         const Program& p = programs_[(size_t)i];
+        bulkLoading_.store(true, std::memory_order_relaxed);
         for (int k = 0; k < numParams() && k < (int)p.plainValues.size(); ++k) set(k, p.plainValues[(size_t)k]);
+        bulkLoading_.store(false, std::memory_order_relaxed);
         stateLoadPending_.store(true, std::memory_order_release);
     }
 
@@ -623,6 +629,7 @@ protected:
     double sampleRate_ = 44100.0;
     int blockSize_ = 128;
     bool prepared_ = false;
+    std::atomic<bool> bulkLoading_{false};
     std::atomic<bool> stateLoadPending_{false};
     std::vector<uint8_t> stateBuffer_;
     MidiEvent midiIn_[kMaxMidiEvents];

@@ -8,6 +8,7 @@ dist/
 # Users' own plugin projects live here; the SDK repo only tracks the placeholder
 plugins/*
 !plugins/.gitkeep
+!plugins/Mushin/
 
 # Python
 __pycache__/
@@ -16,3 +17,6 @@ __pycache__/
 # OS cruft
 .DS_Store
 Thumbs.db
+
+# Local environment config
+.env
